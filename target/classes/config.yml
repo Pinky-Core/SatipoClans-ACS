@@ -1,0 +1,71 @@
+################################################################
+#                                                              #
+#                        Placeholders :                        #
+#  ---------------------------------------------------------   #
+#  | %satipoclan_prefix%           : Plugin prefix          |  #
+#  | %satipoclan_clan_leader%      : Clan leader's name     |  #
+#  | %satipoclan_clan_founder%     : Clan founder's name    |  #
+#  | %satipoclan_clan_name%        : Clan's name            |  #
+#  | %satipoclan_clan_tag%         : Clan's tag             |  #
+#  | %satipoclan_clan_money%       : Clan's money vault     |  #
+#  | %satipoclan_clan_membercount_offline% : Offline count  |  #
+#  | %satipoclan_clan_membercount_online%  : Online count   |  #
+#  | %satipoclan_clan_membercount% : Total members          |  #
+#  | %satipoclan_player_money%     : Player money vault     |  #
+#  ---------------------------------------------------------   #
+#        Now you can use PlaceholderAPI´s placeholders.        #
+#                                                              #
+################################################################
+
+prefix: "&7[&a&lSatipo&6&lClans&7]"
+
+storage:
+  type: "yml" # Opciones: mariadb / yml
+
+  # Solo aplica si storage.type = mariadb
+  mariadb:
+    host: "localhost"
+    port: 3306
+    database: "satipoclans"
+    username: "root"
+    password: "password"
+
+welcome-message:
+  enabled: true
+
+  no-clan:
+    - "&f--------------------------------"
+    - "&eWelcome back!"
+    - "&7Use &a/cl create &7to create your clan."
+    - "&f--------------------------------"
+
+  self-clan:
+    - "&f--------------------------------"
+    - "&eYou are in clan &a%satipoclan_clan_name% &8[%satipoclan_clan_tag%]"
+    - "&7Online members: &a%satipoclan_clan_membercount_online%&7/&f%satipoclan_clan_membercount%"
+    - "&f--------------------------------"
+
+  to-clan:
+    - "&f--------------------------------"
+    - "&a%player_name% &7from the clan has joined the server"
+    - "&f--------------------------------"
+
+max-clans: 0 # 0 = unlimited
+
+economy:
+  enabled: true
+  system: "Vault" # Vault / Internal (SatipoClans economy system)
+
+  cost:
+    create-clan: 5
+  earn:
+    delete-clan: 1
+    kill-enemy: 2.5
+
+names-blocked:
+  enabled: true
+  blocked:
+    - "shit"
+    - "fuck"
+    - "nigga"
+    - "KKK"

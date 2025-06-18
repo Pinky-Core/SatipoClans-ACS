@@ -1,0 +1,33 @@
+main: me.lewisainsworth.satipoclans.SatipoClan
+version: 1.1.5
+name: SatipoClans
+author: Enttbot
+api-version: "1.20"
+softdepend: [Vault, PlaceholderAPI]
+
+commands:
+  clansadmin:
+    description: Administra el plugin SatipoClans.
+    aliases: [cla]
+  clans:
+    description: Comandos principales de los clanes (crear, borrar, invitar, etc.).
+    aliases: [cls]
+  scstats:
+    description: Muestra estadísticas del jugador en SatipoClans.
+    aliases: [scs]
+
+permissions:
+  sc.*:
+    description: Todos los permisos del plugin.
+    default: op
+    children:
+      sc.admin: true
+      sc.user: true
+
+  sc.admin:
+    description: Acceso a comandos administrativos.
+    default: op
+
+  sc.user:
+    description: Acceso a comandos de usuario.
+    default: true
