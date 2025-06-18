@@ -9,6 +9,7 @@ import me.lewisainsworth.satipoclans.CMDs.ACMD;
 import me.lewisainsworth.satipoclans.CMDs.PECMD;
 import me.lewisainsworth.satipoclans.Events.Events;
 import me.lewisainsworth.satipoclans.Utils.*;
+import me.lewisainsworth.satipoclans.Database.MariaDBManager;
 
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -19,9 +20,11 @@ public class SatipoClan extends JavaPlugin {
    public String version = getDescription().getVersion();
    public static String prefix;
    public static Econo econ;
+
    private Updater updater;
    private Metrics metrics;
    private FileHandler fh;
+   private MariaDBManager mariaDBManager;
 
    @Override
    public void onEnable() {
@@ -31,6 +34,8 @@ public class SatipoClan extends JavaPlugin {
       updater = new Updater(this, 114316);
       metrics = new Metrics(this, 20912);
       econ = new Econo(this);
+
+      // Configuración economía
       if (getConfig().getBoolean("economy.enabled", true)) {
          if (!econ.setupEconomy()) {
             getLogger().severe("Can´t load the economy system.");
@@ -42,6 +47,20 @@ public class SatipoClan extends JavaPlugin {
       }
 
       fh.saveDefaults();
+
+      // Conexión y sincronización a MariaDB
+      try {
+         mariaDBManager = new MariaDBManager(getConfig());
+         mariaDBManager.connect();
+         mariaDBManager.syncFromYaml(fh.getData());
+         mariaDBManager.clearYamlClans(fh.getData(), fh);
+         getLogger().info("Clans data successfully synced to MariaDB.");
+      } catch (Exception e) {
+         getLogger().severe("Failed to connect to MariaDB or sync data: " + e.getMessage());
+         e.printStackTrace();
+         getServer().getPluginManager().disablePlugin(this);
+         return;
+      }
 
       setupMetrics();
       registerCommands();
@@ -57,6 +76,9 @@ public class SatipoClan extends JavaPlugin {
 
    @Override
    public void onDisable() {
+      if (mariaDBManager != null) {
+         mariaDBManager.close();
+      }
       Bukkit.getConsoleSender().sendMessage(MSG.color("&av" + getDescription().getVersion() + " &cDisabled"));
    }
 
@@ -121,5 +143,9 @@ public class SatipoClan extends JavaPlugin {
 
    public FileHandler getFH() {
       return fh;
+   }
+
+   public MariaDBManager getMariaDBManager() {
+      return mariaDBManager;
    }
 }
