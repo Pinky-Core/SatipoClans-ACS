@@ -13,16 +13,30 @@ public class MariaDBManager {
     private Connection connection;
 
     public MariaDBManager(FileConfiguration config) {
-        this.host = config.getString("mariadb.host");
-        this.port = config.getInt("mariadb.port");
-        this.database = config.getString("mariadb.database");
-        this.user = config.getString("mariadb.user");
-        this.password = config.getString("mariadb.password");
+        this.host = config.getString("storage.mariadb.host");
+        this.port = config.getInt("storage.mariadb.port");
+        this.database = config.getString("storage.mariadb.database");
+        this.user = config.getString("storage.mariadb.username");
+        this.password = config.getString("storage.mariadb.password");
     }
+
 
     public void connect() throws SQLException {
         if (connection != null && !connection.isClosed()) return;
+        try {
+            Class.forName("org.mariadb.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("⛓️ Conectando a MariaDB con:");
+        System.out.println("Host: " + host);
+        System.out.println("Port: " + port);
+        System.out.println("Database: " + database);
+        System.out.println("User: " + user);
+
         String url = "jdbc:mariadb://" + host + ":" + port + "/" + database + "?useSSL=false";
+
         connection = DriverManager.getConnection(url, user, password);
         setupTables();
     }
@@ -127,7 +141,11 @@ public class MariaDBManager {
         fh.saveData();
     }
 
-    public Connection getConnection() {
+    public Connection getConnection() throws SQLException {
+        if (connection == null || connection.isClosed()) {
+            connect(); // abre o reabre la conexión
+        }
         return connection;
     }
+
 } 

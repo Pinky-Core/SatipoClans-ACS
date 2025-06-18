@@ -20,7 +20,7 @@
 prefix: "&7[&a&lSatipo&6&lClans&7]"
 
 storage:
-  type: "yml" # Opciones: mariadb / yml
+  type: "mariadb" # Opciones: mariadb / yml
 
   # Solo aplica si storage.type = mariadb
   mariadb:

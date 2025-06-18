@@ -2,6 +2,7 @@ me\lewisainsworth\satipoclans\Utils\FileHandler.class
 me\lewisainsworth\satipoclans\Utils\Metrics$SimpleBarChart.class
 me\lewisainsworth\satipoclans\Utils\MSG.class
 me\lewisainsworth\satipoclans\SatipoClan.class
+me\lewisainsworth\satipoclans\Database\MariaDBManager.class
 me\lewisainsworth\satipoclans\Events\Events.class
 me\lewisainsworth\satipoclans\Utils\Metrics$MetricsBase.class
 me\lewisainsworth\satipoclans\CMDs\ACMD.class

@@ -9,6 +9,11 @@ import static me.lewisainsworth.satipoclans.SatipoClan.prefix;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -51,68 +56,86 @@ public class CCMD implements CommandExecutor, TabCompleter {
                     this.create(sender, args);
                 } else if (args[0].equalsIgnoreCase("disband")) {
                     this.disband(sender, playerClan);
-                } else {
-                    String playerToInvite;
-                    if (args[0].equalsIgnoreCase("report")) {
-                        if (args.length < 3) {
-                            sender.sendMessage(MSG.color(prefix + "&cUSE: /cls report <clan> <reason>"));
-                            return true;
-                        }
-
-                        playerToInvite = args[1];
-                        String reason = String.join(" ", Arrays.copyOfRange(args, 2, args.length));
-                        this.report(sender, playerToInvite, reason);
-                    } else if (args[0].equalsIgnoreCase("list")) {
-                        this.list(sender);
-                    } else if (args[0].equalsIgnoreCase("join")) {
-                        if (args.length != 2) {
-                            sender.sendMessage(MSG.color(prefix + "&cUSE: /cls join <clan>"));
-                            return true;
-                        }
-
-                        playerToInvite = args[1];
-                        this.joinClan(sender, playerName, playerToInvite);
-//                    } else if (args[0].equalsIgnoreCase("war")) {
-//                        this.wars(sender, args, playerClan);
-                    } else if (args[0].equalsIgnoreCase("edit")) {
-                        this.edit(player, playerClan, args);
-                    } else if (args[0].equalsIgnoreCase("kick")) {
-                        this.kick(sender, args);
-                    } else if (args[0].equalsIgnoreCase("economy")) {
-                        this.Economy(player, playerClan, args);
-                    } else if (args[0].equalsIgnoreCase("invite")) {
-                        if (args.length != 2) {
-                            sender.sendMessage(MSG.color(prefix + "&cUse: /cls invite <player>"));
-                            return true;
-                        }
-
-                        playerToInvite = args[1];
-                        this.inviteToClan(sender, playerToInvite);
-                    } else if (args[0].equalsIgnoreCase("chat")) {
-                        if (playerClan == null || playerClan.isEmpty()) {
-                            sender.sendMessage(MSG.color(prefix + "&cYou are not in a clan."));
-                            return true;
-                        }
-
-                        this.chat(playerClan, player, Arrays.copyOfRange(args, 1, args.length));
-                    } else if (args[0].equalsIgnoreCase("leave")) {
-                        this.leave(sender, playerClan);
-                    } else if (args[0].equalsIgnoreCase("stats")) {
-                        if (playerClan == null || playerClan.isEmpty()) {
-                            sender.sendMessage(MSG.color(prefix + "&cYou are not in a clan."));
-                            return true;
-                        }
-
-                        this.stats(sender, playerClan);
-                    } else if (args[0].equalsIgnoreCase("resign")) {
-                        this.resign(sender, playerClan);
+                } else if (args[0].equalsIgnoreCase("report")) {
+                    if (args.length < 3) {
+                        sender.sendMessage(MSG.color(prefix + "&cUSE: /cls report <clan> <reason>"));
+                        return true;
                     }
+
+                    String playerToInvite = args[1];
+                    String reason = String.join(" ", Arrays.copyOfRange(args, 2, args.length));
+                    this.report(sender, playerToInvite, reason);
+                } else if (args[0].equalsIgnoreCase("list")) {
+                    this.list(sender);
+                } else if (args[0].equalsIgnoreCase("join")) {
+                    if (args.length != 2) {
+                        sender.sendMessage(MSG.color(prefix + "&cUSE: /cls join <clan>"));
+                        return true;
+                    }
+
+                    String playerToInvite = args[1];
+                    this.joinClan(sender, playerName, playerToInvite);
+                } else if (args[0].equalsIgnoreCase("edit")) {
+                    this.edit(player, playerClan, args);
+                } else if (args[0].equalsIgnoreCase("kick")) {
+                    this.kick(sender, args);
+                } else if (args[0].equalsIgnoreCase("economy")) {
+                    this.Economy(player, playerClan, args);
+                } else if (args[0].equalsIgnoreCase("invite")) {
+                    if (args.length != 2) {
+                        sender.sendMessage(MSG.color(prefix + "&cUse: /cls invite <player>"));
+                        return true;
+                    }
+
+                    String playerToInvite = args[1];
+                    this.inviteToClan(sender, playerToInvite);
+                } else if (args[0].equalsIgnoreCase("chat")) {
+                    if (playerClan == null || playerClan.isEmpty()) {
+                        sender.sendMessage(MSG.color(prefix + "&cYou are not in a clan."));
+                        return true;
+                    }
+
+                    this.chat(playerClan, player, Arrays.copyOfRange(args, 1, args.length));
+                } else if (args[0].equalsIgnoreCase("leave")) {
+                    this.leave(sender, playerClan);
+                } else if (args[0].equalsIgnoreCase("stats")) {
+                    if (playerClan == null || playerClan.isEmpty()) {
+                        sender.sendMessage(MSG.color(prefix + "&cYou are not in a clan."));
+                        return true;
+                    }
+
+                    this.stats(sender, playerClan);
+                } else if (args[0].equalsIgnoreCase("resign")) {
+                    this.resign(sender, playerClan);
+                } else if (args[0].equalsIgnoreCase("ff")) {
+                    if (playerClan == null || playerClan.isEmpty()) {
+                        sender.sendMessage(MSG.color(prefix + "&cYou are not in a clan."));
+                        return true;
+                    }
+                    if (args.length != 2 || (!args[1].equalsIgnoreCase("on") && !args[1].equalsIgnoreCase("off"))) {
+                        sender.sendMessage(MSG.color(prefix + "&cUse: /cls ff <on|off>"));
+                        return true;
+                    }
+                    handleFriendlyFireCommand(sender, playerClan, args);
+                } else if (args[0].equalsIgnoreCase("ally")) {
+                    if (playerClan == null || playerClan.isEmpty()) {
+                        sender.sendMessage(MSG.color(prefix + "&cYou are not in a clan."));
+                        return true;
+                    }
+                    if (args.length != 2) {
+                        sender.sendMessage(MSG.color(prefix + "&cUse: /cls ally <clanName>"));
+                        return true;
+                    }
+                    handleAllyCommand(sender, playerName, playerClan, args);
+                } else {
+                    this.help(sender);
                 }
 
                 return false;
             }
         }
     }
+
 
     public void help(CommandSender sender) {
         sender.sendMessage(MSG.color("&6======= &lCLAN COMMANDS &6======="));
@@ -122,6 +145,8 @@ public class CCMD implements CommandExecutor, TabCompleter {
         sender.sendMessage(MSG.color("&3&lLEAVE: &fLeave your current clan respectfully."));
         sender.sendMessage(MSG.color("&3&lDISBAND: &fDisband your clan if necessary."));
         sender.sendMessage(MSG.color("&3&lKICK: &fRemove a player from your clan if needed."));
+        sender.sendMessage(MSG.color("&3&lFF: &fToggle friendly fire for your clan members."));
+        sender.sendMessage(MSG.color("&3&lALLY: &fForm an alliance with another clan."));
         sender.sendMessage(MSG.color("&3&lCHAT: &fTalk with your clan members easily."));
         sender.sendMessage(MSG.color("&3&lSTATS: &fView your clan's achievements and stats."));
         sender.sendMessage(MSG.color("&3&lLIST: &fSee all clans available on the server."));
@@ -145,66 +170,104 @@ public class CCMD implements CommandExecutor, TabCompleter {
             return;
         }
 
-        String playerName = args[1];
+        String target = args[1];
         Player player = (Player) sender;
-        FileHandler fh = plugin.getFH();
-        String clanName = this.getPlayerClan(player.getName());
+        String clanName = getPlayerClan(player.getName());
 
-        if (clanName == null || clanName.isEmpty()) {
+        if (clanName == null) {
             sender.sendMessage(MSG.color(prefix + "&cYou are not in a clan."));
             return;
         }
 
-        FileConfiguration data = fh.getData();
-        List<String> users = data.getStringList("Clans." + clanName + ".Users");
-        String leader = data.getString("Clans." + clanName + ".Leader");
+        try (Connection con = plugin.getMariaDBManager().getConnection();
+            PreparedStatement checkLeader = con.prepareStatement("SELECT leader FROM clans WHERE name=?");
+            PreparedStatement removeUser = con.prepareStatement("DELETE FROM clan_users WHERE username=? AND clan=?");
+            PreparedStatement countUsers = con.prepareStatement("SELECT COUNT(*) as total FROM clan_users WHERE clan=?");
+            PreparedStatement deleteClan = con.prepareStatement("DELETE FROM clans WHERE name=?")) {
 
-        if (!player.getName().equalsIgnoreCase(leader)) {
-            sender.sendMessage(MSG.color(prefix + "&cOnly the clan leader can expel members."));
-            return;
-        }
-
-        if (playerName.equalsIgnoreCase(player.getName())) {
-            sender.sendMessage(MSG.color(prefix + "&cYou can't expel yourself, use /clans leave."));
-            return;
-        }
-
-        if (!users.contains(playerName)) {
-            sender.sendMessage(MSG.color(prefix + "&cPlayer is not a member of the clan."));
-            return;
-        }
-
-        users.remove(playerName);
-        data.set("Clans." + clanName + ".Users", users);
-        fh.saveData();
-        sender.sendMessage(MSG.color(prefix + "&2Player &e&l" + playerName + " &2has been expelled from the clan &e&l" + clanName));
-
-        if (users.isEmpty()) {
-            data.set("Clans." + clanName, null);
-            fh.saveData();
-            sender.sendMessage(MSG.color(prefix + "&2The clan is empty, it has been eliminated."));
-        }
-    }
-
-    public void resign(CommandSender sender, String playerClan) {
-        if (playerClan != null && !playerClan.isEmpty()) {
-            FileHandler fh = plugin.getFH();
-            FileConfiguration data = fh.getData();
-            List<String> users = data.getStringList("Clans." + playerClan + ".Users");
-            if (!users.isEmpty()) {
-                int randomIndex = (new Random()).nextInt(users.size());
-                String newLeader = users.get(randomIndex);
-                data.set("Clans." + playerClan + ".Leader", newLeader);
-                sender.sendMessage(MSG.color(prefix + "&cYou reject your position as clan leader! The new leader is " + newLeader));
-            } else {
-                data.set("Clans." + playerClan, null);
-                sender.sendMessage(MSG.color(prefix + "&cClan deleted! &7(cause: 0 members)."));
+            checkLeader.setString(1, clanName);
+            ResultSet rs = checkLeader.executeQuery();
+            if (rs.next() && !rs.getString("leader").equalsIgnoreCase(player.getName())) {
+                sender.sendMessage(MSG.color(prefix + "&cOnly the clan leader can expel members."));
+                return;
             }
 
-        } else {
-            sender.sendMessage(MSG.color(prefix + "&cYou are not in a clan."));
+            if (target.equalsIgnoreCase(player.getName())) {
+                sender.sendMessage(MSG.color(prefix + "&cYou can't expel yourself. Use /cls leave."));
+                return;
+            }
+
+            removeUser.setString(1, target);
+            removeUser.setString(2, clanName);
+            int removed = removeUser.executeUpdate();
+            if (removed == 0) {
+                sender.sendMessage(MSG.color(prefix + "&cPlayer is not a member of the clan."));
+                return;
+            }
+
+            sender.sendMessage(MSG.color(prefix + "&2Player &e&l" + target + " &2has been expelled from clan &e&l" + clanName));
+
+            countUsers.setString(1, clanName);
+            ResultSet count = countUsers.executeQuery();
+            if (count.next() && count.getInt("total") == 0) {
+                deleteClan.setString(1, clanName);
+                deleteClan.executeUpdate();
+                sender.sendMessage(MSG.color(prefix + "&2The clan is empty. It has been eliminated."));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            sender.sendMessage(MSG.color(prefix + "&cAn error occurred while kicking."));
         }
     }
+
+
+    public void resign(CommandSender sender, String playerClan) {
+        String playerName = sender.getName();
+
+        if (playerClan == null) {
+            sender.sendMessage(MSG.color(prefix + "&cYou are not in a clan."));
+            return;
+        }
+
+        try (Connection con = plugin.getMariaDBManager().getConnection();
+            PreparedStatement checkLeader = con.prepareStatement("SELECT leader FROM clans WHERE name=?");
+            PreparedStatement selectNext = con.prepareStatement("SELECT username FROM clan_users WHERE clan=? AND username<>? LIMIT 1");
+            PreparedStatement updateLeader = con.prepareStatement("UPDATE clans SET leader=? WHERE name=?");
+            PreparedStatement deleteClan = con.prepareStatement("DELETE FROM clans WHERE name=?");
+            PreparedStatement deleteUsers = con.prepareStatement("DELETE FROM clan_users WHERE clan=?")) {
+
+            checkLeader.setString(1, playerClan);
+            ResultSet rs = checkLeader.executeQuery();
+            if (!rs.next() || !rs.getString("leader").equalsIgnoreCase(playerName)) {
+                sender.sendMessage(MSG.color(prefix + "&cYou are not the clan leader."));
+                return;
+            }
+
+            selectNext.setString(1, playerClan);
+            selectNext.setString(2, playerName);
+            ResultSet next = selectNext.executeQuery();
+
+            if (next.next()) {
+                String newLeader = next.getString("username");
+                updateLeader.setString(1, newLeader);
+                updateLeader.setString(2, playerClan);
+                updateLeader.executeUpdate();
+                sender.sendMessage(MSG.color(prefix + "&cYou resign from leadership! New leader is " + newLeader));
+            } else {
+                deleteUsers.setString(1, playerClan);
+                deleteUsers.executeUpdate();
+                deleteClan.setString(1, playerClan);
+                deleteClan.executeUpdate();
+                sender.sendMessage(MSG.color(prefix + "&cClan deleted due to no members."));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            sender.sendMessage(MSG.color(prefix + "&cError during resign."));
+        }
+    }
+
 
 //    public void wars(CommandSender sender, String[] args, String playerClan) {
 //        if (args.length < 2) {
@@ -373,39 +436,45 @@ public class CCMD implements CommandExecutor, TabCompleter {
 //    }
 
     public void stats(CommandSender sender, String clanName) {
-        FileHandler fh = plugin.getFH();
-        FileConfiguration data = fh.getData();
+        try (Connection con = plugin.getMariaDBManager().getConnection();
+            PreparedStatement clanStmt = con.prepareStatement("SELECT founder, leader, privacy, money FROM clans WHERE name=?");
+            PreparedStatement membersStmt = con.prepareStatement("SELECT username FROM clan_users WHERE clan=?")) {
 
-        String path = "Clans." + clanName;
+            clanStmt.setString(1, clanName);
+            ResultSet clanRs = clanStmt.executeQuery();
 
-        if (!data.contains(path)) {
-            sender.sendMessage(MSG.color(prefix + "&cNo clan found with that name."));
-            return;
+            if (!clanRs.next()) {
+                sender.sendMessage(MSG.color(prefix + "&cNo clan found with that name."));
+                return;
+            }
+
+            String founder = clanRs.getString("founder");
+            String leader = clanRs.getString("leader");
+            String privacy = clanRs.getString("privacy");
+            double money = clanRs.getDouble("money");
+
+            sender.sendMessage(MSG.color("&2--------&f&lSTATS&2--------"));
+            sender.sendMessage(MSG.color("&2Name: &e&l" + clanName));
+            sender.sendMessage(MSG.color("&2Founder: &e&l" + founder));
+            sender.sendMessage(MSG.color("&2Leader: &e&l" + leader));
+            sender.sendMessage(MSG.color("&2Privacy: &e&l" + privacy));
+            sender.sendMessage(MSG.color("&2Money: &e&l$" + money));
+
+            membersStmt.setString(1, clanName);
+            ResultSet members = membersStmt.executeQuery();
+            sender.sendMessage(MSG.color("&2Members:"));
+            while (members.next()) {
+                sender.sendMessage(MSG.color("&f- &l" + members.getString("username")));
+            }
+
+            sender.sendMessage(MSG.color("&2-------- " + prefix + "&2--------"));
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            sender.sendMessage(MSG.color(prefix + "&cError loading clan stats."));
         }
-
-        String founder = data.getString(path + ".Founder", "???");
-        String leader = data.getString(path + ".Leader", "???");
-        String privacy = data.getString(path + ".Privacy", "???");
-        String money = data.getString(path + ".Money", "???");
-
-        List<String> users = data.getStringList(path + ".Users");
-        List<String> invites = data.isList(path + ".Invitations") ? data.getStringList(path + ".Invitations") : List.of();
-
-        sender.sendMessage(MSG.color("&2--------&f&lSTATS&2--------"));
-        sender.sendMessage(MSG.color("&2Name: &e&l" + clanName));
-        sender.sendMessage(MSG.color("&2Founder: &e&l" + founder));
-        sender.sendMessage(MSG.color("&2Leader: &e&l" + leader));
-        sender.sendMessage(MSG.color("&2Privacy: &e&l" + privacy));
-        sender.sendMessage(MSG.color("&2Money: &e&l$" + money));
-        sender.sendMessage(MSG.color("&2Members:"));
-        users.forEach(u -> sender.sendMessage(MSG.color("&f- &l" + u)));
-
-        sender.sendMessage(MSG.color(" "));
-        sender.sendMessage(MSG.color("&2Invited Members:"));
-        invites.forEach(i -> sender.sendMessage(MSG.color("&f- &l" + i)));
-
-        sender.sendMessage(MSG.color("&2-------- " + prefix + "&2--------"));
     }
+
 
     private void Economy(Player player, String clan, String[] args) {
         if (args.length != 3) {
@@ -414,15 +483,13 @@ public class CCMD implements CommandExecutor, TabCompleter {
         }
 
         String playerClan = getPlayerClan(player.getName());
-
-        if (playerClan == null || playerClan.isEmpty()) {
+        if (playerClan == null) {
             player.sendMessage(MSG.color(prefix + "&cYou are not in a clan."));
             return;
         }
 
         String type = args[1];
         int amount;
-
         try {
             amount = Integer.parseInt(args[2]);
         } catch (NumberFormatException e) {
@@ -436,35 +503,52 @@ public class CCMD implements CommandExecutor, TabCompleter {
         }
 
         Econo econ = SatipoClan.getEcon();
-        FileHandler fh = plugin.getFH();
-        FileConfiguration data = fh.getData();
+        double playerBalance = econ.getBalance(player);
 
-        String moneyPath = "Clans." + clan + ".Money";
-        double clanBalance = data.getDouble(moneyPath);
+        try (Connection con = plugin.getMariaDBManager().getConnection();
+            PreparedStatement getMoney = con.prepareStatement("SELECT money FROM clans WHERE name=?");
+            PreparedStatement updateMoney = con.prepareStatement("UPDATE clans SET money=? WHERE name=?")) {
 
-        if (type.equalsIgnoreCase("deposit")) {
-            double playerBalance = econ.getBalance(player);
-            if (playerBalance >= amount) {
-                econ.withdraw(player, amount);
-                data.set(moneyPath, clanBalance + amount);
-                fh.saveData();
-                player.sendMessage(MSG.color(prefix + "&2Deposited &a$" + amount + " &2to clan."));
-            } else {
-                player.sendMessage(MSG.color(prefix + "&cNot enough money to deposit."));
+            getMoney.setString(1, playerClan);
+            ResultSet rs = getMoney.executeQuery();
+
+            if (!rs.next()) {
+                player.sendMessage(MSG.color(prefix + "&cClan not found."));
+                return;
             }
-        } else if (type.equalsIgnoreCase("withdraw")) {
-            if (clanBalance >= amount) {
-                econ.deposit(player, amount);
-                data.set(moneyPath, clanBalance - amount);
-                fh.saveData();
-                player.sendMessage(MSG.color(prefix + "&2Withdrew &a$" + amount + " &2from clan."));
+
+            double clanMoney = rs.getDouble("money");
+
+            if (type.equalsIgnoreCase("deposit")) {
+                if (playerBalance >= amount) {
+                    econ.withdraw(player, amount);
+                    updateMoney.setDouble(1, clanMoney + amount);
+                    updateMoney.setString(2, playerClan);
+                    updateMoney.executeUpdate();
+                    player.sendMessage(MSG.color(prefix + "&2Deposited &a$" + amount + " &2to clan."));
+                } else {
+                    player.sendMessage(MSG.color(prefix + "&cNot enough money to deposit."));
+                }
+            } else if (type.equalsIgnoreCase("withdraw")) {
+                if (clanMoney >= amount) {
+                    econ.deposit(player, amount);
+                    updateMoney.setDouble(1, clanMoney - amount);
+                    updateMoney.setString(2, playerClan);
+                    updateMoney.executeUpdate();
+                    player.sendMessage(MSG.color(prefix + "&2Withdrew &a$" + amount + " &2from clan."));
+                } else {
+                    player.sendMessage(MSG.color(prefix + "&cClan doesn't have enough money."));
+                }
             } else {
-                player.sendMessage(MSG.color(prefix + "&cClan doesn't have enough money."));
+                player.sendMessage(MSG.color(prefix + "&cInvalid operation. Use deposit or withdraw."));
             }
-        } else {
-            player.sendMessage(MSG.color(prefix + "&cInvalid operation. Use deposit or withdraw."));
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            player.sendMessage(MSG.color(prefix + "&cAn error occurred while processing economy action."));
         }
     }
+
 
     private void inviteToClan(CommandSender sender, String playerToInvite) {
         Player invitedPlayer = this.plugin.getServer().getPlayer(playerToInvite);
@@ -490,12 +574,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
     }
 
     public void chat(String clanName, Player player, String[] message) {
-        FileHandler fh = plugin.getFH();
-        FileConfiguration data = fh.getData();
-        List<String> users = data.getStringList("Clans." + clanName + ".Users");
-
         String playerClan = getPlayerClan(player.getName());
-
         if (playerClan == null || playerClan.isEmpty()) {
             player.sendMessage(MSG.color(prefix + "&cYou are not in a clan."));
             return;
@@ -503,127 +582,189 @@ public class CCMD implements CommandExecutor, TabCompleter {
 
         String formattedMessage = String.join(" ", message);
 
-        player.sendMessage(MSG.color("&e" + getPlayerClan(player.getName()) + " &f" + player.getName() + "&f: &7" + formattedMessage));
+        try (Connection con = plugin.getMariaDBManager().getConnection();
+            PreparedStatement stmt = con.prepareStatement("SELECT username FROM clan_users WHERE clan=?")) {
+            stmt.setString(1, playerClan);
+            ResultSet rs = stmt.executeQuery();
 
-        for (String userName : users) {
-            Player recipient = this.plugin.getServer().getPlayer(userName);
-            if (recipient != null && recipient != player) {
-                recipient.sendMessage(MSG.color("&e" + getPlayerClan(player.getName()) + " &f" + player.getName() + "&f: &7" + formattedMessage));
+            while (rs.next()) {
+                String userName = rs.getString("username");
+                Player recipient = Bukkit.getPlayerExact(userName);
+                if (recipient != null) {
+                    recipient.sendMessage(MSG.color("&e" + playerClan + " &f" + player.getName() + "&f: &7" + formattedMessage));
+                }
             }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            player.sendMessage(MSG.color(prefix + "&cError sending clan chat message."));
         }
     }
 
+
     private void leave(CommandSender sender, String playerClan) {
         Player player = (Player) sender;
+        String playerName = player.getName();
 
-        if (playerClan == null || playerClan.isEmpty()) {
+        if (playerClan == null) {
             sender.sendMessage(MSG.color(prefix + "&cYou are not in a clan."));
             return;
         }
 
-        FileHandler fh = plugin.getFH();
-        FileConfiguration data = fh.getData();
-        List<String> users = data.getStringList("Clans." + playerClan + ".Users");
-        String playerName = player.getName();
-        String leader = data.getString("Clans." + playerClan + ".Leader");
+        try (Connection con = plugin.getMariaDBManager().getConnection();
+            PreparedStatement checkLeader = con.prepareStatement("SELECT leader FROM clans WHERE name=?");
+            PreparedStatement removeUser = con.prepareStatement("DELETE FROM clan_users WHERE username=? AND clan=?");
+            PreparedStatement countUsers = con.prepareStatement("SELECT username FROM clan_users WHERE clan=?");
+            PreparedStatement updateLeader = con.prepareStatement("UPDATE clans SET leader=? WHERE name=?");
+            PreparedStatement deleteClan = con.prepareStatement("DELETE FROM clans WHERE name=?")) {
 
-        users.remove(playerName);
-        data.set("Clans." + playerClan + ".Users", users);
+            checkLeader.setString(1, playerClan);
+            ResultSet leaderRs = checkLeader.executeQuery();
+            boolean isLeader = false;
+            if (leaderRs.next()) {
+                isLeader = leaderRs.getString("leader").equalsIgnoreCase(playerName);
+            }
 
-        if (users.isEmpty()) {
-            data.set("Clans." + playerClan, null);
-            sender.sendMessage(MSG.color(prefix + "&cClan deleted! &7(cause: 0 members)."));
-            fh.saveData();
-            return;
+            removeUser.setString(1, playerName);
+            removeUser.setString(2, playerClan);
+            removeUser.executeUpdate();
+
+            countUsers.setString(1, playerClan);
+            ResultSet countRs = countUsers.executeQuery();
+
+            List<String> remaining = new ArrayList<>();
+            while (countRs.next()) {
+                remaining.add(countRs.getString("username"));
+            }
+
+            if (remaining.isEmpty()) {
+                deleteClan.setString(1, playerClan);
+                deleteClan.executeUpdate();
+                sender.sendMessage(MSG.color(prefix + "&cClan deleted due to no members."));
+                return;
+            }
+
+            if (isLeader) {
+                String newLeader = remaining.get(new Random().nextInt(remaining.size()));
+                updateLeader.setString(1, newLeader);
+                updateLeader.setString(2, playerClan);
+                updateLeader.executeUpdate();
+                sender.sendMessage(MSG.color(prefix + "&cYou have left. New leader is " + newLeader));
+            } else {
+                sender.sendMessage(MSG.color(prefix + "&2You have left the clan."));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            sender.sendMessage(MSG.color(prefix + "&cError leaving clan."));
         }
-
-        if (playerName.equals(leader)) {
-            String newLeader = users.get(new Random().nextInt(users.size()));
-            data.set("Clans." + playerClan + ".Leader", newLeader);
-            sender.sendMessage(MSG.color(prefix + "&cYou have left the clan. " + newLeader + " is the new leader."));
-        } else {
-            sender.sendMessage(MSG.color(prefix + "&2You have left the clan."));
-        }
-
-        fh.saveData();
     }
+
 
     private void joinClan(CommandSender sender, String playerName, String clanToJoin) {
-        FileHandler fh = plugin.getFH();
-        FileConfiguration data = fh.getData();
-
-        String playerClan = getPlayerClan(sender.getName());
-
-        if (playerClan != null) {
-            sender.sendMessage(MSG.color(prefix + "&cYou already have a clan."));
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(MSG.color(prefix + "&cOnly players can join clans."));
             return;
         }
 
-        Player player = (Player) sender;
+        String currentClan = getPlayerClan(playerName);
+        if (currentClan != null) {
+            sender.sendMessage(MSG.color(prefix + "&cYou are already in a clan."));
+            return;
+        }
 
-        List<String> users = data.getStringList("Clans." + clanToJoin + ".Users");
+        try (Connection con = plugin.getMariaDBManager().getConnection();
+            PreparedStatement clanCheck = con.prepareStatement("SELECT privacy FROM clans WHERE name=?");
+            PreparedStatement inviteCheck = con.prepareStatement("SELECT * FROM clan_invites WHERE username=? AND clan=?");
+            PreparedStatement addUser = con.prepareStatement("INSERT INTO clan_users (username, clan) VALUES (?, ?)");
+            PreparedStatement deleteInvite = con.prepareStatement("DELETE FROM clan_invites WHERE username=? AND clan=?")) {
 
-        if (getPlayerClan(getPlayerClan(playerName)) == null) {
-            if (Objects.equals(data.getString("Clans." + clanToJoin + ".Privacy"), "Public")) {
-                users.add(playerName);
-                data.set("Clans." + clanToJoin + ".Users", users);
-                fh.saveData();
-                PECMD.addClanToHistory(player, clanToJoin);
-                sender.sendMessage(MSG.color(prefix + "&2You have joined to:&r &e" + clanToJoin));
-            } else {
-                if (data.getStringList("Clans." + clanToJoin + ".Invitations").contains(playerName)) {
-                    users.add(playerName);
-                    data.set("Clans." + clanToJoin + ".Users", users);
-                    fh.saveData();
-                    PECMD.addClanToHistory(player, clanToJoin);
-                    sender.sendMessage(MSG.color(prefix + "&2You have joined to:&r &e" + clanToJoin + "&2 using an invitation."));
-                } else {
-                    sender.sendMessage(MSG.color(prefix + "&cThis clan is &lPrivate&c."));
+            clanCheck.setString(1, clanToJoin);
+            ResultSet clanRs = clanCheck.executeQuery();
+
+            if (!clanRs.next()) {
+                sender.sendMessage(MSG.color(prefix + "&cClan does not exist."));
+                return;
+            }
+
+            String privacy = clanRs.getString("privacy");
+
+            boolean canJoin = privacy.equalsIgnoreCase("Public");
+
+            if (!canJoin) {
+                inviteCheck.setString(1, playerName);
+                inviteCheck.setString(2, clanToJoin);
+                ResultSet inviteRs = inviteCheck.executeQuery();
+                if (inviteRs.next()) {
+                    canJoin = true;
                 }
             }
-        } else {
-            sender.sendMessage(MSG.color(prefix + "&cYou are already joined into a clan!"));
+
+            if (!canJoin) {
+                sender.sendMessage(MSG.color(prefix + "&cThis clan is &lPrivate&c."));
+                return;
+            }
+
+            addUser.setString(1, playerName);
+            addUser.setString(2, clanToJoin);
+            addUser.executeUpdate();
+
+            // Optional: clean up invitation if it existed
+            deleteInvite.setString(1, playerName);
+            deleteInvite.setString(2, clanToJoin);
+            deleteInvite.executeUpdate();
+
+            // Registrar en historial (si mantenés esto)
+            PECMD.addClanToHistory(player, clanToJoin);
+
+            sender.sendMessage(MSG.color(prefix + "&2You have joined the clan: &e" + clanToJoin));
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            sender.sendMessage(MSG.color(prefix + "&cError joining the clan."));
         }
     }
 
+
     private String getPlayerClan(String playerName) {
-        FileHandler fh = plugin.getFH();
-        FileConfiguration data = fh.getData();
-        ConfigurationSection clansSection = data.getConfigurationSection("Clans");
-        if (clansSection != null) {
-
-            for (String clan : clansSection.getKeys(false)) {
-                List<String> users = data.getStringList("Clans." + clan + ".Users");
-                if (users.contains(playerName)) {
-                    return clan;
-                }
+        try (Connection con = plugin.getMariaDBManager().getConnection();
+            PreparedStatement ps = con.prepareStatement("SELECT clan FROM clan_users WHERE username=?")) {
+            ps.setString(1, playerName);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getString("clan");
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-
         return null;
     }
 
+
     public void list(CommandSender sender) {
-        FileHandler fh = plugin.getFH();
-        FileConfiguration data = fh.getData();
-        ConfigurationSection clansSection = data.getConfigurationSection("Clans");
+        try (Connection con = plugin.getMariaDBManager().getConnection();
+            PreparedStatement ps = con.prepareStatement("SELECT name FROM clans");
+            ResultSet rs = ps.executeQuery()) {
 
-        if (clansSection == null || clansSection.getKeys(false).isEmpty()) {
-            sender.sendMessage(MSG.color(prefix + "&cThere are no clans on the server."));
-            return;
+            if (!rs.isBeforeFirst()) {
+                sender.sendMessage(MSG.color(prefix + "&cThere are no clans on the server."));
+                return;
+            }
+
+            StringBuilder clansList = new StringBuilder();
+            clansList.append(MSG.color(prefix + "&2&lClans:\n"));
+            while (rs.next()) {
+                clansList.append(MSG.color("&c- ")).append(rs.getString("name")).append("\n");
+            }
+            clansList.append(MSG.color(prefix + "&c--- end >_< ---"));
+            sender.sendMessage(clansList.toString());
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            sender.sendMessage(MSG.color(prefix + "&cError fetching clan list."));
         }
-
-        StringBuilder clansList = new StringBuilder();
-        clansList.append(MSG.color(prefix + "&2&lClans:\n"));
-
-        for (String clan : clansSection.getKeys(false)) {
-            clansList.append(MSG.color("&c- ")).append(clan).append("\n");
-        }
-
-        clansList.append(MSG.color(prefix + "&c--- end >_< ---"));
-
-        sender.sendMessage(clansList.toString());
     }
+
 
     private void report(CommandSender sender, String reportedClan, String reason) {
         if (reason == null || reason.trim().isEmpty()) {
@@ -631,58 +772,75 @@ public class CCMD implements CommandExecutor, TabCompleter {
             return;
         }
 
-        FileHandler fh = plugin.getFH();
-        FileConfiguration data = fh.getData();
+        try (Connection con = plugin.getMariaDBManager().getConnection();
+            PreparedStatement check = con.prepareStatement("SELECT name FROM clans WHERE name=?");
+            PreparedStatement checkDup = con.prepareStatement("SELECT * FROM reports WHERE clan=? AND reason=?");
+            PreparedStatement insert = con.prepareStatement("INSERT INTO reports (clan, reason) VALUES (?, ?)")) {
 
-        if (!data.contains("Clans." + reportedClan)) {
-            sender.sendMessage(MSG.color(prefix + "&cThe reported clan does not exist."));
-            return;
+            check.setString(1, reportedClan);
+            ResultSet clanRs = check.executeQuery();
+            if (!clanRs.next()) {
+                sender.sendMessage(MSG.color(prefix + "&cThe reported clan does not exist."));
+                return;
+            }
+
+            checkDup.setString(1, reportedClan);
+            checkDup.setString(2, reason);
+            ResultSet dupRs = checkDup.executeQuery();
+            if (dupRs.next()) {
+                sender.sendMessage(MSG.color(prefix + "&cThis report has already been submitted."));
+                return;
+            }
+
+            insert.setString(1, reportedClan);
+            insert.setString(2, reason);
+            insert.executeUpdate();
+
+            sender.sendMessage(MSG.color(prefix + "&2Clan reported: &e" + reportedClan + "&2. Reason: " + reason));
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            sender.sendMessage(MSG.color(prefix + "&cError submitting report."));
         }
-
-        List<String> reports = data.getStringList("Clans." + reportedClan + ".Reports");
-
-        if (reports.contains(reason)) {
-            sender.sendMessage(MSG.color(prefix + "&cThis report has already been submitted."));
-            return;
-        }
-
-        reports.add(reason);
-        data.set("Clans." + reportedClan + ".Reports", reports);
-
-        fh.saveData();
-
-        sender.sendMessage(MSG.color(prefix + "&2Clan reported: &e" + reportedClan + ". Reason: " + reason));
     }
+
 
     private void edit(Player player, String clanName, String[] args) {
         if (!isLeader(player, clanName)) {
-            player.sendMessage(MSG.color(prefix + "&cOnly the leader can modify the props of the clan!"));
-        }
-
-        String playerClan = getPlayerClan(player.getName());
-
-        if (playerClan == null || playerClan.isEmpty()) {
-            player.sendMessage(MSG.color(prefix + "&cYou are not in a clan."));
+            player.sendMessage(MSG.color(prefix + "&cOnly the leader can modify the clan!"));
             return;
         }
 
-        if (args.length == 3) {
-            String type = args[1];
-            String value = args[2];
-            FileHandler fh = plugin.getFH();
-            FileConfiguration data = fh.getData();
+        if (args.length != 3) {
+            player.sendMessage(MSG.color(prefix + "&cUsage: /cls edit <name|privacy> <value>"));
+            return;
+        }
 
+        String type = args[1];
+        String value = args[2];
+
+        try (Connection con = plugin.getMariaDBManager().getConnection()) {
             if (type.equalsIgnoreCase("name")) {
-                data.set("Clans." + clanName + ".Name", value);
-                fh.saveData();
-                player.sendMessage(MSG.color(prefix + "&3Clan Name changed to: &f" + value));
+                try (PreparedStatement ps = con.prepareStatement("UPDATE clans SET name=? WHERE name=?")) {
+                    ps.setString(1, value);
+                    ps.setString(2, clanName);
+                    ps.executeUpdate();
+                    player.sendMessage(MSG.color(prefix + "&3Clan Name changed to: &f" + value));
+                }
             } else if (type.equalsIgnoreCase("privacy")) {
-                data.set("Clans." + clanName + ".Privacy", value);
-                fh.saveData();
-                player.sendMessage(MSG.color(prefix + "&3Clan Privacy changed to: &f" + value));
+                try (PreparedStatement ps = con.prepareStatement("UPDATE clans SET privacy=? WHERE name=?")) {
+                    ps.setString(1, value);
+                    ps.setString(2, clanName);
+                    ps.executeUpdate();
+                    player.sendMessage(MSG.color(prefix + "&3Clan Privacy changed to: &f" + value));
+                }
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            player.sendMessage(MSG.color(prefix + "&cError editing clan."));
         }
     }
+
 
     public void disband(CommandSender sender, String playerClan) {
         if (playerClan == null || playerClan.isEmpty()) {
@@ -690,87 +848,188 @@ public class CCMD implements CommandExecutor, TabCompleter {
             return;
         }
 
-        Econo econ = SatipoClan.getEcon();
         Player player = (Player) sender;
-        FileHandler fh = plugin.getFH();
-        FileConfiguration data = fh.getData();
-        String leader = data.getString("Clans." + playerClan + ".Leader");
+        Econo econ = SatipoClan.getEcon();
 
-        if (!player.getName().equalsIgnoreCase(leader)) {
-            sender.sendMessage(MSG.color(prefix + "&cYou are not the leader of this clan."));
-            return;
+        try (Connection con = plugin.getMariaDBManager().getConnection();
+            PreparedStatement checkLeader = con.prepareStatement("SELECT leader FROM clans WHERE name=?");
+            PreparedStatement deleteClan = con.prepareStatement("DELETE FROM clans WHERE name=?");
+            PreparedStatement deleteUsers = con.prepareStatement("DELETE FROM clan_users WHERE clan=?")) {
+
+            checkLeader.setString(1, playerClan);
+            ResultSet rs = checkLeader.executeQuery();
+            if (!rs.next() || !rs.getString("leader").equalsIgnoreCase(player.getName())) {
+                sender.sendMessage(MSG.color(prefix + "&cYou are not the leader of this clan."));
+                return;
+            }
+
+            // Economía (si está activa)
+            if (plugin.getFH().getConfig().getBoolean("economy.enabled")) {
+                int deleteGain = plugin.getFH().getConfig().getInt("economy.earn.delete-clan", 0);
+                econ.deposit(player, deleteGain);
+                sender.sendMessage(MSG.color(prefix + "&2The clan was eliminated. You won: &e$" + deleteGain));
+            } else {
+                sender.sendMessage(MSG.color(prefix + "&2The clan was eliminated."));
+            }
+
+            deleteUsers.setString(1, playerClan);
+            deleteUsers.executeUpdate();
+
+            deleteClan.setString(1, playerClan);
+            deleteClan.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            sender.sendMessage(MSG.color(prefix + "&cError disbanding clan."));
         }
-
-        if (!data.isConfigurationSection("Clans." + playerClan)) {
-            sender.sendMessage(MSG.color(prefix + "&cError: Clan data not found."));
-            return;
-        }
-
-        if (fh.getConfig().getBoolean("config.economy.enabled")) {
-            int deleteGain = fh.getConfig().getInt("config.economy.earn.delete-clan");
-            econ.deposit(player, deleteGain);
-            sender.sendMessage(MSG.color(prefix + "&2The clan was eliminated. You won: &e$" + deleteGain));
-        } else {
-            sender.sendMessage(MSG.color(prefix + "&2The clan was eliminated."));
-        }
-
-        data.set("Clans." + playerClan, null);
-        fh.saveData();
     }
+
 
     public void create(CommandSender sender, String[] args) {
-        if (args.length < 2) {
-            sender.sendMessage(MSG.color(prefix + "&c&lUSE:&f /cls create &5(name of your clan)."));
+        if (args.length < 2 || !(sender instanceof Player player)) {
+            sender.sendMessage(MSG.color(prefix + "&c&lUSE:&f /cls create <name>"));
             return;
         }
 
-        if (!(sender instanceof Player player)) return;
-
-        Econo econ = SatipoClan.getEcon();
-        FileHandler fh = plugin.getFH();
         String clanName = args[1].toLowerCase();
-        FileConfiguration data = fh.getData();
-        FileConfiguration config = fh.getConfig();
+        String playerName = player.getName();
 
-        if (config.getStringList("names-blocked.blocked").contains(clanName) || data.isConfigurationSection("Clans." + clanName)) {
-            sender.sendMessage(MSG.color(prefix + "&cThis name is not allowed or already exists."));
+        FileConfiguration config = plugin.getFH().getConfig();
+        Econo econ = SatipoClan.getEcon();
+
+        // Nombre bloqueado
+        if (config.getStringList("names-blocked.blocked").contains(clanName)) {
+            sender.sendMessage(MSG.color(prefix + "&cThis name is blocked."));
             return;
         }
 
-        int maxClans = config.getInt("max-clans", 0);
-        if (maxClans > 0) {
-            int currentClans = data.getConfigurationSection("Clans") != null
-                    ? Objects.requireNonNull(data.getConfigurationSection("Clans")).getKeys(false).size()
-                    : 0;
+        try (Connection con = plugin.getMariaDBManager().getConnection();
+            PreparedStatement check = con.prepareStatement("SELECT name FROM clans WHERE name=?");
+            PreparedStatement insertClan = con.prepareStatement("INSERT INTO clans (name, founder, leader, money, privacy) VALUES (?, ?, ?, 0, 'Public')");
+            PreparedStatement insertUser = con.prepareStatement("INSERT INTO clan_users (username, clan) VALUES (?, ?)")) {
 
-            if (currentClans >= maxClans) {
-                sender.sendMessage(MSG.color(prefix + "&cThe clan limit has been reached (" + maxClans + ")."));
-                return;
-            }
-        }
-
-        if (config.getBoolean("economy.enabled")) {
-            int createCost = config.getInt("economy.cost.create-clan");
-            if (econ.getBalance(player) < createCost) {
-                sender.sendMessage(MSG.color("&cYou don’t have enough money. You need: &2&l$" + createCost));
+            check.setString(1, clanName);
+            ResultSet rs = check.executeQuery();
+            if (rs.next()) {
+                sender.sendMessage(MSG.color(prefix + "&cClan already exists."));
                 return;
             }
 
-            econ.withdraw(player, createCost);
+            // Limite de clanes
+            int maxClans = config.getInt("max-clans", 0);
+            if (maxClans > 0) {
+                try (PreparedStatement countStmt = con.prepareStatement("SELECT COUNT(*) AS total FROM clans")) {
+                    ResultSet countRs = countStmt.executeQuery();
+                    if (countRs.next() && countRs.getInt("total") >= maxClans) {
+                        sender.sendMessage(MSG.color(prefix + "&cClan limit reached (" + maxClans + ")."));
+                        return;
+                    }
+                }
+            }
+
+            // Economía
+            if (config.getBoolean("economy.enabled")) {
+                int cost = config.getInt("economy.cost.create-clan");
+                if (econ.getBalance(player) < cost) {
+                    sender.sendMessage(MSG.color("&cYou don’t have enough money. You need: &2&l$" + cost));
+                    return;
+                }
+                econ.withdraw(player, cost);
+            }
+
+            insertClan.setString(1, clanName);
+            insertClan.setString(2, playerName);
+            insertClan.setString(3, playerName);
+            insertClan.executeUpdate();
+
+            insertUser.setString(1, playerName);
+            insertUser.setString(2, clanName);
+            insertUser.executeUpdate();
+
+            PECMD.addClanToHistory(player, clanName); // si seguís usando historial
+            player.sendMessage(MSG.color(prefix + "&2Your clan &e" + clanName + " &2has been created."));
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            sender.sendMessage(MSG.color(prefix + "&cError creating clan."));
         }
-
-        String playerName = player.getName();
-        data.set("Clans." + clanName + ".Founder", playerName);
-        data.set("Clans." + clanName + ".Leader", playerName);
-        data.set("Clans." + clanName + ".Money", 0);
-        data.set("Clans." + clanName + ".Privacy", "Public");
-        data.set("Clans." + clanName + ".Users", Collections.singletonList(playerName));
-        data.set("Clans." + clanName + ".Invitations", null);
-
-        fh.saveData();
-        PECMD.addClanToHistory(player, clanName);
-        player.sendMessage(MSG.color(prefix + "&2Your clan &e" + clanName + " &2has been created."));
     }
+
+    private void handleFriendlyFireCommand(CommandSender sender, String playerClan, String[] args) {
+        if (playerClan == null || playerClan.isEmpty()) {
+            sender.sendMessage(MSG.color(prefix + "&cYou are not in a clan."));
+            return;
+        }
+
+        if (args.length != 2 || (!args[1].equalsIgnoreCase("on") && !args[1].equalsIgnoreCase("off"))) {
+            sender.sendMessage(MSG.color(prefix + "&cUse: /cls ff <on|off>"));
+            return;
+        }
+
+        boolean enabled = args[1].equalsIgnoreCase("on");
+
+        try (Connection con = plugin.getMariaDBManager().getConnection();
+            PreparedStatement stmt = con.prepareStatement("REPLACE INTO friendlyfire (clan, enabled) VALUES (?, ?)")) {
+
+            stmt.setString(1, playerClan);
+            stmt.setBoolean(2, enabled);
+            stmt.executeUpdate();
+
+            sender.sendMessage(MSG.color(prefix + "&aFriendly fire is now: &e" + (enabled ? "ON" : "OFF")));
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            sender.sendMessage(MSG.color(prefix + "&cError updating friendly fire setting."));
+        }
+    }
+
+    private void handleAllyCommand(CommandSender sender, String playerName, String playerClan, String[] args) {
+        if (playerClan == null || playerClan.isEmpty()) {
+            sender.sendMessage(MSG.color(prefix + "&cYou are not in a clan."));
+            return;
+        }
+
+        if (args.length != 2) {
+            sender.sendMessage(MSG.color(prefix + "&cUse: /cls ally <clanName>"));
+            return;
+        }
+
+        String targetClan = args[1];
+
+        if (targetClan.equalsIgnoreCase(playerClan)) {
+            sender.sendMessage(MSG.color(prefix + "&cYou can't ally with your own clan."));
+            return;
+        }
+
+        try (Connection con = plugin.getMariaDBManager().getConnection();
+            PreparedStatement check = con.prepareStatement("SELECT name FROM clans WHERE name=?");
+            PreparedStatement insert = con.prepareStatement("""
+                INSERT IGNORE INTO alliances (clan1, clan2) VALUES (?, ?), (?, ?)
+            """)) {
+
+            check.setString(1, targetClan);
+            ResultSet rs = check.executeQuery();
+            if (!rs.next()) {
+                sender.sendMessage(MSG.color(prefix + "&cThe clan &e" + targetClan + " &cdoes not exist."));
+                return;
+            }
+
+            insert.setString(1, playerClan);
+            insert.setString(2, targetClan);
+            insert.setString(3, targetClan);
+            insert.setString(4, playerClan);
+            insert.executeUpdate();
+
+            sender.sendMessage(MSG.color(prefix + "&aAlliance formed with &e" + targetClan));
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            sender.sendMessage(MSG.color(prefix + "&cError creating alliance."));
+        }
+    }
+
+
+
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
@@ -785,7 +1044,8 @@ public class CCMD implements CommandExecutor, TabCompleter {
             case 1:
                 completions.addAll(List.of(
                         "create", "disband", "report", "list", "join", //"war",
-                        "kick", "invite", "chat", "leave", "stats", "resign", "edit", "economy"
+                        "kick", "invite", "chat", "leave", "stats", "resign", "edit", "economy",
+                        "ally", "ff"
                 ));
                 break;
 
@@ -853,16 +1113,29 @@ public class CCMD implements CommandExecutor, TabCompleter {
     }
 
     private boolean isLeader(Player player, String clanName) {
-        FileHandler fh = plugin.getFH();
-        FileConfiguration data = fh.getData();
-        String leader = data.getString("Clans." + clanName + ".Leader");
-        return player.getName().equalsIgnoreCase(leader);
+        try (Connection con = plugin.getMariaDBManager().getConnection();
+            PreparedStatement ps = con.prepareStatement("SELECT leader FROM clans WHERE name=?")) {
+            ps.setString(1, clanName);
+            ResultSet rs = ps.executeQuery();
+            return rs.next() && player.getName().equalsIgnoreCase(rs.getString("leader"));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     private List<String> getClanNames() {
-        FileHandler fh = plugin.getFH();
-        FileConfiguration data = fh.getData();
-        return new ArrayList<>(Objects.requireNonNull(data.getConfigurationSection("Clans")).getKeys(false));
+        List<String> names = new ArrayList<>();
+        try (Connection con = plugin.getMariaDBManager().getConnection();
+            PreparedStatement ps = con.prepareStatement("SELECT name FROM clans");
+            ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                names.add(rs.getString("name"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return names;
     }
 
     private List<String> getOnlinePlayerNames() {

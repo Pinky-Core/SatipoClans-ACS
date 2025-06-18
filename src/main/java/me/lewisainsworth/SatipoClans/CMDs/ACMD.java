@@ -56,7 +56,7 @@ public class ACMD implements CommandExecutor, TabCompleter {
         if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
             reload(sender);
         } else {
-            sender.sendMessage(MSG.color(prefix + "&cConsole can only use: &f/clx reload"));
+            sender.sendMessage(MSG.color(prefix + "&cConsole can only use: &f/cla reload"));
         }
         return true;
     }
@@ -64,13 +64,13 @@ public class ACMD implements CommandExecutor, TabCompleter {
     private void help(CommandSender sender) {
         sender.sendMessage(MSG.color("""
                 &8
-                &3&l=== &b&lClansX Admin Help &3&l===
-                &e/clx reports &7- &fShow all clans with reports.
-                &e/clx reload &7- &fReload all plugin files.
-                &e/clx ban <clan> [reason] &7- &fBan a clan (perm by default).
-                &e/clx unban <clan> &7- &fUnban a clan.
-                &e/clx clear &7- &cWipe the entire Data.yml (⚠ Use with caution).
-                &e/clx economy <player|clan> <name> <set|add|reset> <amount>
+                &3&l=== &b&lSatipoClans Admin Help &3&l===
+                &e/cla reports &7- &fShow all clans with reports.
+                &e/cla reload &7- &fReload all plugin files.
+                &e/cla ban <clan> [reason] &7- &fBan a clan (perm by default).
+                &e/cla unban <clan> &7- &fUnban a clan.
+                &e/cla clear &7- &cWipe the entire Data.yml/MariaDB (⚠ Use with caution).
+                &e/cla economy <player|clan> <name> <set|add|reset> <amount>
                 &3&l==============================
                 """));
     }
@@ -118,7 +118,7 @@ public class ACMD implements CommandExecutor, TabCompleter {
 
     private void ban(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(MSG.color(prefix + "&cUsage: /clx ban <clan> [reason]"));
+            sender.sendMessage(MSG.color(prefix + "&cUsage: /cla ban <clan> [reason]"));
             return;
         }
 
@@ -145,7 +145,7 @@ public class ACMD implements CommandExecutor, TabCompleter {
 
     private void economy(CommandSender sender, String[] args) {
         if (args.length < 5) {
-            sender.sendMessage(MSG.color(prefix + "&cUsage: /clx economy <player|clan> <name> <set|add|reset> <amount>"));
+            sender.sendMessage(MSG.color(prefix + "&cUsage: /cla economy <player|clan> <name> <set|add|reset> <amount>"));
             return;
         }
 
@@ -224,7 +224,7 @@ public class ACMD implements CommandExecutor, TabCompleter {
 
     private void unban(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(MSG.color(prefix + "&cUsage: /clx unban <clan>"));
+            sender.sendMessage(MSG.color(prefix + "&cUsage: /cla unban <clan>"));
             return;
         }
 
