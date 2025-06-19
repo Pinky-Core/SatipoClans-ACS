@@ -1,16 +1,24 @@
 package me.lewisainsworth.satipoclans.Database;
 
-import org.bukkit.configuration.file.FileConfiguration;
 import me.lewisainsworth.satipoclans.Utils.FileHandler;
+import org.bukkit.configuration.file.FileConfiguration;
 
 import java.sql.*;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.ArrayList;
+
 
 public class MariaDBManager {
     private final String host, database, user, password;
     private final int port;
     private Connection connection;
+
+    private final Map<String, String> playerClanCache = new HashMap<>();
+    private final Set<String> clanNamesCache = new HashSet<>();
+    private long lastCacheUpdate = 0;
 
     public MariaDBManager(FileConfiguration config) {
         this.host = config.getString("storage.mariadb.host");
@@ -20,25 +28,16 @@ public class MariaDBManager {
         this.password = config.getString("storage.mariadb.password");
     }
 
-
     public void connect() throws SQLException {
         if (connection != null && !connection.isClosed()) return;
         try {
-            Class.forName("org.mariadb.jdbc.Driver");
+            Class.forName("me.lewisainsworth.shaded.mariadb.jdbc.Driver");
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
 
-        System.out.println("⛓️ Conectando a MariaDB con:");
-        System.out.println("Host: " + host);
-        System.out.println("Port: " + port);
-        System.out.println("Database: " + database);
-        System.out.println("User: " + user);
-
         String url = "jdbc:mariadb://" + host + ":" + port + "/" + database + "?useSSL=false";
-
         connection = DriverManager.getConnection(url, user, password);
-        setupTables();
     }
 
     public void close() {
@@ -49,7 +48,7 @@ public class MariaDBManager {
         }
     }
 
-    private void setupTables() throws SQLException {
+    public void setupTables() throws SQLException {
         Statement stmt = connection.createStatement();
 
         stmt.executeUpdate("""
@@ -106,6 +105,16 @@ public class MariaDBManager {
                 balance DOUBLE
             )
         """);
+
+        stmt.executeUpdate("""
+            CREATE TABLE IF NOT EXISTS player_clan_history (
+                uuid VARCHAR(36) NOT NULL,
+                name VARCHAR(16),
+                current_clan VARCHAR(32),
+                history TEXT,
+                PRIMARY KEY (uuid)
+            )
+        """);
     }
 
     public void syncFromYaml(FileConfiguration data) throws SQLException {
@@ -143,9 +152,55 @@ public class MariaDBManager {
 
     public Connection getConnection() throws SQLException {
         if (connection == null || connection.isClosed()) {
-            connect(); // abre o reabre la conexión
+            connect();
         }
         return connection;
     }
 
-} 
+    public void reloadCache() {
+        playerClanCache.clear();
+        clanNamesCache.clear();
+
+        try (Connection con = getConnection();
+             PreparedStatement stmt1 = con.prepareStatement("SELECT username, clan FROM clan_users");
+             ResultSet rs1 = stmt1.executeQuery()) {
+
+            while (rs1.next()) {
+                playerClanCache.put(rs1.getString("username").toLowerCase(), rs1.getString("clan"));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        try (Connection con = getConnection();
+             PreparedStatement stmt2 = con.prepareStatement("SELECT name FROM clans");
+             ResultSet rs2 = stmt2.executeQuery()) {
+
+            while (rs2.next()) {
+                clanNamesCache.add(rs2.getString("name"));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        lastCacheUpdate = System.currentTimeMillis();
+    }
+
+    public String getCachedPlayerClan(String playerName) {
+        ensureCacheFresh();
+        return playerClanCache.getOrDefault(playerName.toLowerCase(), null);
+    }
+
+    public List<String> getCachedClanNames() {
+        ensureCacheFresh();
+        return new ArrayList<>(clanNamesCache);
+    }
+
+    private void ensureCacheFresh() {
+        if (System.currentTimeMillis() - lastCacheUpdate > 5 * 60 * 1000) {
+            reloadCache();
+        }
+    }
+}

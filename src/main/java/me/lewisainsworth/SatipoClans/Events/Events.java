@@ -71,7 +71,7 @@ public class Events implements Listener {
         }
 
         if (!invites.isEmpty()) {
-            player.sendMessage(MSG.color(prefix + "&eYou are invited to these clans:"));
+            player.sendMessage(MSG.color(prefix + " &eFuiste invitado a un clan:"));
             invites.forEach(c -> player.sendMessage(MSG.color("&7- &a" + c + " &7(/cl join " + c + ")")));
         }
     }
@@ -88,7 +88,7 @@ public class Events implements Listener {
 
             if (killer != null) {
                 SatipoClan.econ.deposit(killer, killReward);
-                killer.sendMessage(MSG.color(prefix + "&2You Won: &e&l" + killReward));
+                killer.sendMessage(MSG.color(prefix + "&2 Ganaste: &e&l" + killReward));
             }
         }
     }

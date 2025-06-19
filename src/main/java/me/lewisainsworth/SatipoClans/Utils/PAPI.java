@@ -85,7 +85,7 @@ public class PAPI extends PlaceholderExpansion {
                 return Long.toString(users.size() - online);
             }
             default:
-                return "&5&lEnttbot&d&lX";
+                return "&a&lSatipo&6&lClans";
         }
     }
 

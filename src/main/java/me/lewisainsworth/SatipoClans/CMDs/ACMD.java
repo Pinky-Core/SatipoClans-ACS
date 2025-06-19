@@ -17,6 +17,14 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+
+
 public class ACMD implements CommandExecutor, TabCompleter {
 
     private final SatipoClan plugin;
@@ -30,7 +38,7 @@ public class ACMD implements CommandExecutor, TabCompleter {
         if (!(sender instanceof Player)) return handleConsole(sender, args);
 
         if (!sender.hasPermission("sc.admin")) {
-            sender.sendMessage(MSG.color(prefix + "&cYou don't have permission to use this command."));
+            sender.sendMessage(MSG.color(prefix + "&c You don't have permission to use this command."));
             return true;
         }
 
@@ -56,24 +64,26 @@ public class ACMD implements CommandExecutor, TabCompleter {
         if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
             reload(sender);
         } else {
-            sender.sendMessage(MSG.color(prefix + "&cConsole can only use: &f/cla reload"));
+            sender.sendMessage(MSG.color(prefix + "&c Console can only use: &f/cla reload"));
         }
         return true;
     }
 
     private void help(CommandSender sender) {
         sender.sendMessage(MSG.color("""
-                &8
-                &3&l=== &b&lSatipoClans Admin Help &3&l===
-                &e/cla reports &7- &fShow all clans with reports.
-                &e/cla reload &7- &fReload all plugin files.
-                &e/cla ban <clan> [reason] &7- &fBan a clan (perm by default).
-                &e/cla unban <clan> &7- &fUnban a clan.
-                &e/cla clear &7- &cWipe the entire Data.yml/MariaDB (⚠ Use with caution).
-                &e/cla economy <player|clan> <name> <set|add|reset> <amount>
-                &3&l==============================
+                &8&m=====================================
+                &8&l» &a&lSatipo&6&lClans &c&lAdmin &8&l«
+                &8&m=====================================
+                &e/cla reports &7» &fMuestra todos los clanes con reportes activos.
+                &e/cla reload &7» &fRecarga la configuración y datos del plugin.
+                &e/cla ban <clan> [razón] &7» &fProhíbe un clan permanentemente (permiso por defecto).
+                &e/cla unban <clan> &7» &fLevanta la prohibición de un clan.
+                &e/cla clear &7» &c⚠ Borra toda la base de datos MariaDB (¡Usar con extrema precaución!).
+                &e/cla economy <player|clan> <nombre> <set|add|reset> <cantidad> &7» &fGestiona la economía de un clan o jugador.
+                &8&m=====================================
                 """));
     }
+
 
     private void reload(CommandSender sender) {
         FileHandler fh = plugin.getFH();
@@ -81,79 +91,121 @@ public class ACMD implements CommandExecutor, TabCompleter {
         fh.reloadConfig();
         fh.reloadData();
         econ.reload();
-        sender.sendMessage(MSG.color(prefix + "&aPlugin and all files reloaded."));
+        sender.sendMessage(MSG.color(prefix + "&a Plugin and all files reloaded."));
     }
 
     private void clear(CommandSender sender) {
-        FileHandler fh = plugin.getFH();
-        fh.getData().set("Clans", null);
-        fh.saveData();
-        sender.sendMessage(MSG.color(prefix + "&cData.yml cleared."));
+        try (Connection con = plugin.getMariaDBManager().getConnection();
+            Statement stmt = con.createStatement()) {
+
+            stmt.executeUpdate("DELETE FROM reports");
+            stmt.executeUpdate("DELETE FROM banned_clans");
+            stmt.executeUpdate("DELETE FROM clan_users");
+            stmt.executeUpdate("DELETE FROM alliances");
+            stmt.executeUpdate("DELETE FROM friendlyfire");
+            stmt.executeUpdate("DELETE FROM clans");
+            stmt.executeUpdate("DELETE FROM economy_players");
+
+            sender.sendMessage(MSG.color(prefix + "&c All clan-related data wiped from MariaDB."));
+        } catch (SQLException e) {
+            e.printStackTrace();
+            sender.sendMessage(MSG.color(prefix + "&c Failed to wipe MariaDB."));
+        }
     }
+
 
     private void reports(CommandSender sender) {
-        FileConfiguration data = plugin.getFH().getData();
-        if (!data.contains("Clans")) {
-            sender.sendMessage(MSG.color(prefix + "&cNo clans found."));
-            return;
-        }
+        try (Connection con = plugin.getMariaDBManager().getConnection();
+            PreparedStatement stmt = con.prepareStatement("SELECT clan, reason FROM reports");
+            ResultSet rs = stmt.executeQuery()) {
 
-        Map<String, List<String>> reported = new HashMap<>();
-        for (String clan : Objects.requireNonNull(data.getConfigurationSection("Clans")).getKeys(false)) {
-            List<String> r = data.getStringList("Clans." + clan + ".Reports");
-            if (!r.isEmpty()) reported.put(clan, r);
-        }
+            Map<String, List<String>> reported = new HashMap<>();
 
-        if (reported.isEmpty()) {
-            sender.sendMessage(MSG.color(prefix + "&aNo clans with reports."));
-            return;
-        }
+            while (rs.next()) {
+                String clan = rs.getString("clan");
+                String reason = rs.getString("reason");
+                reported.computeIfAbsent(clan, k -> new ArrayList<>()).add(reason);
+            }
 
-        sender.sendMessage(MSG.color("&e--- &6Clan Reports &e---"));
-        reported.forEach((clan, reasons) -> {
-            sender.sendMessage(MSG.color("&6" + clan + ":"));
-            reasons.forEach(reason -> sender.sendMessage(MSG.color("  &7- &f" + reason)));
-        });
+            if (reported.isEmpty()) {
+                sender.sendMessage(MSG.color(prefix + "&a No clans with reports."));
+                return;
+            }
+
+            sender.sendMessage(MSG.color("&e--- &6Clan Reports &e---"));
+            reported.forEach((clan, reasons) -> {
+                sender.sendMessage(MSG.color("&6" + clan + ":"));
+                reasons.forEach(reason -> sender.sendMessage(MSG.color("  &7- &f" + reason)));
+            });
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            sender.sendMessage(MSG.color(prefix + "&c Failed to load reports."));
+        }
     }
+
 
     private void ban(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(MSG.color(prefix + "&cUsage: /cla ban <clan> [reason]"));
+            sender.sendMessage(MSG.color(prefix + "&c Usage: /cla ban <clan> [reason]"));
             return;
         }
 
         String clan = args[1];
         String reason = args.length >= 3 ? args[2] : "Banned by admin";
 
-        FileConfiguration data = plugin.getFH().getData();
-        if (!data.contains("Clans." + clan)) {
-            sender.sendMessage(MSG.color(prefix + "&cClan '" + clan + "' doesn't exist."));
-            return;
-        }
+        try (Connection con = plugin.getMariaDBManager().getConnection();
+            PreparedStatement check = con.prepareStatement("SELECT name FROM clans WHERE name = ?");
+            PreparedStatement ban = con.prepareStatement("REPLACE INTO banned_clans (name, reason) VALUES (?, ?)");
+            PreparedStatement members = con.prepareStatement("SELECT username FROM clan_users WHERE clan = ?")) {
 
-        List<String> members = data.getStringList("Clans." + clan + ".Users");
-        for (String member : members) {
-            Player player = Bukkit.getPlayer(member);
-            if (player != null) {
-                player.kickPlayer(MSG.color("&cYou have been banned from your clan."));
-                player.ban(reason, (Date) null, "ClansX", true);
+            check.setString(1, clan);
+            ResultSet rs = check.executeQuery();
+
+            if (!rs.next()) {
+                sender.sendMessage(MSG.color(prefix + "&c Clan '" + clan + "' doesn't exist."));
+                return;
             }
-        }
 
-        sender.sendMessage(MSG.color(prefix + "&cClan '" + clan + "' has been banned."));
+            ban.setString(1, clan);
+            ban.setString(2, reason);
+            ban.executeUpdate();
+
+            members.setString(1, clan);
+            ResultSet mrs = members.executeQuery();
+            while (mrs.next()) {
+                String user = mrs.getString("username");
+                Player player = Bukkit.getPlayer(user);
+                if (player != null) {
+                    player.kickPlayer(MSG.color("&cYou have been banned from your clan."));
+                    player.ban(reason, (Date) null, "SatipoClans", true);
+                }
+            }
+
+            sender.sendMessage(MSG.color(prefix + "&c Clan '" + clan + "' has been banned."));
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            sender.sendMessage(MSG.color(prefix + "&c Failed to ban the clan."));
+        }
     }
 
+
     private void economy(CommandSender sender, String[] args) {
-        if (args.length < 5) {
-            sender.sendMessage(MSG.color(prefix + "&cUsage: /cla economy <player|clan> <name> <set|add|reset> <amount>"));
+        if (args.length < 4 || (args.length < 5 && !args[3].equalsIgnoreCase("reset"))) {
+            sender.sendMessage(MSG.color(prefix + "&c Usage: /cla economy <player|clan> <name> <set|add|reset> <amount>"));
             return;
         }
 
-        String type = args[1].toLowerCase();
+        String type = args[1].toLowerCase(Locale.ROOT);
         String name = args[2];
-        String action = args[3].toLowerCase();
-        String amountStr = args[4];
-        Econo econ = SatipoClan.getEcon();
+        String action = args[3].toLowerCase(Locale.ROOT);
+        String amountStr = args.length >= 5 ? args[4] : "0";
+
+        if (!action.equals("set") && !action.equals("add") && !action.equals("reset")) {
+            sender.sendMessage(MSG.color(prefix + "&c Invalid action. Use set, add or reset."));
+            return;
+        }
 
         double amount = 0;
         if (!action.equals("reset")) {
@@ -161,7 +213,7 @@ public class ACMD implements CommandExecutor, TabCompleter {
                 amount = Double.parseDouble(amountStr);
                 if (amount < 0) throw new NumberFormatException();
             } catch (NumberFormatException e) {
-                sender.sendMessage(MSG.color(prefix + "&cInvalid amount."));
+                sender.sendMessage(MSG.color(prefix + "&c Invalid amount."));
                 return;
             }
         }
@@ -169,46 +221,69 @@ public class ACMD implements CommandExecutor, TabCompleter {
         if (type.equals("player")) {
             OfflinePlayer player = Bukkit.getOfflinePlayer(name);
             if (!(player.hasPlayedBefore() || player.isOnline())) {
-                sender.sendMessage(MSG.color(prefix + "&cPlayer '" + name + "' not found."));
+                sender.sendMessage(MSG.color(prefix + "&c Player '" + name + "' not found."));
                 return;
             }
-            modifyPlayerEcon(sender, econ, player, action, amount);
+            modifyPlayerEcon(sender, player, action, amount);
             return;
         }
 
         if (type.equals("clan")) {
-            FileConfiguration data = plugin.getFH().getData();
-            if (!data.contains("Clans." + name)) {
-                sender.sendMessage(MSG.color(prefix + "&cClan '" + name + "' doesn't exist."));
-                return;
-            }
-            String path = "Clans." + name + ".Money";
-            double current = data.getDouble(path);
+            String sql = """
+                UPDATE clans
+                SET money = CASE
+                    WHEN ? = 'set' THEN ?
+                    WHEN ? = 'add' THEN money + ?
+                    WHEN ? = 'reset' THEN 0
+                    ELSE money
+                END
+                WHERE name = ?
+            """;
 
-            switch (action) {
-                case "set" -> data.set(path, amount);
-                case "add" -> data.set(path, current + amount);
-                case "reset" -> data.set(path, 0);
-                default -> {
-                    sender.sendMessage(MSG.color(prefix + "&cInvalid action."));
+            try (Connection con = plugin.getMariaDBManager().getConnection();
+                PreparedStatement stmt = con.prepareStatement(sql)) {
+
+                stmt.setString(1, action);
+                stmt.setDouble(2, amount);
+                stmt.setString(3, action);
+                stmt.setDouble(4, amount);
+                stmt.setString(5, action);
+                stmt.setString(6, name);
+
+                int rowsUpdated = stmt.executeUpdate();
+
+                if (rowsUpdated == 0) {
+                    sender.sendMessage(MSG.color(prefix + "&c Clan '" + name + "' doesn't exist."));
                     return;
                 }
+
+                String message = prefix + "&a Clan economy updated: &f" + name + " &7-> &f" + action;
+                if (!action.equals("reset")) {
+                    message += " &7= &f" + amount;
+                } else {
+                    message += " &7= &f0";
+                }
+                sender.sendMessage(MSG.color(message));
+            } catch (SQLException e) {
+                e.printStackTrace();
+                sender.sendMessage(MSG.color(prefix + "&c Failed to update clan economy."));
             }
-            plugin.getFH().saveData();
-            sender.sendMessage(MSG.color(prefix + "&aClan economy updated: &f" + name + " &7-> &f" + action + " &7= &f" + amount));
             return;
         }
 
-        sender.sendMessage(MSG.color(prefix + "&cFirst argument must be 'player' or 'clan'."));
+        sender.sendMessage(MSG.color(prefix + "&c First argument must be 'player' or 'clan'."));
     }
 
-    private void modifyPlayerEcon(CommandSender sender, Econo econ, OfflinePlayer p, String action, double amount) {
+
+    private void modifyPlayerEcon(CommandSender sender, OfflinePlayer p, String action, double amount) {
+        Econo econ = SatipoClan.getEcon();
         double current = econ.getBalance(p);
+
         switch (action) {
             case "set" -> {
                 if (amount > current) econ.deposit(p, amount - current);
                 else econ.withdraw(p, current - amount);
-                sender.sendMessage(MSG.color(p.getName() + "&a economy set to &f" + amount));
+                sender.sendMessage(MSG.color("&aSet &f" + p.getName() + "&a's balance to &f" + amount));
             }
             case "add" -> {
                 econ.deposit(p, amount);
@@ -218,30 +293,49 @@ public class ACMD implements CommandExecutor, TabCompleter {
                 econ.withdraw(p, current);
                 sender.sendMessage(MSG.color("&aReset &f" + p.getName() + "&a's balance."));
             }
-            default -> sender.sendMessage(MSG.color(prefix + "&cInvalid action."));
+            default -> sender.sendMessage(MSG.color(prefix + "&c Invalid action."));
         }
     }
 
+
     private void unban(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(MSG.color(prefix + "&cUsage: /cla unban <clan>"));
+            sender.sendMessage(MSG.color(prefix + "&c Usage: /cla unban <clan>"));
             return;
         }
 
         String clan = args[1];
-        FileConfiguration data = plugin.getFH().getData();
-        if (!data.contains("Clans." + clan)) {
-            sender.sendMessage(MSG.color(prefix + "&cClan '" + clan + "' doesn't exist."));
-            return;
-        }
 
-        List<String> members = data.getStringList("Clans." + clan + ".Users");
-        for (String member : members) {
-            Bukkit.getBanList(org.bukkit.BanList.Type.NAME).pardon(member);
-        }
+        try (Connection con = plugin.getMariaDBManager().getConnection();
+            PreparedStatement check = con.prepareStatement("SELECT name FROM clans WHERE name = ?");
+            PreparedStatement unban = con.prepareStatement("DELETE FROM banned_clans WHERE name = ?");
+            PreparedStatement members = con.prepareStatement("SELECT username FROM clan_users WHERE clan = ?")) {
 
-        sender.sendMessage(MSG.color(prefix + "&aClan '" + clan + "' has been unbanned."));
+            check.setString(1, clan);
+            ResultSet rs = check.executeQuery();
+
+            if (!rs.next()) {
+                sender.sendMessage(MSG.color(prefix + "&c Clan '" + clan + "' doesn't exist."));
+                return;
+            }
+
+            unban.setString(1, clan);
+            unban.executeUpdate();
+
+            members.setString(1, clan);
+            ResultSet mrs = members.executeQuery();
+            while (mrs.next()) {
+                Bukkit.getBanList(org.bukkit.BanList.Type.NAME).pardon(mrs.getString("username"));
+            }
+
+            sender.sendMessage(MSG.color(prefix + "&a Clan '" + clan + "' has been unbanned."));
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            sender.sendMessage(MSG.color(prefix + "&c Failed to unban the clan."));
+        }
     }
+
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String s, String[] args) {

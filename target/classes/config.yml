@@ -1,28 +1,28 @@
-################################################################
-#                                                              #
-#                        Placeholders :                        #
-#  ---------------------------------------------------------   #
-#  | %satipoclan_prefix%           : Plugin prefix          |  #
-#  | %satipoclan_clan_leader%      : Clan leader's name     |  #
-#  | %satipoclan_clan_founder%     : Clan founder's name    |  #
-#  | %satipoclan_clan_name%        : Clan's name            |  #
-#  | %satipoclan_clan_tag%         : Clan's tag             |  #
-#  | %satipoclan_clan_money%       : Clan's money vault     |  #
-#  | %satipoclan_clan_membercount_offline% : Offline count  |  #
-#  | %satipoclan_clan_membercount_online%  : Online count   |  #
-#  | %satipoclan_clan_membercount% : Total members          |  #
-#  | %satipoclan_player_money%     : Player money vault     |  #
-#  ---------------------------------------------------------   #
-#        Now you can use PlaceholderAPI´s placeholders.        #
-#                                                              #
-################################################################
+#####################################################################
+#                                                                   #
+#                     Placeholders disponibles:                     #
+#  ---------------------------------------------------------------  #
+#  | %satipoclan_prefix%               : Prefijo del plugin      |  #
+#  | %satipoclan_clan_leader%          : Nombre del líder        |  #
+#  | %satipoclan_clan_founder%         : Nombre del fundador     |  #
+#  | %satipoclan_clan_name%            : Nombre del clan         |  #
+#  | %satipoclan_clan_tag%             : Tag del clan            |  #
+#  | %satipoclan_clan_money%           : Bóveda del clan         |  #
+#  | %satipoclan_clan_membercount_offline% : Miembros offline    |  #
+#  | %satipoclan_clan_membercount_online%  : Miembros en línea   |  #
+#  | %satipoclan_clan_membercount%     : Total de miembros       |  #
+#  | %satipoclan_player_money%         : Bóveda del jugador      |  #
+#  ---------------------------------------------------------------  #
+#       Ahora puedes usar los placeholders de PlaceholderAPI.       #
+#                                                                   #
+#####################################################################
+
 
 prefix: "&7[&a&lSatipo&6&lClans&7]"
 
 storage:
-  type: "mariadb" # Opciones: mariadb / yml
+  type: "mariadb" # NO TOCAR! A MENOS QUE SEPAS LO QUE HACES!
 
-  # Solo aplica si storage.type = mariadb
   mariadb:
     host: "localhost"
     port: 3306
@@ -34,27 +34,28 @@ welcome-message:
   enabled: true
 
   no-clan:
-    - "&f--------------------------------"
-    - "&eWelcome back!"
-    - "&7Use &a/cl create &7to create your clan."
-    - "&f--------------------------------"
+  - ""
+  - "&b&l¡Bienvenido de nuevo!"
+  - "&7Usa &a/cl crear &7para crear tu clan."
+  - ""
 
   self-clan:
-    - "&f--------------------------------"
-    - "&eYou are in clan &a%satipoclan_clan_name% &8[%satipoclan_clan_tag%]"
-    - "&7Online members: &a%satipoclan_clan_membercount_online%&7/&f%satipoclan_clan_membercount%"
-    - "&f--------------------------------"
+  - ""
+  - "&eEstás en el clan &a&l%satipoclan_clan_name%"
+  - "&7Miembros en línea: &a&l%satipoclan_clan_membercount_online% &7/&f&l%satipoclan_clan_membercount%"
+  - ""
 
   to-clan:
-    - "&f--------------------------------"
-    - "&a%player_name% &7from the clan has joined the server"
-    - "&f--------------------------------"
+  - ""
+  - "&a&l%player_name% &7se conectó"
+  - ""
 
-max-clans: 0 # 0 = unlimited
+
+max-clans: 0 # 0 = ILIMITADO
 
 economy:
   enabled: true
-  system: "Vault" # Vault / Internal (SatipoClans economy system)
+  system: "Vault" # Vault / Internal (SatipoClans sistema de economía)
 
   cost:
     create-clan: 5

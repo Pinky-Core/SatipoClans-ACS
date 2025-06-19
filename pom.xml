@@ -6,7 +6,7 @@
 
     <groupId>me.lewisainsworth</groupId>
     <artifactId>satipoclans</artifactId>
-    <version>1.1.5</version>
+    <version>1.2.1</version>
 
     <properties>
         <maven.compiler.source>16</maven.compiler.source>

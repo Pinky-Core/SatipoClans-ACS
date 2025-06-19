@@ -26,16 +26,18 @@ public class SatipoClan extends JavaPlugin {
    private FileHandler fh;
    private MariaDBManager mariaDBManager;
 
+   private static SatipoClan instance;
+
    @Override
    public void onEnable() {
+      instance = this;
       saveDefaultConfig();
-      prefix = getConfig().getString("prefix", "&7[&a&lSatipo&6&lClans&7] ");
+      prefix = getConfig().getString("prefix", "&7 [&a&lSatipo&6&lClans&7]&n");
       fh = new FileHandler(this);
       updater = new Updater(this, 114316);
       metrics = new Metrics(this, 20912);
       econ = new Econo(this);
 
-      // Configuración economía
       if (getConfig().getBoolean("economy.enabled", true)) {
          if (!econ.setupEconomy()) {
             getLogger().severe("Can´t load the economy system.");
@@ -48,10 +50,10 @@ public class SatipoClan extends JavaPlugin {
 
       fh.saveDefaults();
 
-      // Conexión y sincronización a MariaDB
       try {
          mariaDBManager = new MariaDBManager(getConfig());
          mariaDBManager.connect();
+         mariaDBManager.setupTables();
          mariaDBManager.syncFromYaml(fh.getData());
          mariaDBManager.clearYamlClans(fh.getData(), fh);
          getLogger().info("Clans data successfully synced to MariaDB.");
@@ -82,6 +84,10 @@ public class SatipoClan extends JavaPlugin {
       Bukkit.getConsoleSender().sendMessage(MSG.color("&av" + getDescription().getVersion() + " &cDisabled"));
    }
 
+   public static SatipoClan getInstance() {
+      return instance;
+   }
+
    private void setupMetrics() {
       int max = getConfig().getInt("max-clans", -1);
       String maxClans = (max <= 0) ? "Unlimited" : String.valueOf(max);
@@ -105,7 +111,7 @@ public class SatipoClan extends JavaPlugin {
    }
 
    public void searchUpdates() {
-      String downloadUrl = "https://www.spigotmc.org/resources/clansx-the-best-clan-system-1-8-1-21.114316/";
+      String downloadUrl = "https://www.spigotmc.org/resources/satipoclans/";
       TextComponent link = new TextComponent(MSG.color("&e&lClick here to download the update!"));
       link.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, downloadUrl));
 
@@ -121,16 +127,16 @@ public class SatipoClan extends JavaPlugin {
       }
 
       if (updateAvailable) {
-         Bukkit.getConsoleSender().sendMessage(MSG.color("&2&l============= " + prefix + "&2&l============="));
+         Bukkit.getConsoleSender().sendMessage(MSG.color("&2&l============= " + prefix + " &2&l============="));
          Bukkit.getConsoleSender().sendMessage(MSG.color("&6&lNEW VERSION AVAILABLE!"));
          Bukkit.getConsoleSender().sendMessage(MSG.color("&e&lCurrent Version: &f" + version));
          Bukkit.getConsoleSender().sendMessage(MSG.color("&e&lLatest Version: &f" + latestVersion));
          Bukkit.getConsoleSender().sendMessage(MSG.color("&e&lDownload it here: &f" + downloadUrl));
-         Bukkit.getConsoleSender().sendMessage(MSG.color("&2&l============= " + prefix + "&2&l============="));
+         Bukkit.getConsoleSender().sendMessage(MSG.color("&2&l============= " + prefix + " &2&l============="));
 
          for (Player player : Bukkit.getOnlinePlayers()) {
             if (player.hasPermission("sc.admin")) {
-               player.sendMessage(MSG.color(prefix + "&e&lA new plugin update is available!"));
+               player.sendMessage(MSG.color(prefix + "&e&l A new plugin update is available!"));
                player.spigot().sendMessage(link);
             }
          }

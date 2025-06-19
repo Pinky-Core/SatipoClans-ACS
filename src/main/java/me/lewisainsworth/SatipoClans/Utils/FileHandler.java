@@ -24,10 +24,19 @@ public class FileHandler {
 
     private void registerDataFile() {
         if (!dataFile.exists()) {
-            plugin.saveResource("data.yml", false);
+            if (plugin.getResource("data.yml") != null) {
+                plugin.saveResource("data.yml", false);
+            } else {
+                try {
+                    dataFile.createNewFile();
+                } catch (IOException e) {
+                    plugin.getLogger().severe("No se pudo crear data.yml: " + e.getMessage());
+                }
+            }
         }
         dataFileConfig = YamlConfiguration.loadConfiguration(dataFile);
     }
+
 
     private void registerConfigFile() {
         if (!configFile.exists()) {
