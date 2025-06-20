@@ -23,6 +23,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.hover.content.Text;
+
 
 
 public class ACMD implements CommandExecutor, TabCompleter {
@@ -37,8 +42,8 @@ public class ACMD implements CommandExecutor, TabCompleter {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String s, String[] args) {
         if (!(sender instanceof Player)) return handleConsole(sender, args);
 
-        if (!sender.hasPermission("sc.admin")) {
-            sender.sendMessage(MSG.color(prefix + "&c You don't have permission to use this command."));
+        if (!sender.hasPermission("satipoclans.admin")) {
+            sender.sendMessage(MSG.color(prefix + "&c No tienes permiso para usar este comando."));
             return true;
         }
 
@@ -64,25 +69,26 @@ public class ACMD implements CommandExecutor, TabCompleter {
         if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
             reload(sender);
         } else {
-            sender.sendMessage(MSG.color(prefix + "&c Console can only use: &f/cla reload"));
+            sender.sendMessage(MSG.color(prefix + "&c La consola solo puede usar: &f/cla reload"));
         }
         return true;
     }
 
     private void help(CommandSender sender) {
         sender.sendMessage(MSG.color("""
-                &8&m=====================================
-                &8&l» &a&lSatipo&6&lClans &c&lAdmin &8&l«
-                &8&m=====================================
-                &e/cla reports &7» &fMuestra todos los clanes con reportes activos.
-                &e/cla reload &7» &fRecarga la configuración y datos del plugin.
-                &e/cla ban <clan> [razón] &7» &fProhíbe un clan permanentemente (permiso por defecto).
-                &e/cla unban <clan> &7» &fLevanta la prohibición de un clan.
-                &e/cla clear &7» &c⚠ Borra toda la base de datos MariaDB (¡Usar con extrema precaución!).
-                &e/cla economy <player|clan> <nombre> <set|add|reset> <cantidad> &7» &fGestiona la economía de un clan o jugador.
-                &8&m=====================================
-                """));
+            &8&m=====================================
+            &8&l» &a&lꜱᴀᴛɪᴘᴏ&6&lᴄʟᴀɴꜱ &c&lᴀᴅᴍɪɴ &8&l«
+            &8&m=====================================
+            &e/cla reports &7» &fᴍᴜᴇꜱᴛʀᴀ ᴛᴏᴅᴏꜱ ʟᴏꜱ ᴄʟᴀɴᴇꜱ ᴄᴏɴ ʀᴇᴘᴏʀᴛᴇꜱ ᴀᴄᴛɪᴠᴏꜱ.
+            &e/cla reload &7» &fʀᴇᴄᴀʀɢᴀ ʟᴀ ᴄᴏɴꜰɪɢᴜʀᴀᴄɪᴏ́ɴ ʏ ᴅᴀᴛᴏꜱ ᴅᴇʟ ᴘʟᴜɢɪɴ.
+            &e/cla ban <clan> [razón] &7» &fᴘʀᴏʜɪ́ʙᴇ ᴜɴ ᴄʟᴀɴ ᴘᴇʀᴍᴀɴᴇɴᴛᴇᴍᴇɴᴛᴇ (ᴘᴇʀᴍɪꜱᴏ ᴘᴏʀ ᴅᴇꜰᴇᴄᴛᴏ).
+            &e/cla unban <clan> &7» &fʟᴇᴠᴀɴᴛᴀ ʟᴀ ᴘʀᴏʜɪʙɪᴄɪᴏ́ɴ ᴅᴇ ᴜɴ ᴄʟᴀɴ.
+            &e/cla clear &7» &c⚠ ʙᴏʀʀᴀ ᴛᴏᴅᴀ ʟᴀ ʙᴀꜱᴇ ᴅᴇ ᴅᴀᴛᴏꜱ ᴍᴀʀɪᴀᴅʙ (¡ᴜꜱᴀʀ ᴄᴏɴ ᴇxᴛʀᴇᴍᴀ ᴘʀᴇᴄᴀᴜᴄɪᴏ́ɴ!).
+            &e/cla economy <player|clan> <nombre> <set|add|reset> <cantidad> &7» &fɢᴇꜱᴛɪᴏɴᴀ ʟᴀ ᴇᴄᴏɴᴏᴍɪ́ᴀ ᴅᴇ ᴜɴ ᴄʟᴀɴ ᴏ ᴊᴜɢᴀᴅᴏʀ.
+            &8&m=====================================
+            """));
     }
+
 
 
     private void reload(CommandSender sender) {
@@ -91,27 +97,50 @@ public class ACMD implements CommandExecutor, TabCompleter {
         fh.reloadConfig();
         fh.reloadData();
         econ.reload();
-        sender.sendMessage(MSG.color(prefix + "&a Plugin and all files reloaded."));
+        sender.sendMessage(MSG.color(prefix + "&a Plugin y todos los archivos recargados."));
     }
 
+
+    private final Set<CommandSender> confirmClear = new HashSet<>();
+
     private void clear(CommandSender sender) {
+        if (!confirmClear.contains(sender)) {
+            confirmClear.add(sender);
+            sender.sendMessage(MSG.color(prefix + "&e ¿Estás seguro de borrar todos los datos de clanes?"));
+            sender.sendMessage(MSG.color(prefix + "&e Usa &c/cla clear &eotra vez para confirmar."));
+            return;
+        }
+
+        confirmClear.remove(sender);
+
         try (Connection con = plugin.getMariaDBManager().getConnection();
             Statement stmt = con.createStatement()) {
 
-            stmt.executeUpdate("DELETE FROM reports");
-            stmt.executeUpdate("DELETE FROM banned_clans");
-            stmt.executeUpdate("DELETE FROM clan_users");
-            stmt.executeUpdate("DELETE FROM alliances");
-            stmt.executeUpdate("DELETE FROM friendlyfire");
-            stmt.executeUpdate("DELETE FROM clans");
-            stmt.executeUpdate("DELETE FROM economy_players");
+            stmt.executeUpdate("SET FOREIGN_KEY_CHECKS = 0");
 
-            sender.sendMessage(MSG.color(prefix + "&c All clan-related data wiped from MariaDB."));
+            stmt.executeUpdate("TRUNCATE TABLE reports");
+            stmt.executeUpdate("TRUNCATE TABLE banned_clans");
+            stmt.executeUpdate("TRUNCATE TABLE clan_users");
+            stmt.executeUpdate("TRUNCATE TABLE alliances");
+            stmt.executeUpdate("TRUNCATE TABLE friendlyfire");
+            stmt.executeUpdate("TRUNCATE TABLE friendlyfire_allies");
+            stmt.executeUpdate("TRUNCATE TABLE clans");
+            stmt.executeUpdate("TRUNCATE TABLE economy_players");
+            stmt.executeUpdate("TRUNCATE TABLE player_clan_history");
+            stmt.executeUpdate("TRUNCATE TABLE clan_invites");
+            stmt.executeUpdate("TRUNCATE TABLE pending_alliances");
+
+            stmt.executeUpdate("SET FOREIGN_KEY_CHECKS = 1");
+
+            sender.sendMessage(MSG.color(prefix + "&aTodos los datos relacionados con clanes fueron eliminados de MariaDB."));
+
         } catch (SQLException e) {
             e.printStackTrace();
-            sender.sendMessage(MSG.color(prefix + "&c Failed to wipe MariaDB."));
+            sender.sendMessage(MSG.color(prefix + "&cError al borrar los datos de MariaDB."));
         }
     }
+
+
 
 
     private void reports(CommandSender sender) {
@@ -128,11 +157,11 @@ public class ACMD implements CommandExecutor, TabCompleter {
             }
 
             if (reported.isEmpty()) {
-                sender.sendMessage(MSG.color(prefix + "&a No clans with reports."));
+                sender.sendMessage(MSG.color(prefix + " &a No hay clanes con reportes."));
                 return;
             }
 
-            sender.sendMessage(MSG.color("&e--- &6Clan Reports &e---"));
+            sender.sendMessage(MSG.color("&e--- &6Reportes de Clanes &e---"));
             reported.forEach((clan, reasons) -> {
                 sender.sendMessage(MSG.color("&6" + clan + ":"));
                 reasons.forEach(reason -> sender.sendMessage(MSG.color("  &7- &f" + reason)));
@@ -140,19 +169,19 @@ public class ACMD implements CommandExecutor, TabCompleter {
 
         } catch (SQLException e) {
             e.printStackTrace();
-            sender.sendMessage(MSG.color(prefix + "&c Failed to load reports."));
+            sender.sendMessage(MSG.color(prefix + "&c Error al cargar los reportes."));
         }
     }
 
 
     private void ban(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(MSG.color(prefix + "&c Usage: /cla ban <clan> [reason]"));
+            sender.sendMessage(MSG.color(prefix + "&c Uso: /cla ban <clan> [razón]"));
             return;
         }
 
         String clan = args[1];
-        String reason = args.length >= 3 ? args[2] : "Banned by admin";
+        String reason = args.length >= 3 ? args[2] : "Baneado por un administrador";
 
         try (Connection con = plugin.getMariaDBManager().getConnection();
             PreparedStatement check = con.prepareStatement("SELECT name FROM clans WHERE name = ?");
@@ -163,7 +192,7 @@ public class ACMD implements CommandExecutor, TabCompleter {
             ResultSet rs = check.executeQuery();
 
             if (!rs.next()) {
-                sender.sendMessage(MSG.color(prefix + "&c Clan '" + clan + "' doesn't exist."));
+                sender.sendMessage(MSG.color(prefix + "&c El clan '" + clan + "' no existe."));
                 return;
             }
 
@@ -177,23 +206,23 @@ public class ACMD implements CommandExecutor, TabCompleter {
                 String user = mrs.getString("username");
                 Player player = Bukkit.getPlayer(user);
                 if (player != null) {
-                    player.kickPlayer(MSG.color("&cYou have been banned from your clan."));
+                    player.kickPlayer(MSG.color("&c Has sido expulsado de tu clan."));
                     player.ban(reason, (Date) null, "SatipoClans", true);
                 }
             }
 
-            sender.sendMessage(MSG.color(prefix + "&c Clan '" + clan + "' has been banned."));
+            sender.sendMessage(MSG.color(prefix + "&c El clan '" + clan + "' ha sido baneado."));
 
         } catch (SQLException e) {
             e.printStackTrace();
-            sender.sendMessage(MSG.color(prefix + "&c Failed to ban the clan."));
+            sender.sendMessage(MSG.color(prefix + "&c Error al banear el clan."));
         }
     }
 
 
     private void economy(CommandSender sender, String[] args) {
         if (args.length < 4 || (args.length < 5 && !args[3].equalsIgnoreCase("reset"))) {
-            sender.sendMessage(MSG.color(prefix + "&c Usage: /cla economy <player|clan> <name> <set|add|reset> <amount>"));
+            sender.sendMessage(MSG.color(prefix + "&c Uso: /cla economy <player|clan> <nombre> <set|add|reset> <cantidad>"));
             return;
         }
 
@@ -203,7 +232,7 @@ public class ACMD implements CommandExecutor, TabCompleter {
         String amountStr = args.length >= 5 ? args[4] : "0";
 
         if (!action.equals("set") && !action.equals("add") && !action.equals("reset")) {
-            sender.sendMessage(MSG.color(prefix + "&c Invalid action. Use set, add or reset."));
+            sender.sendMessage(MSG.color(prefix + "&c Acción inválida. Usa set, add o reset."));
             return;
         }
 
@@ -213,7 +242,7 @@ public class ACMD implements CommandExecutor, TabCompleter {
                 amount = Double.parseDouble(amountStr);
                 if (amount < 0) throw new NumberFormatException();
             } catch (NumberFormatException e) {
-                sender.sendMessage(MSG.color(prefix + "&c Invalid amount."));
+                sender.sendMessage(MSG.color(prefix + "&c Cantidad inválida."));
                 return;
             }
         }
@@ -221,7 +250,7 @@ public class ACMD implements CommandExecutor, TabCompleter {
         if (type.equals("player")) {
             OfflinePlayer player = Bukkit.getOfflinePlayer(name);
             if (!(player.hasPlayedBefore() || player.isOnline())) {
-                sender.sendMessage(MSG.color(prefix + "&c Player '" + name + "' not found."));
+                sender.sendMessage(MSG.color(prefix + "&c Jugador '" + name + "' no encontrado."));
                 return;
             }
             modifyPlayerEcon(sender, player, action, amount);
@@ -253,11 +282,11 @@ public class ACMD implements CommandExecutor, TabCompleter {
                 int rowsUpdated = stmt.executeUpdate();
 
                 if (rowsUpdated == 0) {
-                    sender.sendMessage(MSG.color(prefix + "&c Clan '" + name + "' doesn't exist."));
+                    sender.sendMessage(MSG.color(prefix + "&c El clan '" + name + "' no existe."));
                     return;
                 }
 
-                String message = prefix + "&a Clan economy updated: &f" + name + " &7-> &f" + action;
+                String message = prefix + "&a Economía del clan actualizada: &f" + name + " &7-> &f" + action;
                 if (!action.equals("reset")) {
                     message += " &7= &f" + amount;
                 } else {
@@ -266,12 +295,12 @@ public class ACMD implements CommandExecutor, TabCompleter {
                 sender.sendMessage(MSG.color(message));
             } catch (SQLException e) {
                 e.printStackTrace();
-                sender.sendMessage(MSG.color(prefix + "&c Failed to update clan economy."));
+                sender.sendMessage(MSG.color(prefix + "&c Error al actualizar la economía del clan."));
             }
             return;
         }
 
-        sender.sendMessage(MSG.color(prefix + "&c First argument must be 'player' or 'clan'."));
+        sender.sendMessage(MSG.color(prefix + "&c El primer argumento debe ser 'player' o 'clan'."));
     }
 
 
@@ -283,24 +312,24 @@ public class ACMD implements CommandExecutor, TabCompleter {
             case "set" -> {
                 if (amount > current) econ.deposit(p, amount - current);
                 else econ.withdraw(p, current - amount);
-                sender.sendMessage(MSG.color("&aSet &f" + p.getName() + "&a's balance to &f" + amount));
+                sender.sendMessage(MSG.color("&a Saldo de &f" + p.getName() + "&a establecido en &f" + amount));
             }
             case "add" -> {
                 econ.deposit(p, amount);
-                sender.sendMessage(MSG.color("&aAdded &f" + amount + "&a to &f" + p.getName()));
+                sender.sendMessage(MSG.color("&a Añadido &f" + amount + "&a a &f" + p.getName()));
             }
             case "reset" -> {
                 econ.withdraw(p, current);
-                sender.sendMessage(MSG.color("&aReset &f" + p.getName() + "&a's balance."));
+                sender.sendMessage(MSG.color("&a Saldo de &f" + p.getName() + "&a reiniciado."));
             }
-            default -> sender.sendMessage(MSG.color(prefix + "&c Invalid action."));
+            default -> sender.sendMessage(MSG.color(prefix + "&c Acción inválida."));
         }
     }
 
 
     private void unban(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(MSG.color(prefix + "&c Usage: /cla unban <clan>"));
+            sender.sendMessage(MSG.color(prefix + "&c Uso: /cla unban <clan>"));
             return;
         }
 
@@ -315,7 +344,7 @@ public class ACMD implements CommandExecutor, TabCompleter {
             ResultSet rs = check.executeQuery();
 
             if (!rs.next()) {
-                sender.sendMessage(MSG.color(prefix + "&c Clan '" + clan + "' doesn't exist."));
+                sender.sendMessage(MSG.color(prefix + "&c El clan '" + clan + "' no existe."));
                 return;
             }
 
@@ -328,18 +357,18 @@ public class ACMD implements CommandExecutor, TabCompleter {
                 Bukkit.getBanList(org.bukkit.BanList.Type.NAME).pardon(mrs.getString("username"));
             }
 
-            sender.sendMessage(MSG.color(prefix + "&a Clan '" + clan + "' has been unbanned."));
+            sender.sendMessage(MSG.color(prefix + "&a El clan '" + clan + "' ha sido desbaneado."));
 
         } catch (SQLException e) {
             e.printStackTrace();
-            sender.sendMessage(MSG.color(prefix + "&c Failed to unban the clan."));
+            sender.sendMessage(MSG.color(prefix + "&c Error al desbanear el clan."));
         }
     }
 
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String s, String[] args) {
-        if (!(sender instanceof Player p) || !p.hasPermission("sc.admin")) {
+        if (!(sender instanceof Player p) || !p.hasPermission("satipoclans.admin")) {
             return args.length == 1 ? List.of("reload") : Collections.emptyList();
         }
 
@@ -396,7 +425,7 @@ public class ACMD implements CommandExecutor, TabCompleter {
         }
 
         if (arg0.equals("ban") && args.length == 3) {
-            return Stream.of("cheating", "toxicity", "abuse")
+            return Stream.of("hacks", "toxicidad", "abusos", "spam")
                     .filter(reason -> reason.startsWith(args[2].toLowerCase()))
                     .collect(Collectors.toList());
         }

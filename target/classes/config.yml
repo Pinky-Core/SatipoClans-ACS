@@ -2,23 +2,22 @@
 #                                                                   #
 #                     Placeholders disponibles:                     #
 #  ---------------------------------------------------------------  #
-#  | %satipoclan_prefix%               : Prefijo del plugin      |  #
-#  | %satipoclan_clan_leader%          : Nombre del líder        |  #
-#  | %satipoclan_clan_founder%         : Nombre del fundador     |  #
-#  | %satipoclan_clan_name%            : Nombre del clan         |  #
-#  | %satipoclan_clan_tag%             : Tag del clan            |  #
-#  | %satipoclan_clan_money%           : Bóveda del clan         |  #
-#  | %satipoclan_clan_membercount_offline% : Miembros offline    |  #
-#  | %satipoclan_clan_membercount_online%  : Miembros en línea   |  #
-#  | %satipoclan_clan_membercount%     : Total de miembros       |  #
-#  | %satipoclan_player_money%         : Bóveda del jugador      |  #
+#  | %satipoclans_prefix%               : Prefijo del plugin      |  #
+#  | %satipoclans_clan_leader%          : Nombre del líder        |  #
+#  | %satipoclans_clan_founder%         : Nombre del fundador     |  #
+#  | %satipoclans_clan_name%            : Nombre del clan         |  #
+#  | %satipoclans_clan_money%           : Bóveda del clan         |  #
+#  | %satipoclans_clan_membercount_offline% : Miembros offline    |  #
+#  | %satipoclans_clan_membercount_online%  : Miembros en línea   |  #
+#  | %satipoclans_clan_membercount%     : Total de miembros       |  #
+#  | %satipoclans_player_money%         : Bóveda del jugador      |  #
 #  ---------------------------------------------------------------  #
 #       Ahora puedes usar los placeholders de PlaceholderAPI.       #
 #                                                                   #
 #####################################################################
 
 
-prefix: "&7[&a&lSatipo&6&lClans&7]"
+prefix: "&7[&a&lꜱᴀᴛɪᴘᴏ&6&lᴄʟᴀɴꜱ&7]"
 
 storage:
   type: "mariadb" # NO TOCAR! A MENOS QUE SEPAS LO QUE HACES!
@@ -35,19 +34,19 @@ welcome-message:
 
   no-clan:
   - ""
-  - "&b&l¡Bienvenido de nuevo!"
-  - "&7Usa &a/cl crear &7para crear tu clan."
+  - "&b&l¡ʙɪᴇɴᴠᴇɴɪᴅᴏ ᴅᴇ ɴᴜᴇᴠᴏ!"
+  - "&7ᴜꜱᴀ &a/clans create &7ᴘᴀʀᴀ ᴄʀᴇᴀʀ ᴛᴜ ᴄʟᴀɴ."
   - ""
 
   self-clan:
   - ""
-  - "&eEstás en el clan &a&l%satipoclan_clan_name%"
-  - "&7Miembros en línea: &a&l%satipoclan_clan_membercount_online% &7/&f&l%satipoclan_clan_membercount%"
+  - "&eᴇꜱᴛᴀ́ꜱ ᴇɴ ᴇʟ ᴄʟᴀɴ &a&l%satipoclans_clan_name%"
+  - "&7ᴍɪᴇᴍʙʀᴏꜱ ᴇɴ ʟɪ́ɴᴇᴀ: &a&l%satipoclans_clan_membercount_online% &7/&f&l%satipoclans_clan_membercount%"
   - ""
 
   to-clan:
   - ""
-  - "&a&l%player_name% &7se conectó"
+  - "&a&l%player_name% &7ꜱᴇ ᴄᴏɴᴇᴄᴛᴏ́"
   - ""
 
 

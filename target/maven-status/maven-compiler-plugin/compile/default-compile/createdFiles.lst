@@ -4,6 +4,7 @@ me\lewisainsworth\satipoclans\Utils\MSG.class
 me\lewisainsworth\satipoclans\SatipoClan.class
 me\lewisainsworth\satipoclans\Database\MariaDBManager.class
 me\lewisainsworth\satipoclans\Events\Events.class
+me\lewisainsworth\satipoclans\Utils\ClanUtils.class
 me\lewisainsworth\satipoclans\Utils\Metrics$MetricsBase.class
 me\lewisainsworth\satipoclans\CMDs\ACMD.class
 me\lewisainsworth\satipoclans\CMDs\PECMD.class
@@ -17,6 +18,7 @@ me\lewisainsworth\satipoclans\Utils\Metrics$MultiLineChart.class
 me\lewisainsworth\satipoclans\Utils\Metrics$AdvancedPie.class
 me\lewisainsworth\satipoclans\Utils\Metrics$JsonObjectBuilder.class
 me\lewisainsworth\satipoclans\Utils\PAPI.class
+me\lewisainsworth\satipoclans\Utils\LangManager.class
 me\lewisainsworth\satipoclans\Utils\Metrics$AdvancedBarChart.class
 me\lewisainsworth\satipoclans\Utils\Metrics$DrilldownPie.class
 me\lewisainsworth\satipoclans\Utils\Metrics$JsonObjectBuilder$JsonObject.class

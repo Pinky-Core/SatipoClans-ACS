@@ -36,7 +36,7 @@ public class PECMD implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         if (args.length != 1) {
-            sender.sendMessage(MSG.color(prefix + " &cUso correcto: &f/scstats <jugador>"));
+            sender.sendMessage(MSG.color(prefix + " &cUso correcto: &f/clans stats <jugador>"));
             return true;
         }
 
@@ -60,7 +60,7 @@ public class PECMD implements CommandExecutor, TabCompleter {
             }
 
         } catch (SQLException e) {
-            sender.sendMessage(MSG.color(prefix + " &cError al consultar la base de datos."));
+            sender.sendMessage(MSG.color(prefix + " &c Error al consultar la base de datos."));
             e.printStackTrace();
             return true;
         }

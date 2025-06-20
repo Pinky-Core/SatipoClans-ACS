@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>me.lewisainsworth</groupId>
   <artifactId>satipoclans</artifactId>
-  <version>1.2.1</version>
+  <version>1.3.7</version>
   <build>
     <resources>
       <resource>
@@ -18,8 +18,7 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.11.0</version>
         <configuration>
-          <source>16</source>
-          <target>16</target>
+          <release>16</release>
         </configuration>
       </plugin>
       <plugin>
@@ -48,11 +47,21 @@
                   <pattern>org.mariadb</pattern>
                   <shadedPattern>me.lewisainsworth.shaded.mariadb</shadedPattern>
                 </relocation>
+                <relocation>
+                  <pattern>com.zaxxer.hikari</pattern>
+                  <shadedPattern>me.lewisainsworth.shaded.hikari</shadedPattern>
+                </relocation>
               </relocations>
               <minimizeJar>false</minimizeJar>
               <filters>
                 <filter>
                   <artifact>org.mariadb.jdbc:mariadb-java-client</artifact>
+                  <includes>
+                    <include>**/*</include>
+                  </includes>
+                </filter>
+                <filter>
+                  <artifact>com.zaxxer:HikariCP</artifact>
                   <includes>
                     <include>**/*</include>
                   </includes>

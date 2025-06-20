@@ -1,5 +1,5 @@
 main: me.lewisainsworth.satipoclans.SatipoClan
-version: 1.2.1
+version: 1.3.7
 name: SatipoClans
 author: LewisAinsworth
 api-version: "1.20"
@@ -17,17 +17,17 @@ commands:
     aliases: [scs]
 
 permissions:
-  sc.*:
+  satipoclans.*:
     description: Todos los permisos del plugin.
     default: op
     children:
-      sc.admin: true
-      sc.user: true
+      satipoclans.admin: true
+      satipoclans.user: true
 
-  sc.admin:
+  satipoclans.admin:
     description: Acceso a comandos administrativos.
     default: op
 
-  sc.user:
+  satipoclans.user:
     description: Acceso a comandos de usuario.
     default: true
