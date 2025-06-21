@@ -5,6 +5,7 @@ import me.lewisainsworth.satipoclans.Utils.Econo;
 import me.lewisainsworth.satipoclans.Utils.FileHandler;
 import me.lewisainsworth.satipoclans.Utils.MSG;
 import static me.lewisainsworth.satipoclans.SatipoClan.prefix;
+import me.lewisainsworth.satipoclans.Utils.LangManager;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -32,38 +33,23 @@ import net.md_5.bungee.api.chat.hover.content.Text;
 
 public class CCMD implements CommandExecutor, TabCompleter {
     private final SatipoClan plugin;
+    private final LangManager langManager;
+    private final List<String> helpLines;
 
-    private final List<String> helpLines = Arrays.asList(
-        "&e➤ &f&lᴄʀᴇᴀᴛᴇ &7» &fꜰᴏʀᴍᴀ ᴜɴ ᴄʟᴀɴ ɴᴜᴇᴠᴏ ʏ ᴄᴏᴍɪᴇɴᴢᴀ ᴛᴜ ᴀᴠᴇɴᴛᴜʀᴀ.",
-        "&e➤ &f&lᴊᴏɪɴ &7» &fúɴᴇᴛᴇ ᴀ ᴜɴ ᴄʟᴀɴ ʏ ʜᴀᴢ ɴᴜᴇᴠᴏꜱ ᴀʟɪᴀᴅᴏꜱ.",
-        "&e➤ &f&lɪɴᴠɪᴛᴇ &7» &fɪɴᴠɪᴛᴀ ᴊᴜɢᴀᴅᴏʀᴇꜱ ᴅɪɢɴᴏꜱ ᴀ ᴛᴜ ᴄʟᴀɴ.",
-        "&e➤ &f&lʟᴇᴀᴠᴇ &7» &fᴅᴇᴊᴀ ᴛᴜ ᴄʟᴀɴ ᴄᴏɴ ʜᴏɴᴏʀ ʏ ʀᴇꜱᴘᴇᴛᴏ.",
-        "&e➤ &f&lᴅɪꜱʙᴀɴᴅ &7» &fᴅɪꜱᴏʟᴠᴇ ᴛᴜ ᴄʟᴀɴ ᴄᴜᴀɴᴅᴏ ꜱᴇᴀ ɴᴇᴄᴇꜱᴀʀɪᴏ.",
-        "&e➤ &f&lᴋɪᴄᴋ &7» &fᴇʟɪᴍɪɴᴀ ᴊᴜɢᴀᴅᴏʀᴇꜱ ᴘʀᴏʙʟᴇᴍᴀ́ᴛɪᴄᴏꜱ.",
-        "&e➤ &f&lꜰꜰ &7» &fᴀᴄᴛɪᴠᴀ ᴏ ᴅᴇꜱᴀᴄᴛɪᴠᴀ ꜰᴜᴇɢᴏ ᴀᴍɪɢᴏ.",
-        "&e➤ &f&lᴀʟʟʏ &7» &fꜰᴏʀᴍᴀ ᴀʟɪᴀɴᴢᴀꜱ ᴄᴏɴ ᴏᴛʀᴏꜱ ᴄʟᴀɴᴇꜱ.",
-        "&e➤ &f&lᴄʜᴀᴛ &7» &fᴄᴏᴍᴜɴɪ́ᴄᴀᴛᴇ ᴇɴ ᴘʀɪᴠᴀᴅᴏ ᴄᴏɴ ᴛᴜ ᴄʟᴀɴ.",
-        "&e➤ &f&lꜱᴛᴀᴛꜱ &7» &fᴄᴏɴꜱᴜʟᴛᴀ ᴇʟ ᴘʀᴏɢʀᴇꜱᴏ ʏ ʟᴏɢʀᴏꜱ ᴅᴇ ᴛᴜ ᴄʟᴀɴ.",
-        "&e➤ &f&lʟɪꜱᴛ &7» &fᴇxᴘʟᴏʀᴀ ʟᴏꜱ ᴄʟᴀɴᴇꜱ ᴅᴇʟ ꜱᴇʀᴠɪᴅᴏʀ.",
-        "&e➤ &f&lʀᴇᴘᴏʀᴛ &7» &fʀᴇᴘᴏʀᴛᴀ ᴄʟᴀɴᴇꜱ ǫᴜᴇ ᴄᴀᴜꜱᴇɴ ᴘʀᴏʙʟᴇᴍᴀꜱ.",
-        "&e➤ &f&lᴇᴅɪᴛ &7» &fᴍᴏᴅɪꜰɪᴄᴀ ᴅᴇᴛᴀʟʟᴇꜱ ʏ ᴘʀɪᴠᴀᴄɪᴅᴀᴅ.",
-        "&e➤ &f&lᴇᴄᴏɴᴏᴍʏ &7» &fᴀᴅᴍɪɴɪꜱᴛʀᴀ ʟᴏꜱ ꜰᴏɴᴅᴏꜱ ᴅᴇʟ ᴄʟᴀɴ.",
-        "&e➤ &f&lʀᴇꜱɪɢɴ &7» &fʀᴇɴᴜɴᴄɪᴀ ᴀʟ ʟɪᴅᴇʀᴀᴢɢᴏ ᴄᴏɴ ᴅɪɢɴɪᴅᴀᴅ.",
-        "&e➤ &f&lʜᴇʟᴘ &7» &fᴍᴜᴇꜱᴛʀᴀ ᴇꜱᴛᴇ ᴍᴇɴᴜ́ ᴅᴇ ᴀʏᴜᴅᴀ."
-    );
-
-    public CCMD(SatipoClan plugin) {
+    public CCMD(SatipoClan plugin, LangManager langManager) {
         this.plugin = plugin;
+        this.langManager = langManager;
+        this.helpLines = langManager.getMessageList("user.help_lines");
     }
 
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String s, String[] args) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(MSG.color(prefix + "&c Comandos de consola: &f/cls reload."));
+            sender.sendMessage(MSG.color(langManager.getMessage("user.console_command_only")));
             return true;
         }
 
         if (!sender.hasPermission("satipoclans.user")) {
-            sender.sendMessage(MSG.color(prefix + "&c No tienes permisos para usar este comando"));
+            sender.sendMessage(MSG.color(langManager.getMessage("user.no_permission")));
             return true;
         }
 
@@ -77,102 +63,179 @@ public class CCMD implements CommandExecutor, TabCompleter {
                 try {
                     page = Integer.parseInt(args[1]);
                 } catch (NumberFormatException e) {
-                    sender.sendMessage(MSG.color(prefix + "&c Número de página inválido."));
+                    sender.sendMessage(MSG.color(langManager.getMessage("user.invalid_page_number")));
                     return true;
                 }
             }
-
-            if (sender instanceof Player p) {
-                this.help(p, page);  // Llama al método help paginado
-                return true;
-            } else {
-                sender.sendMessage(MSG.color(prefix + "&c Solo los jugadores pueden ver la ayuda paginada."));
-                return true;
-            }
+            
+            // Solo llamamos a tu método help que ya tiene la paginación y botones
+            help(player, page);
+            return true;
         }
 
-        // Resto de comandos
-        if (args[0].equalsIgnoreCase("create")) {
-            if (playerClan != null && !playerClan.isEmpty()) {
-                sender.sendMessage(MSG.color(prefix + "&c Ya perteneces a un clan."));
-                return true;
-            }
-            this.create(sender, args);
-        } else if (args[0].equalsIgnoreCase("disband")) {
-            this.disband(sender, playerClan);
-        } else if (args[0].equalsIgnoreCase("report")) {
-            if (args.length < 3) {
-                sender.sendMessage(MSG.color(prefix + "&c USO: /cls report <clan> <razón>"));
-                return true;
-            }
-            String playerToInvite = args[1];
-            String reason = String.join(" ", Arrays.copyOfRange(args, 2, args.length));
-            this.report(sender, playerToInvite, reason);
-        } else if (args[0].equalsIgnoreCase("list")) {
-            this.list(sender);
-        } else if (args[0].equalsIgnoreCase("join")) {
-            if (args.length != 2) {
-                sender.sendMessage(MSG.color(prefix + "&c USO: /cls join <clan>"));
-                return true;
-            }
-            String playerToInvite = args[1];
-            this.joinClan(sender, playerName, playerToInvite);
-        } else if (args[0].equalsIgnoreCase("edit")) {
-            this.edit(player, playerClan, args);
-        } else if (args[0].equalsIgnoreCase("kick")) {
-            this.kick(sender, args);
-        /*} else if (args[0].equalsIgnoreCase("economy")) {
-            this.Economy(player, playerClan, args); */
-        } else if (args[0].equalsIgnoreCase("invite")) {
-            if (args.length != 2) {
-                sender.sendMessage(MSG.color(prefix + "&c USO: /cls invite <jugador>"));
-                return true;
-            }
-            String playerToInvite = args[1];
-            this.inviteToClan(sender, playerToInvite);
-        } else if (args[0].equalsIgnoreCase("chat")) {
-            if (playerClan == null || playerClan.isEmpty()) {
-                sender.sendMessage(MSG.color(prefix + "&c No perteneces a ningún clan."));
-                return true;
-            }
-            this.chat(playerClan, player, Arrays.copyOfRange(args, 1, args.length));
-        } else if (args[0].equalsIgnoreCase("leave")) {
-            this.leave(sender, playerClan);
-        } else if (args[0].equalsIgnoreCase("stats")) {
-            if (playerClan == null || playerClan.isEmpty()) {
-                sender.sendMessage(MSG.color(prefix + "&c No perteneces a ningún clan."));
-                return true;
-            }
-            this.stats(sender, playerClan);
-        } else if (args[0].equalsIgnoreCase("resign")) {
-            this.resign(sender, playerClan);
-        } else if (args[0].equalsIgnoreCase("ff")) {
-            if (playerClan == null || playerClan.isEmpty()) {
-                sender.sendMessage(MSG.color(prefix + "&c No perteneces a ningún clan."));
-                return true;
-            }
-            if (args.length != 2 || (!args[1].equalsIgnoreCase("on") && !args[1].equalsIgnoreCase("off"))) {
-                sender.sendMessage(MSG.color(prefix + "&c USO: /cls ff <on|off>"));
-                return true;
-            }
-            handleFriendlyFireCommand(sender, playerClan, args);
-        } else if (args[0].equalsIgnoreCase("ally")) {
-            if (playerClan == null || playerClan.isEmpty()) {
-                sender.sendMessage(MSG.color(prefix + "&c No perteneces a ningún clan."));
-                return true;
-            }
-            if (args.length < 2) {
-                sender.sendMessage(MSG.color(prefix + "&c USO: /cls ally <request|accept|decline|remove> <nombreClan>"));
-                return true;
-            }
-            String[] subArgs = Arrays.copyOfRange(args, 1, args.length);
-            handleAllyCommand(sender, playerName, playerClan, subArgs);
-        } else {
-            this.help(player, 1);  // Mostrar página 1 de ayuda por defecto
+        // Resto de comandos con permisos individuales
+        switch (args[0].toLowerCase()) {
+            case "create":
+                if (!player.hasPermission("satipoclans.user.create")) {
+                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_permission")));
+                    return true;
+                }
+                if (playerClan != null && !playerClan.isEmpty()) {
+                    sender.sendMessage(MSG.color(langManager.getMessage("user.already_in_clan")));
+                    return true;
+                }
+                this.create(sender, args);
+                break;
+
+            case "disband":
+                if (!player.hasPermission("satipoclans.user.disband")) {
+                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_permission")));
+                    return true;
+                }
+                this.disband(sender, playerClan);
+                break;
+
+            case "report":
+                if (!player.hasPermission("satipoclans.user.report")) {
+                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_permission")));
+                    return true;
+                }
+                if (args.length < 3) {
+                    sender.sendMessage(MSG.color(langManager.getMessage("user.usage_report")));
+                    return true;
+                }
+                this.report(sender, args[1], String.join(" ", Arrays.copyOfRange(args, 2, args.length)));
+                break;
+
+            case "list":
+                if (!player.hasPermission("satipoclans.user.list")) {
+                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_permission")));
+                    return true;
+                }
+                this.list(sender);
+                break;
+
+            case "join":
+                if (!player.hasPermission("satipoclans.user.join")) {
+                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_permission")));
+                    return true;
+                }
+                if (args.length != 2) {
+                    sender.sendMessage(MSG.color(langManager.getMessage("user.usage_join")));
+                    return true;
+                }
+                this.joinClan(sender, playerName, args[1]);
+                break;
+
+            case "leave":
+                if (!player.hasPermission("satipoclans.user.leave")) {
+                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_permission")));
+                    return true;
+                }
+                this.leave(sender, playerClan);
+                break;
+
+            case "kick":
+                if (!player.hasPermission("satipoclans.user.kick")) {
+                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_permission")));
+                    return true;
+                }
+                this.kick(sender, args);
+                break;
+
+            case "invite":
+                if (!player.hasPermission("satipoclans.user.invite")) {
+                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_permission")));
+                    return true;
+                }
+                if (args.length != 2) {
+                    sender.sendMessage(MSG.color(langManager.getMessage("user.usage_invite")));
+                    return true;
+                }
+                this.inviteToClan(sender, args[1]);
+                break;
+
+            case "chat":
+                if (!player.hasPermission("satipoclans.user.chat")) {
+                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_permission")));
+                    return true;
+                }
+                if (playerClan == null || playerClan.isEmpty()) {
+                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_clan")));
+                    return true;
+                }
+                this.chat(playerClan, player, Arrays.copyOfRange(args, 1, args.length));
+                break;
+
+            case "stats":
+                if (!player.hasPermission("satipoclans.user.stats")) {
+                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_permission")));
+                    return true;
+                }
+                if (playerClan == null || playerClan.isEmpty()) {
+                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_clan")));
+                    return true;
+                }
+                this.stats(sender, playerClan);
+                break;
+
+            case "resign":
+                if (!player.hasPermission("satipoclans.user.resign")) {
+                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_permission")));
+                    return true;
+                }
+                this.resign(sender, playerClan);
+                break;
+
+            case "ff":
+                if (!player.hasPermission("satipoclans.user.ff")) {
+                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_permission")));
+                    return true;
+                }
+                if (playerClan == null || playerClan.isEmpty()) {
+                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_clan")));
+                    return true;
+                }
+                if (args.length != 2 || (!args[1].equalsIgnoreCase("on") && !args[1].equalsIgnoreCase("off"))) {
+                    sender.sendMessage(MSG.color(langManager.getMessage("user.usage_ff")));
+                    return true;
+                }
+                handleFriendlyFireCommand(sender, playerClan, args);
+                break;
+
+            case "ally":
+                if (!player.hasPermission("satipoclans.user.ally")) {
+                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_permission")));
+                    return true;
+                }
+                if (playerClan == null || playerClan.isEmpty()) {
+                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_clan")));
+                    return true;
+                }
+                if (args.length < 2) {
+                    sender.sendMessage(MSG.color(langManager.getMessage("user.usage_ally")));
+                    return true;
+                }
+                handleAllyCommand(sender, playerName, playerClan, Arrays.copyOfRange(args, 1, args.length));
+                break;
+
+            case "edit":
+                if (!player.hasPermission("satipoclans.user.edit")) {
+                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_permission")));
+                    return true;
+                }
+                this.edit(player, playerClan, args);
+                break;
+
+            default:
+                this.help(player, 1);
+                break;
         }
 
         return true;
     }
+
+
 
 
 

@@ -1,3 +1,37 @@
+# USER COMMANDS
+user:
+  console_command_only: "&c Comandos de consola: &f/cls reload."
+  no_permission: "&c No tienes permisos para usar este comando."
+  invalid_page_number: "&c Número de página inválido."
+  only_players_help: "&c Solo los jugadores pueden ver la ayuda paginada."
+  already_in_clan: "&c Ya perteneces a un clan."
+  usage_report: "&c USO: /cls report <clan> <razón>"
+  usage_join: "&c USO: /cls join <clan>"
+  usage_invite: "&c USO: /cls invite <jugador>"
+  usage_ff: "&c USO: /cls ff <on|off>"
+  usage_ally: "&c USO: /cls ally <request|accept|decline|remove> <nombreClan>"
+  no_clan: "&c No perteneces a ningún clan."
+  invalid_page_help: "&c Página inválida. Usa /cls help <1-{total_pages}>"
+  help_header: "&6&m====================================="
+  help_title: "&6&l» &a&lꜱᴀᴛɪᴘᴏ&6&lᴄʟᴀɴꜱ &e&lᴄᴏᴍᴀɴᴅᴏꜱ &7(Página {page}/{total_pages})"
+  help_footer: "&6&m====================================="
+  help_lines:
+    - "&e➤ &f&lᴄʀᴇᴀᴛᴇ &7» &fꜰᴏʀᴍᴀ ᴜɴ ᴄʟᴀɴ ɴᴜᴇᴠᴏ ʏ ᴄᴏᴍɪᴇɴᴢᴀ ᴛᴜ ᴀᴠᴇɴᴛᴜʀᴀ."
+    - "&e➤ &f&lᴊᴏɪɴ &7» &fúɴᴇᴛᴇ ᴀ ᴜɴ ᴄʟᴀɴ ʏ ʜᴀᴢ ɴᴜᴇᴠᴏꜱ ᴀʟɪᴀᴅᴏꜱ."
+    - "&e➤ &f&lɪɴᴠɪᴛᴇ &7» &fɪɴᴠɪᴛᴀ ᴊᴜɢᴀᴅᴏʀᴇꜱ ᴅɪɢɴᴏꜱ ᴀ ᴛᴜ ᴄʟᴀɴ."
+    - "&e➤ &f&lʟᴇᴀᴠᴇ &7» &fᴅᴇᴊᴀ ᴛᴜ ᴄʟᴀɴ ᴄᴏɴ ʜᴏɴᴏʀ ʏ ʀᴇꜱᴘᴇᴛᴏ."
+    - "&e➤ &f&lᴅɪꜱʙᴀɴᴅ &7» &fᴅɪꜱᴏʟᴠᴇ ᴛᴜ ᴄʟᴀɴ ᴄᴜᴀɴᴅᴏ ꜱᴇᴀ ɴᴇᴄᴇꜱᴀʀɪᴏ."
+    - "&e➤ &f&lᴋɪᴄᴋ &7» &fᴇʟɪᴍɪɴᴀ ᴊᴜɢᴀᴅᴏʀᴇꜱ ᴘʀᴏʙʟᴇᴍᴀ́ᴛɪᴄᴏꜱ."
+    - "&e➤ &f&lꜰꜰ &7» &fᴀᴄᴛɪᴠᴀ ᴏ ᴅᴇꜱᴀᴄᴛɪᴠᴀ ꜰᴜᴇɢᴏ ᴀᴍɪɢᴏ."
+    - "&e➤ &f&lᴀʟʟʏ &7» &fꜰᴏʀᴍᴀ ᴀʟɪᴀɴᴢᴀꜱ ᴄᴏɴ ᴏᴛʀᴏꜱ ᴄʟᴀɴᴇꜱ."
+    - "&e➤ &f&lᴄʜᴀᴛ &7» &fᴄᴏᴍᴜɴɪ́ᴄᴀᴛᴇ ᴇɴ ᴘʀɪᴠᴀᴅᴏ ᴄᴏɴ ᴛᴜ ᴄʟᴀɴ."
+    - "&e➤ &f&lꜱᴛᴀᴛꜱ &7» &fᴄᴏɴꜱᴜʟᴛᴀ ᴇʟ ᴘʀᴏɢʀᴇꜱᴏ ʏ ʟᴏɢʀᴏꜱ ᴅᴇ ᴛᴜ ᴄʟᴀɴ."
+    - "&e➤ &f&lʟɪꜱᴛ &7» &fᴇxᴘʟᴏʀᴀ ʟᴏꜱ ᴄʟᴀɴᴇꜱ ᴅᴇʟ ꜱᴇʀᴠɪᴅᴏʀ."
+    - "&e➤ &f&lʀᴇᴘᴏʀᴛ &7» &fʀᴇᴘᴏʀᴛᴀ ᴄʟᴀɴᴇꜱ ǫᴜᴇ ᴄᴀᴜꜱᴇɴ ᴘʀᴏʙʟᴇᴍᴀꜱ."
+    - "&e➤ &f&lᴇᴅɪᴛ &7» &fᴍᴏᴅɪꜰɪᴄᴀ ᴅᴇᴛᴀʟʟᴇꜱ ʏ ᴘʀɪᴠᴀᴄɪᴅᴀᴅ."
+    - "&e➤ &f&lᴇᴄᴏɴᴏᴍʏ &7» &fᴀᴅᴍɪɴɪꜱᴛʀᴀ ʟᴏꜱ ꜰᴏɴᴅᴏꜱ ᴅᴇʟ ᴄʟᴀɴ."
+    - "&e➤ &f&lʀᴇꜱɪɢɴ &7» &fʀᴇɴᴜɴᴄɪᴀ ᴀʟ ʟɪᴅᴇʀᴀᴢɢᴏ ᴄᴏɴ ᴅɪɢɴɪᴅᴀᴅ."
+    - "&e➤ &f&lʜᴇʟᴘ &7» &fᴍᴜᴇꜱᴛʀᴀ ᴇꜱᴛᴇ ᴍᴇɴᴜ́ ᴅᴇ ᴀʏᴜᴅᴀ."
 
 
 

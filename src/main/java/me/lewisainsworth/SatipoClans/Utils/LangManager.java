@@ -40,9 +40,9 @@ public class LangManager {
             loadedLangs.put(langName, config);
         }
 
-        // Si el idioma configurado no existe, fallback a "es"
+        // Fallback
         if (!loadedLangs.containsKey(currentLang)) {
-            plugin.getLogger().warning("Idioma configurado '" + currentLang + "' no encontrado en los idiomas cargados.");
+            plugin.getLogger().warning("Idioma configurado '" + currentLang + "' no encontrado.");
             currentLang = "es";
             plugin.getConfig().set("lang", currentLang);
             plugin.saveConfig();
@@ -51,13 +51,10 @@ public class LangManager {
     }
 
     public String getMessage(String path) {
-        YamlConfiguration config = loadedLangs.get(currentLang);
+        YamlConfiguration config = loadedLangs.getOrDefault(currentLang, loadedLangs.get("es"));
         if (config == null) {
-            plugin.getLogger().warning("Archivo de idioma no encontrado para: " + currentLang);
-        } else if (config.getKeys(false).isEmpty()) {
-            plugin.getLogger().warning("Archivo de idioma '" + currentLang + "' está vacío o mal formado.");
+            return "&c[LangManager] Archivo de idioma no encontrado.";
         }
-
 
         String msg = config.getString(path);
         if (msg == null) {
@@ -73,7 +70,6 @@ public class LangManager {
         return prefix + " " + getMessage(path);
     }
 
-
     public List<String> getMessageList(String path) {
         YamlConfiguration config = loadedLangs.getOrDefault(currentLang, loadedLangs.get("es"));
         if (config == null) {
@@ -81,14 +77,12 @@ public class LangManager {
         }
 
         List<String> list = config.getStringList(path);
-
-        if (list.isEmpty()) {
+        if (list == null || list.isEmpty()) {
             return List.of("&c¡Mensaje de lista no encontrado! [" + path + "]");
         }
 
         return list;
     }
-
 
     public void setCurrentLang(String lang) {
         lang = lang.toLowerCase(Locale.ROOT);
@@ -97,9 +91,6 @@ public class LangManager {
         plugin.getConfig().set("lang", lang);
         plugin.saveConfig();
         plugin.getLogger().info("Idioma cambiado a: " + lang);
-        plugin.getLogger().info("Idioma actual configurado: " + currentLang);
-        plugin.getLogger().info("Idiomas cargados: " + loadedLangs.keySet());
-
     }
 
     public String getCurrentLang() {

@@ -42,6 +42,8 @@ public class SatipoClan extends JavaPlugin {
       ClanUtils.init(this);
       copyLangFiles();
       langManager = new LangManager(this);
+      getCommand("cls").setExecutor(new CCMD(this, langManager));
+
 
       
 
@@ -126,7 +128,7 @@ public class SatipoClan extends JavaPlugin {
 
    private void registerCommands() {
       Objects.requireNonNull(getCommand("clansadmin")).setExecutor(new ACMD(this));
-      Objects.requireNonNull(getCommand("clans")).setExecutor(new CCMD(this));
+      Objects.requireNonNull(getCommand("clans")).setExecutor(new CCMD(this, langManager));
       Objects.requireNonNull(getCommand("scstats")).setExecutor(new PECMD(this));
    }
 
