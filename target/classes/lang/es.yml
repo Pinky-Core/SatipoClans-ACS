@@ -50,6 +50,23 @@ msg:
 
 
 
+# STATS COMMANDS
+stats:
+  usage_stats: "&cUso correcto: &f/clans stats <jugador>"
+  no_clan: "Sin clan"
+  error_database: "&cError al consultar la base de datos."
+  stats_header_line: "&6&m========================================"
+  stats_footer_line: "&6&m========================================"
+  stats_title: "&e&lEstadísticas de &f%player%"
+  stats_money: "&7• &eDinero: &a$%money%"
+  stats_current_clan: "&7• &eClan actual: &f%clan%"
+  stats_history: "&7• &eHistorial de clanes:"
+  stats_no_history: "&8  - Ningún historial encontrado."
+  stats_history_entry: "&8  - &7%clan%"
+
+
+
+
 # LANG COMMANDS
 lang:
   usage: "&eUso: /clansadmin lang <código>"

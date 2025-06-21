@@ -19,6 +19,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import me.lewisainsworth.satipoclans.Database.MariaDBManager;
+import me.lewisainsworth.satipoclans.Utils.LangManager;
+
 
 
 public class PECMD implements CommandExecutor, TabCompleter {
@@ -26,23 +28,26 @@ public class PECMD implements CommandExecutor, TabCompleter {
     private final SatipoClan plugin;
     private final MariaDBManager db;
     private final Econo econ;
+    private final LangManager langManager; // Añadido
 
     public PECMD(SatipoClan plugin) {
         this.plugin = plugin;
         this.db = plugin.getMariaDBManager();
         this.econ = SatipoClan.getEcon();
+        this.langManager = plugin.getLangManager(); // Inicializa
     }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         if (args.length != 1) {
-            sender.sendMessage(MSG.color(prefix + " &cUso correcto: &f/clans stats <jugador>"));
+            // Uso correcto sin prefijo
+            sender.sendMessage(MSG.color(langManager.getMessage("stats.usage_stats")));
             return true;
         }
 
         OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
 
-        String currentClan = "Sin clan";
+        String currentClan = langManager.getMessage("stats.no_clan"); // "Sin clan"
         List<String> history = new ArrayList<>();
 
         try (Connection con = db.getConnection();
@@ -60,30 +65,31 @@ public class PECMD implements CommandExecutor, TabCompleter {
             }
 
         } catch (SQLException e) {
-            sender.sendMessage(MSG.color(prefix + " &c Error al consultar la base de datos."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("stats.error_database")));
             e.printStackTrace();
             return true;
         }
 
         double money = econ.getBalance(target);
 
-        sender.sendMessage(MSG.color("&6&m========================================"));
-        sender.sendMessage(MSG.color("&e&lEstadísticas de &f" + target.getName()));
-        sender.sendMessage(MSG.color("&7• &eDinero: &a$" + money));
-        sender.sendMessage(MSG.color("&7• &eClan actual: &f" + currentClan));
-        sender.sendMessage(MSG.color("&7• &eHistorial de clanes:"));
+        sender.sendMessage(MSG.color(langManager.getMessage("stats.stats_header_line")));
+        sender.sendMessage(MSG.color(langManager.getMessage("stats.stats_title").replace("%player%", target.getName())));
+        sender.sendMessage(MSG.color(langManager.getMessage("stats.stats_money").replace("%money%", String.format("%.2f", money))));
+        sender.sendMessage(MSG.color(langManager.getMessage("stats.stats_current_clan").replace("%clan%", currentClan)));
+        sender.sendMessage(MSG.color(langManager.getMessage("stats.stats_history")));
 
         if (history.isEmpty()) {
-            sender.sendMessage(MSG.color("&8  - Ningún historial encontrado."));
+            sender.sendMessage(MSG.color(langManager.getMessage("stats.stats_no_history")));
         } else {
             for (String clan : history) {
-                sender.sendMessage(MSG.color("&8  - &7" + clan));
+                sender.sendMessage(MSG.color(langManager.getMessage("stats.stats_history_entry").replace("%clan%", clan)));
             }
         }
 
-        sender.sendMessage(MSG.color("&6&m========================================"));
+        sender.sendMessage(MSG.color(langManager.getMessage("stats.stats_footer_line")));
         return true;
     }
+
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
