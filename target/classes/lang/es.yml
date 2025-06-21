@@ -42,6 +42,11 @@ msg:
   error_banning_clan: "&cError al banear el clan."
   kicked_ban_message: "&cHas sido expulsado de tu clan."
 
+  # UNBAN COMMANDS
+  usage_unban: "&cUso: /cla unban <clan>"
+  clan_not_exist: "&cEl clan '{clan}' no existe."
+  clan_unbanned: "&aEl clan '{clan}' ha sido desbaneado."
+  error_unbanning_clan: "&cError al desbanear el clan."
 
 
 

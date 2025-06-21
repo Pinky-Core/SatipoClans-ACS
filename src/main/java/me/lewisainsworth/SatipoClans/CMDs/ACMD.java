@@ -349,7 +349,7 @@ public class ACMD implements CommandExecutor, TabCompleter {
 
     private void unban(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(MSG.color(prefix + "&c Uso: /cla unban <clan>"));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("msg.usage_unban")));
             return;
         }
 
@@ -364,7 +364,7 @@ public class ACMD implements CommandExecutor, TabCompleter {
             ResultSet rs = check.executeQuery();
 
             if (!rs.next()) {
-                sender.sendMessage(MSG.color(prefix + "&c El clan '" + clan + "' no existe."));
+                sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("msg.clan_not_exist").replace("{clan}", clan)));
                 return;
             }
 
@@ -374,16 +374,18 @@ public class ACMD implements CommandExecutor, TabCompleter {
             members.setString(1, clan);
             ResultSet mrs = members.executeQuery();
             while (mrs.next()) {
-                Bukkit.getBanList(org.bukkit.BanList.Type.NAME).pardon(mrs.getString("username"));
+                String username = mrs.getString("username");
+                Bukkit.getBanList(org.bukkit.BanList.Type.NAME).pardon(username);
             }
 
-            sender.sendMessage(MSG.color(prefix + "&a El clan '" + clan + "' ha sido desbaneado."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("msg.clan_unbanned").replace("{clan}", clan)));
 
         } catch (SQLException e) {
             e.printStackTrace();
-            sender.sendMessage(MSG.color(prefix + "&c Error al desbanear el clan."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("msg.error_unbanning_clan")));
         }
     }
+
 
 
     @Override
