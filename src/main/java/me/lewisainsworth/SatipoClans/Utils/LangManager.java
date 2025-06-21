@@ -100,4 +100,8 @@ public class LangManager {
     public Set<String> getAvailableLangs() {
         return Collections.unmodifiableSet(loadedLangs.keySet());
     }
+
+    public void reload() {
+        loadLangs();
+    }
 }

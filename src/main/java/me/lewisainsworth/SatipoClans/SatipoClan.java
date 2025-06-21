@@ -7,6 +7,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import me.lewisainsworth.satipoclans.CMDs.CCMD;
 import me.lewisainsworth.satipoclans.CMDs.ACMD;
 import me.lewisainsworth.satipoclans.CMDs.PECMD;
+import me.lewisainsworth.satipoclans.CMDs.LangCMD;
 import me.lewisainsworth.satipoclans.Events.Events;
 import me.lewisainsworth.satipoclans.Utils.*;
 import me.lewisainsworth.satipoclans.Database.MariaDBManager;
@@ -27,6 +28,7 @@ public class SatipoClan extends JavaPlugin {
    private FileHandler fh;
    private MariaDBManager mariaDBManager;
    private LangManager langManager;
+   private LangCMD langCMD;
 
    private static SatipoClan instance;
 
@@ -43,6 +45,9 @@ public class SatipoClan extends JavaPlugin {
       copyLangFiles();
       langManager = new LangManager(this);
       getCommand("cls").setExecutor(new CCMD(this, langManager));
+      LangCMD langCMD = new LangCMD(this);
+      setLangCMD(langCMD);
+
 
 
       
@@ -183,5 +188,13 @@ public class SatipoClan extends JavaPlugin {
 
    public LangManager getLangManager() {
       return langManager;
+   }
+
+   public LangCMD getLangCMD() {
+      return langCMD;
+   }
+
+   public void setLangCMD(LangCMD langCMD) {
+      this.langCMD = langCMD;
    }
 }

@@ -3,17 +3,13 @@ package me.lewisainsworth.satipoclans.CMDs;
 import me.lewisainsworth.satipoclans.SatipoClan;
 import me.lewisainsworth.satipoclans.Utils.LangManager;
 import me.lewisainsworth.satipoclans.Utils.MSG;
-import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.List;
-
 
 public class LangCMD implements CommandExecutor {
 
@@ -24,7 +20,7 @@ public class LangCMD implements CommandExecutor {
     private final Map<String, String> languageNames = Map.of(
             "es", "Español",
             "en", "English"
-            // Podés agregar más idiomas aquí, ej: "fr", "Français"
+            // Podés agregar más idiomas aquí
     );
 
     public LangCMD(SatipoClan plugin) {
@@ -49,16 +45,23 @@ public class LangCMD implements CommandExecutor {
         return true;
     }
 
-
     public void showLanguageMenu(Player player) {
-        player.sendMessage(MSG.color("&6&m-----------------------------"));
-        player.sendMessage(MSG.color("&e Idioma actual: &a" + langManager.getCurrentLang().toUpperCase()
-            + " - " + languageNames.getOrDefault(langManager.getCurrentLang(), "Unknown")));
+        player.sendMessage(MSG.color(langManager.getMessage("lang.menu_header")));
+
+        String currentLang = langManager.getCurrentLang();
+        String langDisplay = currentLang.toUpperCase() + " - " +
+                languageNames.getOrDefault(currentLang, "Unknown");
+
+        player.sendMessage(MSG.color(
+                langManager.getMessage("lang.actual_lang")
+                        .replace("{lang}", langDisplay)
+        ));
+
         player.sendMessage(MSG.color(langManager.getMessage("lang.lang_list_title")));
 
         for (String lang : langManager.getAvailableLangs()) {
             String displayName = languageNames.getOrDefault(lang, lang.toUpperCase());
-            boolean isSelected = lang.equalsIgnoreCase(langManager.getCurrentLang());
+            boolean isSelected = lang.equalsIgnoreCase(currentLang);
 
             TextComponent line = new TextComponent("» ");
             line.setColor(net.md_5.bungee.api.ChatColor.GOLD);
@@ -68,11 +71,16 @@ public class LangCMD implements CommandExecutor {
             if (isSelected) langText.setBold(true);
 
             langText.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                new TextComponent[] {
-                    new TextComponent(isSelected ? "Idioma seleccionado" : "Click para seleccionar")
-                }));
+                    new TextComponent[]{
+                            new TextComponent(MSG.color(
+                                    langManager.getMessage(isSelected
+                                            ? "lang.selected_lang"
+                                            : "lang.select_lang")
+                            ))
+                    }));
 
-            langText.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/clansadmin lang select " + lang));
+            langText.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,
+                    "/clansadmin lang select " + lang));
 
             line.addExtra(langText);
 
@@ -85,9 +93,8 @@ public class LangCMD implements CommandExecutor {
             player.spigot().sendMessage(line);
         }
 
-        player.sendMessage(MSG.color("&6&m-----------------------------"));
+        player.sendMessage(MSG.color(langManager.getMessage("lang.menu_footer")));
     }
-
 
     // Este método debe llamarse desde el main o desde ACMD al detectar /clansadmin lang select <lang>
     public void setLanguageCommand(Player player, String lang) {
@@ -96,8 +103,15 @@ public class LangCMD implements CommandExecutor {
             return;
         }
         langManager.setCurrentLang(lang);
-        player.sendMessage(MSG.color("&aIdioma cambiado a " + lang.toUpperCase()
-                + " - " + languageNames.getOrDefault(lang, "Unknown")));
+
+        String display = lang.toUpperCase() + " - " + languageNames.getOrDefault(lang, "Unknown");
+        player.sendMessage(MSG.color(
+                langManager.getMessage("lang.lang_changed")
+                        .replace("{lang}", display)
+        ));
     }
-    
+
+    public String getLanguageDisplayName(String code) {
+        return languageNames.getOrDefault(code, "Unknown");
+    }
 }

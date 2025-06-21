@@ -6,6 +6,8 @@ import org.bukkit.command.*;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.bukkit.Sound;
+import org.bukkit.entity.Player;
 
 import me.lewisainsworth.satipoclans.SatipoClan;
 import me.lewisainsworth.satipoclans.Utils.Econo;
@@ -28,6 +30,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.hover.content.Text;
+
 
 
 
@@ -109,13 +112,49 @@ public class ACMD implements CommandExecutor, TabCompleter {
 
 
     private void reload(CommandSender sender) {
-        FileHandler fh = plugin.getFH();
-        Econo econ = SatipoClan.getEcon();
-        fh.reloadConfig();
-        fh.reloadData();
-        econ.reload();
+        // Reproducir sonido al iniciar reload (solo si es Player)
+        if (sender instanceof Player) {
+            Player player = (Player) sender;
+        }
+
+        // Mensaje de recargando
+        sender.sendMessage(MSG.color(langManager.getMessage("msg.reloading")));
+
+        // Recargar archivos
+        plugin.getFH().reloadConfig();
+        plugin.getFH().reloadData();
+
+        // Recargar economía
+        // SatipoClan.getEcon().reload();
+
+        // Recargar idioma
+        plugin.getLangManager().reload();
+
+        // Recargar comandos (si es necesario)
+        plugin.getCommand("clans").setExecutor(new CCMD(plugin, plugin.getLangManager()));
+        plugin.getCommand("clansadmin").setExecutor(new ACMD(plugin));
+        plugin.getCommand("cls").setExecutor(new CCMD(plugin, plugin.getLangManager())); // alias
+
+        // Obtener idioma actual y nombre legible
+        String currentLang = plugin.getLangManager().getCurrentLang();
+        String langDisplayName = plugin.getLangCMD().getLanguageDisplayName(currentLang);
+
+        // Mensaje final
+        sender.sendMessage(MSG.color("&7------------------------------------"));
         sender.sendMessage(MSG.color(langManager.getMessage("msg.plugin_reloaded")));
+        sender.sendMessage(MSG.color(langManager.getMessage("lang.actual_lang ")
+                .replace("{lang}", currentLang.toUpperCase())
+                .replace("{lang_name}", langDisplayName)));
+        sender.sendMessage(MSG.color("&7------------------------------------"));
+
+        // Reproducir sonido al finalizar reload (solo si es Player)
+        if (sender instanceof Player) {
+            Player player = (Player) sender;
+            player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
+        }
     }
+
+
 
 
     private final Set<CommandSender> confirmClear = new HashSet<>();

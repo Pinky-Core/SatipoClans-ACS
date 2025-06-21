@@ -49,7 +49,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
         }
 
         if (!sender.hasPermission("satipoclans.user")) {
-            sender.sendMessage(MSG.color(langManager.getMessage("user.no_permission")));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_permission")));
             return true;
         }
 
@@ -63,7 +63,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
                 try {
                     page = Integer.parseInt(args[1]);
                 } catch (NumberFormatException e) {
-                    sender.sendMessage(MSG.color(langManager.getMessage("user.invalid_page_number")));
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.invalid_page_number")));
                     return true;
                 }
             }
@@ -77,11 +77,11 @@ public class CCMD implements CommandExecutor, TabCompleter {
         switch (args[0].toLowerCase()) {
             case "create":
                 if (!player.hasPermission("satipoclans.user.create")) {
-                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_permission")));
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_permission")));
                     return true;
                 }
                 if (playerClan != null && !playerClan.isEmpty()) {
-                    sender.sendMessage(MSG.color(langManager.getMessage("user.already_in_clan")));
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.already_in_clan")));
                     return true;
                 }
                 this.create(sender, args);
@@ -89,7 +89,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
 
             case "disband":
                 if (!player.hasPermission("satipoclans.user.disband")) {
-                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_permission")));
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_permission")));
                     return true;
                 }
                 this.disband(sender, playerClan);
@@ -97,11 +97,11 @@ public class CCMD implements CommandExecutor, TabCompleter {
 
             case "report":
                 if (!player.hasPermission("satipoclans.user.report")) {
-                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_permission")));
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_permission")));
                     return true;
                 }
                 if (args.length < 3) {
-                    sender.sendMessage(MSG.color(langManager.getMessage("user.usage_report")));
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.usage_report")));
                     return true;
                 }
                 this.report(sender, args[1], String.join(" ", Arrays.copyOfRange(args, 2, args.length)));
@@ -109,7 +109,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
 
             case "list":
                 if (!player.hasPermission("satipoclans.user.list")) {
-                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_permission")));
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_permission")));
                     return true;
                 }
                 this.list(sender);
@@ -117,11 +117,11 @@ public class CCMD implements CommandExecutor, TabCompleter {
 
             case "join":
                 if (!player.hasPermission("satipoclans.user.join")) {
-                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_permission")));
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_permission")));
                     return true;
                 }
                 if (args.length != 2) {
-                    sender.sendMessage(MSG.color(langManager.getMessage("user.usage_join")));
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.usage_join")));
                     return true;
                 }
                 this.joinClan(sender, playerName, args[1]);
@@ -129,7 +129,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
 
             case "leave":
                 if (!player.hasPermission("satipoclans.user.leave")) {
-                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_permission")));
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_permission")));
                     return true;
                 }
                 this.leave(sender, playerClan);
@@ -137,7 +137,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
 
             case "kick":
                 if (!player.hasPermission("satipoclans.user.kick")) {
-                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_permission")));
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_permission")));
                     return true;
                 }
                 this.kick(sender, args);
@@ -145,11 +145,11 @@ public class CCMD implements CommandExecutor, TabCompleter {
 
             case "invite":
                 if (!player.hasPermission("satipoclans.user.invite")) {
-                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_permission")));
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_permission")));
                     return true;
                 }
                 if (args.length != 2) {
-                    sender.sendMessage(MSG.color(langManager.getMessage("user.usage_invite")));
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.usage_invite")));
                     return true;
                 }
                 this.inviteToClan(sender, args[1]);
@@ -157,11 +157,11 @@ public class CCMD implements CommandExecutor, TabCompleter {
 
             case "chat":
                 if (!player.hasPermission("satipoclans.user.chat")) {
-                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_permission")));
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_permission")));
                     return true;
                 }
                 if (playerClan == null || playerClan.isEmpty()) {
-                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_clan")));
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_clan")));
                     return true;
                 }
                 this.chat(playerClan, player, Arrays.copyOfRange(args, 1, args.length));
@@ -169,11 +169,11 @@ public class CCMD implements CommandExecutor, TabCompleter {
 
             case "stats":
                 if (!player.hasPermission("satipoclans.user.stats")) {
-                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_permission")));
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_permission")));
                     return true;
                 }
                 if (playerClan == null || playerClan.isEmpty()) {
-                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_clan")));
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_clan")));
                     return true;
                 }
                 this.stats(sender, playerClan);
@@ -181,7 +181,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
 
             case "resign":
                 if (!player.hasPermission("satipoclans.user.resign")) {
-                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_permission")));
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_permission")));
                     return true;
                 }
                 this.resign(sender, playerClan);
@@ -189,15 +189,15 @@ public class CCMD implements CommandExecutor, TabCompleter {
 
             case "ff":
                 if (!player.hasPermission("satipoclans.user.ff")) {
-                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_permission")));
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_permission")));
                     return true;
                 }
                 if (playerClan == null || playerClan.isEmpty()) {
-                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_clan")));
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_clan")));
                     return true;
                 }
                 if (args.length != 2 || (!args[1].equalsIgnoreCase("on") && !args[1].equalsIgnoreCase("off"))) {
-                    sender.sendMessage(MSG.color(langManager.getMessage("user.usage_ff")));
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.usage_ff")));
                     return true;
                 }
                 handleFriendlyFireCommand(sender, playerClan, args);
@@ -205,15 +205,15 @@ public class CCMD implements CommandExecutor, TabCompleter {
 
             case "ally":
                 if (!player.hasPermission("satipoclans.user.ally")) {
-                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_permission")));
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_permission")));
                     return true;
                 }
                 if (playerClan == null || playerClan.isEmpty()) {
-                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_clan")));
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_clan")));
                     return true;
                 }
                 if (args.length < 2) {
-                    sender.sendMessage(MSG.color(langManager.getMessage("user.usage_ally")));
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.usage_ally")));
                     return true;
                 }
                 handleAllyCommand(sender, playerName, playerClan, Arrays.copyOfRange(args, 1, args.length));
@@ -221,7 +221,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
 
             case "edit":
                 if (!player.hasPermission("satipoclans.user.edit")) {
-                    sender.sendMessage(MSG.color(langManager.getMessage("user.no_permission")));
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_permission")));
                     return true;
                 }
                 this.edit(player, playerClan, args);

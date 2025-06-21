@@ -1,5 +1,273 @@
+# USER COMMANDS
+user:
+  console_command_only: "&c Console commands: &f/cls reload."
+  no_permission: "&c You do not have permission to use this command."
+  invalid_page_number: "&c Invalid page number."
+  only_players_help: "&c Only players can view the paginated help."
+  already_in_clan: "&c You are already in a clan."
+  usage_report: "&c &lUSAGE:&f /cls report <clan> <reason>"
+  usage_join: "&c &lUSAGE:&f /cls join <clan>"
+  usage_invite: "&c &lUSAGE:&f /cls invite <player>"
+  usage_ff: "&c &lUSAGE:&f /cls ff <on|off>"
+  usage_ally: "&c &lUSAGE:&f /cls ally <request|accept|decline|remove> <clanName>"
+  no_clan: "&c You are not in any clan."
+
+  # HELP COMMAND
+  invalid_page_help: "&c Invalid page. Use /cls help <1-{total_pages}>"
+  help_header: "&6&m====================================="
+  help_title: "&6&l» &a&lꜱᴀᴛɪᴘᴏ&6&lᴄʟᴀɴꜱ &e&lᴄᴏᴍᴍᴀɴᴅꜱ &7(Page {page}/{total_pages})"
+  help_footer: "&6&m====================================="
+  help_lines:
+    - "&e➤ &f&lᴄʀᴇᴀᴛᴇ &7» &fCreate a new clan and start your adventure."
+    - "&e➤ &f&lᴊᴏɪɴ &7» &fJoin a clan and make new allies."
+    - "&e➤ &f&lɪɴᴠɪᴛᴇ &7» &fInvite worthy players to your clan."
+    - "&e➤ &f&lʟᴇᴀᴠᴇ &7» &fLeave your clan with honor and respect."
+    - "&e➤ &f&lᴅɪꜱʙᴀɴᴅ &7» &fDisband your clan when necessary."
+    - "&e➤ &f&lᴋɪᴄᴋ &7» &fRemove problematic players."
+    - "&e➤ &f&lꜰꜰ &7» &fEnable or disable friendly fire."
+    - "&e➤ &f&lᴀʟʟʏ &7» &fForm alliances with other clans."
+    - "&e➤ &f&lᴄʜᴀᴛ &7» &fCommunicate privately with your clan."
+    - "&e➤ &f&lꜱᴛᴀᴛꜱ &7» &fCheck your clan's progress and achievements."
+    - "&e➤ &f&lʟɪꜱᴛ &7» &fExplore the server's clans."
+    - "&e➤ &f&lʀᴇᴘᴏʀᴛ &7» &fReport clans causing problems."
+    - "&e➤ &f&lᴇᴅɪᴛ &7» &fModify details and privacy."
+    - "&e➤ &f&lᴇᴄᴏɴᴏᴍʏ &7» &fManage the clan's funds."
+    - "&e➤ &f&lʀᴇꜱɪɢɴ &7» &fResign leadership with dignity."
+    - "&e➤ &f&lʜᴇʟᴘ &7» &fShow this help menu."
+
+  # KICK COMMAND
+  usage_kick: "&c &lUSAGE:&f /cls kick <player>"
+  console_command_only: "&c Console commands: &f/cls reload."
+  no_clan: "&c You are not in any clan."
+  kick_only_leader: "&c Only the clan leader can kick members."
+  kick_cant_kick_self: "&c You can't kick yourself. Use /cls leave."
+  kick_player_not_member: "&c The player is not a member of the clan."
+  kick_success: "&2 Player &e&l{player} &2has been kicked from clan &e&l{clan}"
+  kick_clan_deleted: "&2 The clan is empty. It has been deleted."
+  kick_error: "&c An error occurred while kicking."
+
+  # RESIGN COMMAND
+  resign_not_leader: "&c You are not the clan leader."
+  resign_success: "&c You have resigned leadership! The new leader is {newLeader}"
+  resign_clan_deleted: "&c Clan deleted due to no members."
+  resign_error: "&c Error while resigning."
+
+  # STATS COMMAND
+  stats_not_found: "&c No clan found with that name."
+  stats_border: "&8&m===================================================="
+  stats_title: "&8&l» &e&lStatistics: &b{clan} &8&l «"
+  stats_founder: "&7Founder: &f{founder}"
+  stats_leader: "&7Leader: &f{leader}"
+  stats_privacy: "&7Privacy: &f{privacy}"
+  stats_money: "&7Clan money: &a${money}"
+  stats_members_title: "&2Members:"
+  stats_member_line: "&f- &l{member}"
+  stats_footer: "&2================== &7 [&a&lꜱᴀᴛɪᴘᴏ&6&lᴄʟᴀɴꜱ&7] &2=================="
+  stats_error: "&c Error loading clan statistics."
+
+  # INVITE COMMAND
+  only_players_invite: "&c Only players can send invitations."
+  no_clan: "&c You are not in any clan."
+  cant_invite_self: "&c You can't invite yourself!"
+  player_not_online: "&c The player is not online."
+  player_in_other_clan: "&c That player already belongs to another clan."
+  invite_pending: "&c This player already has a pending invitation."
+  invite_sent: "&a Invitation sent to &f{player}"
+  invite_received: "&e You have received an invitation to join clan &f{clan}"
+  invite_usage: "&8 USAGE: /cls join {clan} &7- to join the clan"
+  invite_error: "&c Error sending the invitation."
+
+  # CHAT COMMAND
+  chat_format: "&e{clan} &f{player}&f: &7{message}"
+  chat_error: "&c Error sending message to clan chat."
+  
+  # LEAVE COMMAND
+  clan_deleted_empty: "&c Clan deleted due to no members."
+  leader_left: "&c You left. The new leader is {newLeader}"
+  left_clan: "&2 You have left the clan."
+  leave_error: "&c Error leaving the clan."
+
+  # JOIN COMMAND
+  only_players_join: "&c Only players can join clans."
+  already_in_clan: "&c You are already in a clan."
+  clan_not_exist: "&c The clan does not exist."
+  invite_expired: "&c Your invitation to join the clan has expired."
+  clan_private: "&c This clan is &lPrivate&c."
+  joined_clan: "&2 You have joined the clan: &e{clan}"
+  join_error: "&c Error joining the clan."
+
+  # CLANS LIST COMMAND
+  no_clans: "&c There are no clans on the server."
+  clans_header: "&2&l Clans:"
+  clans_footer: "&2&m=================="
+  clans_error: "&c Error getting the list of clans."
+
+  # REPORT COMMAND
+  report_no_reason: "&c Please provide a valid reason for the report."
+  report_clan_not_exist: "&c The reported clan does not exist."
+  report_already_sent: "&c This report has already been sent."
+  report_success: "&2 Clan reported: &e{clan}&2. Reason: {reason}"
+  report_error: "&c Error sending the report."
+
+  # EDIT COMMAND
+  edit_no_leader: "&c Only the leader can modify the clan!"
+  edit_usage: "&c &lUSAGE:&f /cls edit <name|privacy> <value>"
+  edit_name_success: "&3 Clan name changed to: &f{name}"
+  edit_name_error: "&c Error changing the clan name."
+  edit_privacy_success: "&3 Clan privacy changed to: &f{privacy}"
+  edit_error: "&c Error editing the clan."
+
+  # DISBAND COMMAND
+  disband_not_leader: "&c You are not the leader of this clan."
+  disband_success: "&2 The clan was deleted."
+  disband_success_earn: "&2 The clan was deleted. You earned: &e${money}"
+  disband_error: "&c Error deleting the clan."
+
+  # CREATE COMMAND
+  create_usage: "&c&l USAGE:&f /cls create <name>"
+  create_name_blocked: "&c This name is blocked."
+  create_exists: "&c The clan already exists."
+  create_limit: "&c Clan limit reached ({max})."
+  create_no_money: "&c You don't have enough money. You need: &2&l${cost}"
+  create_success: "&2 Your clan &e{clan} &2has been created."
+  create_error: "&c Error creating the clan."
+
+
+# HANDLERS
+command:
+  # FF COMMAND
+  ff_usage: "&c &lUSAGE:&f /cls ff <on|off>"
+  ff_status: "&a Friendly fire is now: &e{status}"
+  ff_error: "&c Error updating friendly fire setting."
+
+  # ALLYFF COMMAND
+  allyff_usage: "&c &lUSAGE:&f /clan allyff <on|off>"
+  allyff_status: "&a Ally friendly fire is now: &e{status}"
+  allyff_error: "&c Error updating ally friendly fire setting."
+
+  # ALLY COMMAND
+  ally_usage: "&c &lUSAGE:&f /cls ally <request|accept|decline|remove|ff> [<clan>|<on|off>]"
+  ally_request_usage: "&c &lCorrect usage:&f /cls ally request <clan>"
+  ally_accept_usage: "&c &lCorrect usage:&f /cls ally accept <clan>"
+  ally_decline_usage: "&c &lCorrect usage:&f /cls ally decline <clan>"
+  ally_remove_usage: "&c &lCorrect usage:&f /cls ally remove <clan>"
+  ally_ff_usage: "&c &lCorrect usage:&f /cls ally ff <on|off>"
+  ally_invalid_subcommand: "&c Invalid subcommand. Use request, accept, decline, remove or ff."
+
+  # ALLY REQUEST
+  ally_same_clan: "&c You can't ally with your own clan."
+  ally_target_not_exist: "&c The clan &e{target} &cdoes not exist."
+  ally_already_requested: "&c You have already sent a request to that clan."
+  ally_request_sent: "&a Alliance request sent to &e{target}"
+  ally_request_received: "&eYou have a new alliance request from &a{clan}"
+  ally_request_error: "&c Error sending alliance request."
+
+  # ALLY ACCEPT
+  ally_accept_same_clan: "&c You can't accept alliance with your own clan."
+  ally_accept_no_pending: "&c You have no pending requests from that clan."
+  ally_accept_success: "&a You have accepted the alliance with &e{requester}"
+  ally_accepted_notify: "&a The clan &e{clan} &ahas accepted the alliance."
+  ally_accept_error: "&c Error accepting the alliance."
+
+  # ALLY DECLINE
+  ally_decline_same_clan: "&c You can't decline alliance with your own clan."
+  ally_decline_no_pending: "&c You have no pending requests from that clan."
+  ally_decline_success: "&a You have declined the alliance with &e{requester}"
+  ally_declined_notify: "&c The clan &e{clan} &chas declined the alliance."
+  ally_decline_error: "&c Error declining the alliance."
+
+  # ALLY REMOVE
+  ally_remove_same_clan: "&c You can't remove alliance with your own clan."
+  ally_remove_success: "&a You have removed the alliance with &e{target}"
+  ally_remove_none: "&c You have no alliance with that clan."
+  ally_remove_error: "&c Error removing the alliance."
+
+  # ALLY FF COMMAND
+  allyff_usage: "&c &lCorrect usage:&f /cls ally ff <on|off>"
+  allyff_status: "&a Ally friendly fire is now: &e{status}"
+  allyff_error: "&c Error modifying ally friendly fire setting."
+
+
+# STATUS MESSAGES
+status:
+  enabled: "ENABLED"
+  disabled: "DISABLED"
+
+
+# ADMIN COMMANDS
 msg:
-  no_permission: "&cNo tienes permiso para usar este comando."
-  lang_not_found: "&cIdioma no encontrado."
-  only_in_game: "&cEste comando solo puede usarse en el juego."
-  usage_lang: "&eUso: /clansadmin lang"
+  no_permission: "&cYou do not have permission to use this command."
+  only_in_game: "&cThis command can only be used in-game."
+  usage_lang: "&e &lUsage:&f /clansadmin lang"
+  console_reload_only: "&cConsole can only use: &f/cla reload"
+  plugin_reloaded: "&aPlugin and all files reloaded."
+  reloading: "&eReloading plugin..."
+  plugin_reloaded: "&a✔ Plugin successfully reloaded."
+
+  # RELOAD COMMAND
+  confirm_clear_1: "&eAre you sure you want to delete all clan data?"
+  confirm_clear_2: "&eUse &c&l/cla clear &eagain to confirm."
+  data_cleared: "&aAll clan-related data has been deleted from Database."
+  error_clearing_data: "&cError deleting data from Database."
+
+  # HELP COMMAND
+  help:
+    commands:
+      - "&8&m====================================="
+      - "&8&l» &a&lꜱᴀᴛɪᴘᴏ&6&lᴄʟᴀɴꜱ &c&lᴀᴅᴍɪɴ &8&l«"
+      - "&8&m====================================="
+      - "&e/cla reports &7» &fShows all clans with active reports."
+      - "&e/cla reload &7» &fReloads the plugin's configuration and data."
+      - "&e/cla ban <clan> [reason] &7» &fPermanently bans a clan (default permission)."
+      - "&e/cla unban <clan> &7» &fLifts the ban from a clan."
+      - "&e/cla clear &7» &c⚠ Deletes the entire database (use with extreme caution!)."
+      - "&8&m====================================="
+  
+  # REPORTS COMMAND
+  no_reports: "&aThere are no clans with reports."
+  reports_title: "&e--- &6Clan Reports &e---"
+  clan_colon: "&6{clan}:"
+  report_reason: "  &7- &f{reason}"
+  error_loading_reports: "&cError loading reports."
+
+  # BAN COMMANDS
+  usage_ban: "&c &lUSAGE:&f /cla ban <clan> [reason]"
+  clan_not_exist: "&cThe clan '{clan}' does not exist."
+  clan_banned: "&cThe clan '{clan}' has been banned."
+  error_banning_clan: "&cError banning the clan."
+  kicked_ban_message: "&cYou have been kicked from your clan."
+
+  # UNBAN COMMANDS
+  usage_unban: "&c &lUSAGE:&f /cla unban <clan>"
+  clan_not_exist: "&cThe clan '{clan}' does not exist."
+  clan_unbanned: "&aThe clan '{clan}' has been unbanned."
+  error_unbanning_clan: "&cError unbanning the clan."
+
+
+# STATS COMMANDS
+stats:
+  usage_stats: "&c &lCorrect USAGE:&f &f/clans stats <player>"
+  no_clan: "No clan"
+  error_database: "&cError querying the database."
+  stats_header_line: "&6&m========================================"
+  stats_footer_line: "&6&m========================================"
+  stats_title: "&e&lStatistics of &f%player%"
+  stats_money: "&7• &eMoney: &a$%money%"
+  stats_current_clan: "&7• &eCurrent clan: &f%clan%"
+  stats_history: "&7• &eClan history:"
+  stats_no_history: "&8  - No history found."
+  stats_history_entry: "&8  - &7%clan%"
+
+
+# LANG COMMANDS
+lang:
+  usage: "&e &lUSAGE:&f /clansadmin lang (select) <code>"
+  lang_list_title: "&eList of available languages:"
+  actual_lang: "&eCurrent language: &a{lang}"
+  selected_lang: "Selected language"
+  select_lang: "Click to select"
+  lang_changed: "&aLanguage changed to {lang}"
+  no_permission: "&cYou do not have permission to use this command."
+  lang_not_found: "&cLanguage not found."
+  menu_header: "&6&m-----------------------------"
+  menu_footer: "&6&m-----------------------------"
