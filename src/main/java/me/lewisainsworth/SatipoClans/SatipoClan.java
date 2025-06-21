@@ -14,6 +14,7 @@ import me.lewisainsworth.satipoclans.Database.MariaDBManager;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 
+import java.io.File;
 import java.util.Objects;
 
 public class SatipoClan extends JavaPlugin {
@@ -25,7 +26,7 @@ public class SatipoClan extends JavaPlugin {
    private Metrics metrics;
    private FileHandler fh;
    private MariaDBManager mariaDBManager;
-   //private LangManager langManager;
+   private LangManager langManager;
 
    private static SatipoClan instance;
 
@@ -34,12 +35,15 @@ public class SatipoClan extends JavaPlugin {
       instance = this;
       saveDefaultConfig();
       prefix = getConfig().getString("prefix", "&7 [&a&lꜱᴀᴛɪᴘᴏ&6&lᴄʟᴀɴꜱ&7]&n");
-      //lang = new LangManager(this);
+      langManager = new LangManager(this);
       fh = new FileHandler(this);
       updater = new Updater(this, 114316);
       metrics = new Metrics(this, 20912);
       econ = new Econo(this);
       ClanUtils.init(this);
+      copyLangFiles();
+
+      
 
       if (getConfig().getBoolean("economy.enabled", true)) {
          if (!econ.setupEconomy()) {
@@ -89,6 +93,16 @@ public class SatipoClan extends JavaPlugin {
 
    public static SatipoClan getInstance() {
       return instance;
+   }
+
+   public void copyLangFiles() {
+        File langFolder = new File(getDataFolder(), "lang");
+        if (!langFolder.exists()) {
+            langFolder.mkdirs();
+            saveResource("lang/es.yml", false);
+            saveResource("lang/en.yml", false);
+            // agrega más idiomas si tienes
+         }
    }
 
    private void setupMetrics() {
@@ -156,5 +170,9 @@ public class SatipoClan extends JavaPlugin {
 
    public MariaDBManager getMariaDBManager() {
       return mariaDBManager;
+   }
+
+   public LangManager getLangManager() {
+      return langManager;
    }
 }

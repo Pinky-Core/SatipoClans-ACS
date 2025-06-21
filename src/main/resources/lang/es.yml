@@ -1,0 +1,57 @@
+
+
+
+# ADMIN COMMANDS
+msg:
+  no_permission: "&cNo tienes permiso para usar este comando."
+  only_in_game: "&cEste comando solo puede usarse en el juego."
+  usage_lang: "&eUso: /clansadmin lang"
+  console_reload_only: "&cLa consola solo puede usar: &f/cla reload"
+  plugin_reloaded: "&aPlugin y todos los archivos recargados."
+
+  # RELOAD COMMAND
+  confirm_clear_1: "&e¿Estás seguro de borrar todos los datos de clanes?"
+  confirm_clear_2: "&eUsa &c/cla clear &eotra vez para confirmar."
+  data_cleared: "&aTodos los datos relacionados con clanes fueron eliminados de MariaDB."
+  error_clearing_data: "&cError al borrar los datos de MariaDB."
+
+  # HELP COMMAND
+  help:
+    commands:
+      - "&8&m====================================="
+      - "&8&l» &a&lꜱᴀᴛɪᴘᴏ&6&lᴄʟᴀɴꜱ &c&lᴀᴅᴍɪɴ &8&l«"
+      - "&8&m====================================="
+      - "&e/cla reports &7» &fᴍᴜᴇꜱᴛʀᴀ ᴛᴏᴅᴏꜱ ʟᴏꜱ ᴄʟᴀɴᴇꜱ ᴄᴏɴ ʀᴇᴘᴏʀᴛᴇꜱ ᴀᴄᴛɪᴠᴏꜱ."
+      - "&e/cla reload &7» &fʀᴇᴄᴀʀɢᴀ ʟᴀ ᴄᴏɴꜰɪɢᴜʀᴀᴄɪᴏ́ɴ ʏ ᴅᴀᴛᴏꜱ ᴅᴇʟ ᴘʟᴜɢɪɴ."
+      - "&e/cla ban <clan> [razón] &7» &fᴘʀᴏʜɪ́ʙᴇ ᴜɴ ᴄʟᴀɴ ᴘᴇʀᴍᴀɴᴇɴᴛᴇᴍᴇɴᴛᴇ (ᴘᴇʀᴍɪꜱᴏ ᴘᴏʀ ᴅᴇꜰᴇᴄᴛᴏ)."
+      - "&e/cla unban <clan> &7» &fʟᴇᴠᴀɴᴛᴀ ʟᴀ ᴘʀᴏʜɪʙɪᴄɪᴏ́ɴ ᴅᴇ ᴜɴ ᴄʟᴀɴ."
+      - "&e/cla clear &7» &c⚠ ʙᴏʀʀᴀ ᴛᴏᴅᴀ ʟᴀ ʙᴀꜱᴇ ᴅᴇ ᴅᴀᴛᴏꜱ ᴍᴀʀɪᴀᴅʙ (¡ᴜꜱᴀʀ ᴄᴏɴ ᴇxᴛʀᴇᴍᴀ ᴘʀᴇᴄᴀᴜᴄɪᴏ́ɴ!)."
+      - "&8&m====================================="
+  
+  # REPORTS COMMAND
+  no_reports: "&aNo hay clanes con reportes."
+  reports_title: "&e--- &6Reportes de Clanes &e---"
+  clan_colon: "&6{clan}:"
+  report_reason: "  &7- &f{reason}"
+  error_loading_reports: "&cError al cargar los reportes."
+
+  # BAN COMMANDS
+  usage_ban: "&cUso: /cla ban <clan> [razón]"
+  clan_not_exist: "&cEl clan '{clan}' no existe."
+  clan_banned: "&cEl clan '{clan}' ha sido baneado."
+  error_banning_clan: "&cError al banear el clan."
+  kicked_ban_message: "&cHas sido expulsado de tu clan."
+
+
+
+
+# LANG COMMANDS
+lang:
+  usage: "&eUso: /clansadmin lang <código>"
+  lang_list_title: "&eLista de idiomas disponibles:"
+  actual_lang: "&eIdioma actual:"
+  selected_lang: "Idioma seleccionado"
+  select_lang: "Click para seleccionar"
+  lang_changed: "&aIdioma cambiado a"
+  no_permission: "&cNo tienes permiso para usar este comando."
+  lang_not_found: "&cIdioma no encontrado."

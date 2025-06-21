@@ -121,8 +121,8 @@ public class CCMD implements CommandExecutor, TabCompleter {
             this.edit(player, playerClan, args);
         } else if (args[0].equalsIgnoreCase("kick")) {
             this.kick(sender, args);
-        } else if (args[0].equalsIgnoreCase("economy")) {
-            this.Economy(player, playerClan, args);
+        /*} else if (args[0].equalsIgnoreCase("economy")) {
+            this.Economy(player, playerClan, args); */
         } else if (args[0].equalsIgnoreCase("invite")) {
             if (args.length != 2) {
                 sender.sendMessage(MSG.color(prefix + "&c USO: /cls invite <jugador>"));
@@ -535,7 +535,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
     }
 
 
-    private void Economy(Player player, String clan, String[] args) {
+    /* private void Economy(Player player, String clan, String[] args) {
         if (args.length != 3) {
             player.sendMessage(MSG.color(prefix + "&c USO: /cls economy <depositar|retirar> <cantidad>"));
             return;
@@ -628,7 +628,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
             e.printStackTrace();
             player.sendMessage(MSG.color(prefix + "&c Ocurrió un error al procesar la acción de economía."));
         }
-    }
+    } */
 
     private void inviteToClan(CommandSender sender, String playerToInvite) {
         String prefix = SatipoClan.prefix;
@@ -1578,7 +1578,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
         switch (args.length) {
             case 1 -> completions.addAll(List.of(
                     "create", "disband", "report", "list", "join",
-                    "kick", "invite", "chat", "leave", "stats", "resign", "edit", "economy",
+                    "kick", "invite", "chat", "leave", "stats", "resign", "edit",
                     "ff", "ally", "help"
             ));
 
@@ -1591,7 +1591,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
                     case "invite", "kick" -> {
                         if (isInClan(playerClan) && isLeader(player, playerClan)) completions.addAll(getOnlinePlayerNames());
                     }
-                    case "economy" -> completions.addAll(List.of("deposit", "withdraw"));
+                    //case "economy" -> completions.addAll(List.of("deposit", "withdraw"));
                     case "report", "allyremove" -> completions.addAll(SatipoClan.getInstance().getMariaDBManager().getCachedClanNames());
                     case "edit" -> {
                         if (isInClan(playerClan) && isLeader(player, playerClan)) {

@@ -1,0 +1,103 @@
+package me.lewisainsworth.satipoclans.CMDs;
+
+import me.lewisainsworth.satipoclans.SatipoClan;
+import me.lewisainsworth.satipoclans.Utils.LangManager;
+import me.lewisainsworth.satipoclans.Utils.MSG;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.HoverEvent;
+import org.bukkit.command.*;
+import org.bukkit.entity.Player;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.List;
+
+
+public class LangCMD implements CommandExecutor {
+
+    private final SatipoClan plugin;
+    private final LangManager langManager;
+
+    // Mapa para mostrar nombre legible de idiomas
+    private final Map<String, String> languageNames = Map.of(
+            "es", "Español",
+            "en", "English"
+            // Podés agregar más idiomas aquí, ej: "fr", "Français"
+    );
+
+    public LangCMD(SatipoClan plugin) {
+        this.plugin = plugin;
+        this.langManager = plugin.getLangManager();
+    }
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(MSG.color(langManager.getMessage("lang.lang_not_found")));
+            return true;
+        }
+        Player p = (Player) sender;
+
+        if (!p.hasPermission("satipoclans.admin")) {
+            p.sendMessage(MSG.color(langManager.getMessage("lang.no_permission")));
+            return true;
+        }
+
+        showLanguageMenu(p);
+        return true;
+    }
+
+
+    public void showLanguageMenu(Player player) {
+        player.sendMessage(MSG.color("&6&m-----------------------------"));
+        player.sendMessage(MSG.color("&e Idioma actual: &a" + langManager.getCurrentLang().toUpperCase()
+            + " - " + languageNames.getOrDefault(langManager.getCurrentLang(), "Unknown")));
+        player.sendMessage(MSG.color(langManager.getMessage("lang.lang_list_title")));
+
+        for (String lang : langManager.getAvailableLangs()) {
+            String displayName = languageNames.getOrDefault(lang, lang.toUpperCase());
+            boolean isSelected = lang.equalsIgnoreCase(langManager.getCurrentLang());
+
+            TextComponent line = new TextComponent("» ");
+            line.setColor(net.md_5.bungee.api.ChatColor.GOLD);
+
+            TextComponent langText = new TextComponent(lang.toUpperCase() + " - " + displayName);
+            langText.setColor(isSelected ? net.md_5.bungee.api.ChatColor.GREEN : net.md_5.bungee.api.ChatColor.YELLOW);
+            if (isSelected) langText.setBold(true);
+
+            langText.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                new TextComponent[] {
+                    new TextComponent(isSelected ? "Idioma seleccionado" : "Click para seleccionar")
+                }));
+
+            langText.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/clansadmin lang select " + lang));
+
+            line.addExtra(langText);
+
+            if (isSelected) {
+                TextComponent check = new TextComponent(" ✓");
+                check.setColor(net.md_5.bungee.api.ChatColor.GREEN);
+                line.addExtra(check);
+            }
+
+            player.spigot().sendMessage(line);
+        }
+
+        player.sendMessage(MSG.color("&6&m-----------------------------"));
+    }
+
+
+    // Este método debe llamarse desde el main o desde ACMD al detectar /clansadmin lang select <lang>
+    public void setLanguageCommand(Player player, String lang) {
+        if (!langManager.getAvailableLangs().contains(lang)) {
+            player.sendMessage(MSG.color(langManager.getMessage("lang.lang_not_found")));
+            return;
+        }
+        langManager.setCurrentLang(lang);
+        player.sendMessage(MSG.color("&aIdioma cambiado a " + lang.toUpperCase()
+                + " - " + languageNames.getOrDefault(lang, "Unknown")));
+    }
+    
+}

@@ -9,67 +9,97 @@ import java.util.*;
 public class LangManager {
 
     private final SatipoClan plugin;
-    private final Map<UUID, String> playerLanguages = new HashMap<>();
     private final Map<String, YamlConfiguration> loadedLangs = new HashMap<>();
-    private final String defaultLang = "es";
+    private String currentLang;
 
     public LangManager(SatipoClan plugin) {
         this.plugin = plugin;
+        this.currentLang = plugin.getConfig().getString("lang", "es").toLowerCase(Locale.ROOT);
         loadLangs();
     }
 
     private void loadLangs() {
         File langFolder = new File(plugin.getDataFolder(), "lang");
-        if (!langFolder.exists()) langFolder.mkdirs();
-
-        for (File file : Objects.requireNonNull(langFolder.listFiles())) {
-            if (file.getName().endsWith(".yml")) {
-                String langName = file.getName().replace(".yml", "");
-                loadedLangs.put(langName, YamlConfiguration.loadConfiguration(file));
-            }
+        if (!langFolder.exists() && !langFolder.mkdirs()) {
+            plugin.getLogger().warning("No se pudo crear la carpeta /lang/");
+            return;
         }
 
-        if (loadedLangs.isEmpty()) {
+        loadedLangs.clear();
+
+        File[] files = langFolder.listFiles(file -> file.getName().toLowerCase(Locale.ROOT).endsWith(".yml"));
+        if (files == null || files.length == 0) {
             plugin.getLogger().warning("No se encontraron archivos de idioma en /lang/");
+            return;
+        }
+
+        for (File file : files) {
+            String langName = file.getName().replace(".yml", "").toLowerCase(Locale.ROOT);
+            YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+            loadedLangs.put(langName, config);
+        }
+
+        // Si el idioma configurado no existe, fallback a "es"
+        if (!loadedLangs.containsKey(currentLang)) {
+            currentLang = "es";
+            plugin.getConfig().set("lang", currentLang);
+            plugin.saveConfig();
+            plugin.getLogger().info("Idioma configurado no encontrado. Se usará el idioma por defecto: " + currentLang);
         }
     }
 
-    public String getMessage(UUID uuid, String path) {
-        String lang = playerLanguages.getOrDefault(uuid, defaultLang);
-        YamlConfiguration config = loadedLangs.getOrDefault(lang, loadedLangs.get(defaultLang));
-        String prefix = plugin.getConfig().getString("prefix", "&7 [&a&lꜱᴀᴛɪᴘᴏ&6&lᴄʟᴀɴꜱ&7]&n");
-        String msg = config.getString(path);
+    public String getMessage(String path) {
+        YamlConfiguration config = loadedLangs.get(currentLang);
+        if (config == null) {
+            plugin.getLogger().warning("Archivo de idioma no encontrado para: " + currentLang);
+            return "&c[LangManager] Idioma '" + currentLang + "' no encontrado.";
+        }
 
-        if (msg == null) return prefix + " &c¡Mensaje no encontrado! [" + path + "]";
-        return prefix + " " + msg;
+        String msg = config.getString(path);
+        if (msg == null) {
+            plugin.getLogger().warning("Mensaje no encontrado en " + currentLang + ": " + path);
+            return "&c¡Mensaje no encontrado! [" + path + "]";
+        }
+
+        return msg;
     }
 
-    public List<String> getMessageList(UUID uuid, String path) {
-        String lang = playerLanguages.getOrDefault(uuid, defaultLang);
-        YamlConfiguration config = loadedLangs.getOrDefault(lang, loadedLangs.get(defaultLang));
+    public String getMessageWithPrefix(String path) {
+        String prefix = plugin.getConfig().getString("prefix", "&7[SatipoClans]");
+        return prefix + " " + getMessage(path);
+    }
+
+
+    public List<String> getMessageList(String path) {
+        YamlConfiguration config = loadedLangs.getOrDefault(currentLang, loadedLangs.get("es"));
+        if (config == null) {
+            return Collections.singletonList("&c[LangManager] Idioma no cargado.");
+        }
+
         List<String> list = config.getStringList(path);
-        String prefix = plugin.getConfig().getString("prefix", "&7 [&a&lꜱᴀᴛɪᴘᴏ&6&lᴄʟᴀɴꜱ&7]&n");
 
         if (list.isEmpty()) {
-            return List.of(prefix + " &c¡Mensaje de lista no encontrado! [" + path + "]");
+            return List.of("&c¡Mensaje de lista no encontrado! [" + path + "]");
         }
 
-        return list.stream().map(line -> prefix + " " + line).toList();
+        return list;
     }
 
-    public void setPlayerLang(UUID uuid, String lang) {
-        playerLanguages.put(uuid, lang);
+
+    public void setCurrentLang(String lang) {
+        lang = lang.toLowerCase(Locale.ROOT);
+        if (!loadedLangs.containsKey(lang)) return;
+        this.currentLang = lang;
+        plugin.getConfig().set("lang", lang);
+        plugin.saveConfig();
+        plugin.getLogger().info("Idioma cambiado a: " + lang);
     }
 
-    public String getPlayerLang(UUID uuid) {
-        return playerLanguages.getOrDefault(uuid, defaultLang);
+    public String getCurrentLang() {
+        return currentLang;
     }
 
-    public Set<String> getAvailableLanguages() {
-        return loadedLangs.keySet();
-    }
-
-    public boolean isValidLanguage(String lang) {
-        return loadedLangs.containsKey(lang);
+    public Set<String> getAvailableLangs() {
+        return Collections.unmodifiableSet(loadedLangs.keySet());
     }
 }

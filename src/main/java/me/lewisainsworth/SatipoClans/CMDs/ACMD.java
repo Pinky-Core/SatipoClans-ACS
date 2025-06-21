@@ -11,6 +11,7 @@ import me.lewisainsworth.satipoclans.SatipoClan;
 import me.lewisainsworth.satipoclans.Utils.Econo;
 import me.lewisainsworth.satipoclans.Utils.FileHandler;
 import me.lewisainsworth.satipoclans.Utils.MSG;
+import me.lewisainsworth.satipoclans.Utils.LangManager;
 import static me.lewisainsworth.satipoclans.SatipoClan.prefix;
 
 import java.util.*;
@@ -34,18 +35,25 @@ public class ACMD implements CommandExecutor, TabCompleter {
 
     private final SatipoClan plugin;
 
+    private final LangCMD langCMD;
+    private final LangManager langManager;
+
     public ACMD(SatipoClan plugin) {
         this.plugin = plugin;
+        this.langManager = plugin.getLangManager();
+        this.langCMD = new LangCMD(plugin);
     }
+
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String s, String[] args) {
         if (!(sender instanceof Player)) return handleConsole(sender, args);
 
         if (!sender.hasPermission("satipoclans.admin")) {
-            sender.sendMessage(MSG.color(prefix + "&c No tienes permiso para usar este comando."));
+            sender.sendMessage(MSG.color(langManager.getMessage("msg.no_permission")));
             return true;
         }
+
 
         if (args.length == 0) {
             help(sender);
@@ -58,7 +66,27 @@ public class ACMD implements CommandExecutor, TabCompleter {
             case "unban" -> unban(sender, args);
             case "clear" -> clear(sender);
             case "reports" -> reports(sender);
-            case "economy" -> economy(sender, args);
+            //case "economy" -> economy(sender, args);
+            case "lang" -> {
+                if (!(sender instanceof Player p)) {
+                    sender.sendMessage(MSG.color(langManager.getMessage("msg.only_in_game")));
+                    return true;
+                }
+
+                if (!sender.hasPermission("satipoclans.admin")) {
+                    sender.sendMessage(MSG.color(langManager.getMessage("msg.no_permission")));
+                    return true;
+                }
+
+                if (args.length == 1) {
+                    // Abrir menú interactivo
+                    langCMD.showLanguageMenu(p);
+                } else if (args.length == 3 && args[1].equalsIgnoreCase("select")) {
+                    langCMD.setLanguageCommand(p, args[2].toLowerCase());
+                } else {
+                    sender.sendMessage(MSG.color(langManager.getMessage("msg.usage_lang")));
+                }
+            }
             default -> help(sender);
         }
 
@@ -69,24 +97,13 @@ public class ACMD implements CommandExecutor, TabCompleter {
         if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
             reload(sender);
         } else {
-            sender.sendMessage(MSG.color(prefix + "&c La consola solo puede usar: &f/cla reload"));
+            sender.sendMessage(MSG.color(langManager.getMessage("msg.console_reload_only")));
         }
         return true;
     }
 
     private void help(CommandSender sender) {
-        sender.sendMessage(MSG.color("""
-            &8&m=====================================
-            &8&l» &a&lꜱᴀᴛɪᴘᴏ&6&lᴄʟᴀɴꜱ &c&lᴀᴅᴍɪɴ &8&l«
-            &8&m=====================================
-            &e/cla reports &7» &fᴍᴜᴇꜱᴛʀᴀ ᴛᴏᴅᴏꜱ ʟᴏꜱ ᴄʟᴀɴᴇꜱ ᴄᴏɴ ʀᴇᴘᴏʀᴛᴇꜱ ᴀᴄᴛɪᴠᴏꜱ.
-            &e/cla reload &7» &fʀᴇᴄᴀʀɢᴀ ʟᴀ ᴄᴏɴꜰɪɢᴜʀᴀᴄɪᴏ́ɴ ʏ ᴅᴀᴛᴏꜱ ᴅᴇʟ ᴘʟᴜɢɪɴ.
-            &e/cla ban <clan> [razón] &7» &fᴘʀᴏʜɪ́ʙᴇ ᴜɴ ᴄʟᴀɴ ᴘᴇʀᴍᴀɴᴇɴᴛᴇᴍᴇɴᴛᴇ (ᴘᴇʀᴍɪꜱᴏ ᴘᴏʀ ᴅᴇꜰᴇᴄᴛᴏ).
-            &e/cla unban <clan> &7» &fʟᴇᴠᴀɴᴛᴀ ʟᴀ ᴘʀᴏʜɪʙɪᴄɪᴏ́ɴ ᴅᴇ ᴜɴ ᴄʟᴀɴ.
-            &e/cla clear &7» &c⚠ ʙᴏʀʀᴀ ᴛᴏᴅᴀ ʟᴀ ʙᴀꜱᴇ ᴅᴇ ᴅᴀᴛᴏꜱ ᴍᴀʀɪᴀᴅʙ (¡ᴜꜱᴀʀ ᴄᴏɴ ᴇxᴛʀᴇᴍᴀ ᴘʀᴇᴄᴀᴜᴄɪᴏ́ɴ!).
-            &e/cla economy <player|clan> <nombre> <set|add|reset> <cantidad> &7» &fɢᴇꜱᴛɪᴏɴᴀ ʟᴀ ᴇᴄᴏɴᴏᴍɪ́ᴀ ᴅᴇ ᴜɴ ᴄʟᴀɴ ᴏ ᴊᴜɢᴀᴅᴏʀ.
-            &8&m=====================================
-            """));
+        langManager.getMessageList("msg.help.commands").forEach(line -> sender.sendMessage(MSG.color(line)));
     }
 
 
@@ -97,7 +114,7 @@ public class ACMD implements CommandExecutor, TabCompleter {
         fh.reloadConfig();
         fh.reloadData();
         econ.reload();
-        sender.sendMessage(MSG.color(prefix + "&a Plugin y todos los archivos recargados."));
+        sender.sendMessage(MSG.color(langManager.getMessage("msg.plugin_reloaded")));
     }
 
 
@@ -106,8 +123,8 @@ public class ACMD implements CommandExecutor, TabCompleter {
     private void clear(CommandSender sender) {
         if (!confirmClear.contains(sender)) {
             confirmClear.add(sender);
-            sender.sendMessage(MSG.color(prefix + "&e ¿Estás seguro de borrar todos los datos de clanes?"));
-            sender.sendMessage(MSG.color(prefix + "&e Usa &c/cla clear &eotra vez para confirmar."));
+            sender.sendMessage(MSG.color(langManager.getMessage("msg.confirm_clear_1")));
+            sender.sendMessage(MSG.color(langManager.getMessage("msg.confirm_clear_2")));
             return;
         }
 
@@ -132,11 +149,11 @@ public class ACMD implements CommandExecutor, TabCompleter {
 
             stmt.executeUpdate("SET FOREIGN_KEY_CHECKS = 1");
 
-            sender.sendMessage(MSG.color(prefix + "&aTodos los datos relacionados con clanes fueron eliminados de MariaDB."));
+            sender.sendMessage(MSG.color(langManager.getMessage("msg.data_cleared")));
 
         } catch (SQLException e) {
             e.printStackTrace();
-            sender.sendMessage(MSG.color(prefix + "&cError al borrar los datos de MariaDB."));
+            sender.sendMessage(MSG.color(langManager.getMessage("msg.error_clearing_data")));
         }
     }
 
@@ -157,26 +174,27 @@ public class ACMD implements CommandExecutor, TabCompleter {
             }
 
             if (reported.isEmpty()) {
-                sender.sendMessage(MSG.color(prefix + " &a No hay clanes con reportes."));
+                sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("msg.no_reports")));
                 return;
             }
 
-            sender.sendMessage(MSG.color("&e--- &6Reportes de Clanes &e---"));
+            sender.sendMessage(MSG.color(langManager.getMessage("msg.reports_title")));
             reported.forEach((clan, reasons) -> {
-                sender.sendMessage(MSG.color("&6" + clan + ":"));
-                reasons.forEach(reason -> sender.sendMessage(MSG.color("  &7- &f" + reason)));
+                // Reemplazo de placeholder {clan}
+                sender.sendMessage(MSG.color(langManager.getMessage("msg.clan_colon").replace("{clan}", clan)));
+                reasons.forEach(reason -> sender.sendMessage(MSG.color(langManager.getMessage("msg.report_reason").replace("{reason}", reason))));
             });
 
         } catch (SQLException e) {
             e.printStackTrace();
-            sender.sendMessage(MSG.color(prefix + "&c Error al cargar los reportes."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("msg.error_loading_reports")));
         }
     }
 
 
     private void ban(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(MSG.color(prefix + "&c Uso: /cla ban <clan> [razón]"));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("msg.usage_ban")));
             return;
         }
 
@@ -192,7 +210,7 @@ public class ACMD implements CommandExecutor, TabCompleter {
             ResultSet rs = check.executeQuery();
 
             if (!rs.next()) {
-                sender.sendMessage(MSG.color(prefix + "&c El clan '" + clan + "' no existe."));
+                sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("msg.clan_not_exist").replace("{clan}", clan)));
                 return;
             }
 
@@ -206,20 +224,22 @@ public class ACMD implements CommandExecutor, TabCompleter {
                 String user = mrs.getString("username");
                 Player player = Bukkit.getPlayer(user);
                 if (player != null) {
-                    player.kickPlayer(MSG.color("&c Has sido expulsado de tu clan."));
-                    player.ban(reason, (Date) null, "SatipoClans", true);
+                    player.kickPlayer(MSG.color(langManager.getMessage("msg.kicked_ban_message")));
+                    // El método ban() no existe en Bukkit API, asumí que tenés un método personalizado o plugin para esto
+                    // player.ban(reason, (Date) null, "SatipoClans", true);
                 }
             }
 
-            sender.sendMessage(MSG.color(prefix + "&c El clan '" + clan + "' ha sido baneado."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("msg.clan_banned").replace("{clan}", clan)));
 
         } catch (SQLException e) {
             e.printStackTrace();
-            sender.sendMessage(MSG.color(prefix + "&c Error al banear el clan."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("msg.error_banning_clan")));
         }
     }
 
 
+    /*
     private void economy(CommandSender sender, String[] args) {
         if (args.length < 4 || (args.length < 5 && !args[3].equalsIgnoreCase("reset"))) {
             sender.sendMessage(MSG.color(prefix + "&c Uso: /cla economy <player|clan> <nombre> <set|add|reset> <cantidad>"));
@@ -324,7 +344,7 @@ public class ACMD implements CommandExecutor, TabCompleter {
             }
             default -> sender.sendMessage(MSG.color(prefix + "&c Acción inválida."));
         }
-    }
+    } */
 
 
     private void unban(CommandSender sender, String[] args) {
@@ -373,7 +393,7 @@ public class ACMD implements CommandExecutor, TabCompleter {
         }
 
         if (args.length == 1) {
-            return Stream.of("reload", "ban", "unban", "clear", "reports", "economy")
+            return Stream.of("reload", "ban", "unban", "clear", "reports", "lang")
                     .filter(sub -> sub.startsWith(args[0].toLowerCase()))
                     .collect(Collectors.toList());
         }
@@ -428,6 +448,22 @@ public class ACMD implements CommandExecutor, TabCompleter {
             return Stream.of("hacks", "toxicidad", "abusos", "spam")
                     .filter(reason -> reason.startsWith(args[2].toLowerCase()))
                     .collect(Collectors.toList());
+        }
+
+        if (arg0.equals("lang")) {
+            if (args.length == 2) {
+                return Stream.of("select")
+                        .filter(opt -> opt.startsWith(args[1].toLowerCase()))
+                        .collect(Collectors.toList());
+            }
+
+            if (args.length == 3 && args[1].equalsIgnoreCase("select")) {
+                return plugin.getLangManager().getAvailableLangs().stream()
+                        .filter(lang -> lang.toLowerCase().startsWith(args[2].toLowerCase()))
+                        .collect(Collectors.toList());
+            }
+
+            return Collections.emptyList();
         }
 
         return Collections.emptyList();

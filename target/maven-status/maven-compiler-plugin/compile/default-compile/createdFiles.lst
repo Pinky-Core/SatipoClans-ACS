@@ -6,6 +6,7 @@ me\lewisainsworth\satipoclans\Database\MariaDBManager.class
 me\lewisainsworth\satipoclans\Events\Events.class
 me\lewisainsworth\satipoclans\Utils\ClanUtils.class
 me\lewisainsworth\satipoclans\Utils\Metrics$MetricsBase.class
+me\lewisainsworth\satipoclans\CMDs\LangCMD.class
 me\lewisainsworth\satipoclans\CMDs\ACMD.class
 me\lewisainsworth\satipoclans\CMDs\PECMD.class
 me\lewisainsworth\satipoclans\Utils\Metrics$CustomChart.class

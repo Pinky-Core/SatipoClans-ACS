@@ -31,3 +31,64 @@ permissions:
   satipoclans.user:
     description: Acceso a comandos de usuario.
     default: true
+
+  # Permisos específicos para comandos/clanes
+  satipoclans.create:
+    description: Permiso para crear un clan.
+    default: true
+
+  satipoclans.list:
+    description: Permiso para listar clanes.
+    default: true
+
+  satipoclans.join:
+    description: Permiso para unirse a un clan.
+    default: true
+
+  satipoclans.leave:
+    description: Permiso para salir de un clan.
+    default: true
+
+  satipoclans.disband:
+    description: Permiso para disolver un clan.
+    default: op
+
+  satipoclans.kick:
+    description: Permiso para expulsar a un miembro de un clan.
+    default: op
+
+  satipoclans.ally:
+    description: Permiso para gestionar alianzas.
+    default: op
+
+  satipoclans.ff:
+    description: Permiso para configurar fuego amigo.
+    default: op
+
+  satipoclans.chat:
+    description: Permiso para usar chat de clan.
+    default: true
+
+  satipoclans.stats:
+    description: Permiso para ver estadísticas de clanes.
+    default: true
+
+  satipoclans.invite:
+    description: Permiso para invitar jugadores a un clan.
+    default: true
+
+  satipoclans.accept:
+    description: Permiso para aceptar invitaciones a clanes.
+    default: true
+
+  satipoclans.decline:
+    description: Permiso para rechazar invitaciones a clanes.
+    default: true
+
+  satipoclans.resign:
+    description: Permiso para renunciar a un clan.
+    default: true
+
+  satipoclans.report:
+    description: Permiso para reportar clanes.
+    default: true

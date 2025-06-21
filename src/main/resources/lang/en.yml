@@ -1,0 +1,5 @@
+msg:
+  no_permission: "&cNo tienes permiso para usar este comando."
+  lang_not_found: "&cIdioma no encontrado."
+  only_in_game: "&cEste comando solo puede usarse en el juego."
+  usage_lang: "&eUso: /clansadmin lang"
