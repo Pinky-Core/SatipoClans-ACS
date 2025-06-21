@@ -286,16 +286,20 @@ public class CCMD implements CommandExecutor, TabCompleter {
 
     public void kick(CommandSender sender, String[] args) {
         if (args.length != 2) {
-            sender.sendMessage(MSG.color(prefix + "&c &lUSO:&f /cls kick <jugador>"));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.usage_kick")));
             return;
         }
 
         String target = args[1];
-        Player player = (Player) sender;
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.console_command_only")));
+            return;
+        }
+
         String clanName = getPlayerClan(player.getName());
 
         if (clanName == null) {
-            sender.sendMessage(MSG.color(prefix + "&c No perteneces a ningún clan."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_clan")));
             return;
         }
 
@@ -308,12 +312,12 @@ public class CCMD implements CommandExecutor, TabCompleter {
             checkLeader.setString(1, clanName);
             ResultSet rs = checkLeader.executeQuery();
             if (rs.next() && !rs.getString("leader").equalsIgnoreCase(player.getName())) {
-                sender.sendMessage(MSG.color(prefix + "&c Solo el líder del clan puede expulsar miembros."));
+                sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.kick_only_leader")));
                 return;
             }
 
             if (target.equalsIgnoreCase(player.getName())) {
-                sender.sendMessage(MSG.color(prefix + "&c No puedes expulsarte a ti mismo. Usa /cls leave."));
+                sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.kick_cant_kick_self")));
                 return;
             }
 
@@ -321,32 +325,35 @@ public class CCMD implements CommandExecutor, TabCompleter {
             removeUser.setString(2, clanName);
             int removed = removeUser.executeUpdate();
             if (removed == 0) {
-                sender.sendMessage(MSG.color(prefix + "&c El jugador no es miembro del clan."));
+                sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.kick_player_not_member")));
                 return;
             }
 
-            sender.sendMessage(MSG.color(prefix + "&2 El jugador &e&l" + target + " &2ha sido expulsado del clan &e&l" + clanName));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.kick_success")
+                .replace("{player}", target)
+                .replace("{clan}", clanName)));
 
             countUsers.setString(1, clanName);
             ResultSet count = countUsers.executeQuery();
             if (count.next() && count.getInt("total") == 0) {
                 deleteClan.setString(1, clanName);
                 deleteClan.executeUpdate();
-                sender.sendMessage(MSG.color(prefix + "&2 El clan está vacío. Ha sido eliminado."));
+                sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.kick_clan_deleted")));
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
-            sender.sendMessage(MSG.color(prefix + "&c Ocurrió un error al expulsar."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.kick_error")));
         }
     }
+
 
 
     public void resign(CommandSender sender, String playerClan) {
         String playerName = sender.getName();
 
         if (playerClan == null) {
-            sender.sendMessage(MSG.color(prefix + "&c No perteneces a ningún clan."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_clan")));
             return;
         }
 
@@ -360,7 +367,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
             checkLeader.setString(1, playerClan);
             ResultSet rs = checkLeader.executeQuery();
             if (!rs.next() || !rs.getString("leader").equalsIgnoreCase(playerName)) {
-                sender.sendMessage(MSG.color(prefix + "&c No eres el líder del clan."));
+                sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.resign_not_leader")));
                 return;
             }
 
@@ -373,20 +380,22 @@ public class CCMD implements CommandExecutor, TabCompleter {
                 updateLeader.setString(1, newLeader);
                 updateLeader.setString(2, playerClan);
                 updateLeader.executeUpdate();
-                sender.sendMessage(MSG.color(prefix + "&c ¡Has renunciado al liderazgo! El nuevo líder es " + newLeader));
+                sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.resign_success")
+                    .replace("{newLeader}", newLeader)));
             } else {
                 deleteUsers.setString(1, playerClan);
                 deleteUsers.executeUpdate();
                 deleteClan.setString(1, playerClan);
                 deleteClan.executeUpdate();
-                sender.sendMessage(MSG.color(prefix + "&c Clan eliminado por no tener miembros."));
+                sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.resign_clan_deleted")));
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
-            sender.sendMessage(MSG.color(prefix + "&c Error al renunciar."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.resign_error")));
         }
     }
+
 
 
 //    public void wars(CommandSender sender, String[] args, String playerClan) {
@@ -555,7 +564,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
 //        data.set("Wars." + otherClan + ".Ally.Alliance", allianceOtherClan);
 //    }
 
-    public void stats(CommandSender sender, String clanName) {
+   public void stats(CommandSender sender, String clanName) {
         try (Connection con = plugin.getMariaDBManager().getConnection();
             PreparedStatement clanStmt = con.prepareStatement("SELECT founder, leader, privacy, money FROM clans WHERE name=?");
             PreparedStatement membersStmt = con.prepareStatement("SELECT username FROM clan_users WHERE clan=?")) {
@@ -564,7 +573,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
             ResultSet clanRs = clanStmt.executeQuery();
 
             if (!clanRs.next()) {
-                sender.sendMessage(MSG.color(prefix + "&c No se encontró un clan con ese nombre."));
+                sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.stats_not_found")));
                 return;
             }
 
@@ -573,29 +582,31 @@ public class CCMD implements CommandExecutor, TabCompleter {
             String privacy = clanRs.getString("privacy");
             double money = clanRs.getDouble("money");
 
-            sender.sendMessage(MSG.color("&8"));
-            sender.sendMessage(MSG.color("&8&m===================================================="));
-            sender.sendMessage(MSG.color("&8&l» &e&lEstadísticas: &b" + clanName + "&8&l «"));
-            sender.sendMessage(MSG.color("&8&m===================================================="));
-            sender.sendMessage(MSG.color("&7Fundador: &f" + founder));
-            sender.sendMessage(MSG.color("&7Líder: &f" + leader));
-            sender.sendMessage(MSG.color("&7Privacidad: &f" + privacy));
-            sender.sendMessage(MSG.color("&7Dinero del clan: &a$" + money));
+            sender.sendMessage(MSG.color(""));
+            sender.sendMessage(MSG.color(langManager.getMessage("user.stats_border")));
+            sender.sendMessage(MSG.color(langManager.getMessage("user.stats_title").replace("{clan}", clanName)));
+            sender.sendMessage(MSG.color(langManager.getMessage("user.stats_border")));
+            sender.sendMessage(MSG.color(langManager.getMessage("user.stats_founder").replace("{founder}", founder)));
+            sender.sendMessage(MSG.color(langManager.getMessage("user.stats_leader").replace("{leader}", leader)));
+            sender.sendMessage(MSG.color(langManager.getMessage("user.stats_privacy").replace("{privacy}", privacy)));
+            sender.sendMessage(MSG.color(langManager.getMessage("user.stats_money").replace("{money}", String.format("%.2f", money))));
 
             membersStmt.setString(1, clanName);
             ResultSet members = membersStmt.executeQuery();
-            sender.sendMessage(MSG.color("&2Miembros:"));
+
+            sender.sendMessage(MSG.color(langManager.getMessage("user.stats_members_title")));
             while (members.next()) {
-                sender.sendMessage(MSG.color("&f- &l" + members.getString("username")));
+                sender.sendMessage(MSG.color(langManager.getMessage("user.stats_member_line").replace("{member}", members.getString("username"))));
             }
 
-            sender.sendMessage(MSG.color("&2================== " + prefix + "&2=================="));
+            sender.sendMessage(MSG.color(langManager.getMessage("user.stats_footer")));
 
         } catch (SQLException e) {
             e.printStackTrace();
-            sender.sendMessage(MSG.color(prefix + "&c Error al cargar las estadísticas del clan."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.stats_error")));
         }
     }
+
 
 
     /* private void Economy(Player player, String clan, String[] args) {
@@ -697,7 +708,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
         String prefix = SatipoClan.prefix;
 
         if (!(sender instanceof Player inviter)) {
-            sender.sendMessage(MSG.color(prefix + "&c Solo los jugadores pueden enviar invitaciones."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.only_players_invite")));
             return;
         }
 
@@ -705,29 +716,28 @@ public class CCMD implements CommandExecutor, TabCompleter {
         String inviterClan = plugin.getMariaDBManager().getCachedPlayerClan(inviterName);
 
         if (inviterClan == null) {
-            sender.sendMessage(MSG.color(prefix + "&c No estás en un clan."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_clan")));
             return;
         }
 
         if (playerToInvite.equalsIgnoreCase(inviterName)) {
-            sender.sendMessage(MSG.color(prefix + "&c ¡No puedes invitarte a ti mismo!"));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.cant_invite_self")));
             return;
         }
 
         Player invitedPlayer = Bukkit.getPlayerExact(playerToInvite);
         if (invitedPlayer == null || !invitedPlayer.isOnline()) {
-            sender.sendMessage(MSG.color(prefix + "&c El jugador no está en línea."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.player_not_online")));
             return;
         }
 
         String invitedPlayerClan = plugin.getMariaDBManager().getCachedPlayerClan(playerToInvite);
         if (invitedPlayerClan != null) {
-            sender.sendMessage(MSG.color(prefix + "&c Ese jugador ya pertenece a otro clan."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.player_in_other_clan")));
             return;
         }
 
         try (Connection con = plugin.getMariaDBManager().getConnection()) {
-            // Chequear invitación vigente (menos de 5 minutos)
             String checkSql = "SELECT invite_time FROM clan_invites WHERE clan=? AND username=?";
             try (PreparedStatement checkStmt = con.prepareStatement(checkSql)) {
                 checkStmt.setString(1, inviterClan);
@@ -737,10 +747,9 @@ public class CCMD implements CommandExecutor, TabCompleter {
                         long inviteTime = rs.getLong("invite_time");
                         long currentTime = System.currentTimeMillis();
                         if (currentTime - inviteTime < 5 * 60 * 1000) {
-                            sender.sendMessage(MSG.color(prefix + "&c Este jugador ya tiene una invitación pendiente."));
+                            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.invite_pending")));
                             return;
                         } else {
-                            // Invitación expirada, eliminarla para reemplazarla
                             String deleteSql = "DELETE FROM clan_invites WHERE clan=? AND username=?";
                             try (PreparedStatement delStmt = con.prepareStatement(deleteSql)) {
                                 delStmt.setString(1, inviterClan);
@@ -752,7 +761,6 @@ public class CCMD implements CommandExecutor, TabCompleter {
                 }
             }
 
-            // Insertar invitación nueva con timestamp actual
             String insertSql = "INSERT INTO clan_invites (clan, username, invite_time) VALUES (?, ?, ?)";
             try (PreparedStatement insertStmt = con.prepareStatement(insertSql)) {
                 insertStmt.setString(1, inviterClan);
@@ -761,21 +769,23 @@ public class CCMD implements CommandExecutor, TabCompleter {
                 insertStmt.executeUpdate();
             }
 
-            sender.sendMessage(MSG.color(prefix + "&a Invitación enviada a &f" + playerToInvite));
-            invitedPlayer.sendMessage(MSG.color(prefix + "&e Has recibido una invitación para unirte al clan &f" + inviterClan));
-            invitedPlayer.sendMessage(MSG.color("&8 USO: /cls join " + inviterClan + " &7- para unirte al clan"));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.invite_sent").replace("{player}", playerToInvite)));
+            invitedPlayer.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.invite_received")
+                .replace("{clan}", inviterClan)));
+            invitedPlayer.sendMessage(MSG.color(langManager.getMessage("user.invite_usage")));
 
         } catch (SQLException e) {
             e.printStackTrace();
-            sender.sendMessage(MSG.color(prefix + "&c Error al enviar la invitación."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.invite_error")));
         }
     }
+
 
 
     public void chat(String clanName, Player player, String[] message) {
         String playerClan = getPlayerClan(player.getName());
         if (playerClan == null || playerClan.isEmpty()) {
-            player.sendMessage(MSG.color(prefix + "&c No perteneces a ningún clan."));
+            player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_clan")));
             return;
         }
 
@@ -790,15 +800,19 @@ public class CCMD implements CommandExecutor, TabCompleter {
                 String userName = rs.getString("username");
                 Player recipient = Bukkit.getPlayerExact(userName);
                 if (recipient != null) {
-                    recipient.sendMessage(MSG.color("&e" + playerClan + " &f" + player.getName() + "&f: &7" + formattedMessage));
+                    recipient.sendMessage(MSG.color(langManager.getMessage("user.chat_format")
+                        .replace("{clan}", playerClan)
+                        .replace("{player}", player.getName())
+                        .replace("{message}", formattedMessage)));
                 }
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
-            player.sendMessage(MSG.color(prefix + "&c Error al enviar el mensaje al chat del clan."));
+            player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.chat_error")));
         }
     }
+
 
 
     private void leave(CommandSender sender, String playerClan) {
@@ -806,7 +820,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
         String playerName = player.getName();
 
         if (playerClan == null) {
-            sender.sendMessage(MSG.color(prefix + "&c No perteneces a ningún clan."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_clan")));
             return;
         }
 
@@ -838,7 +852,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
             if (remaining.isEmpty()) {
                 deleteEntireClanData(con, playerClan);
                 plugin.getMariaDBManager().reloadCache();
-                sender.sendMessage(MSG.color(prefix + "&c Clan eliminado por no tener miembros."));
+                sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.clan_deleted_empty")));
                 return;
             }
 
@@ -847,31 +861,32 @@ public class CCMD implements CommandExecutor, TabCompleter {
                 updateLeader.setString(1, newLeader);
                 updateLeader.setString(2, playerClan);
                 updateLeader.executeUpdate();
-                sender.sendMessage(MSG.color(prefix + "&c Has salido. El nuevo líder es " + newLeader));
+                sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.leader_left").replace("{newLeader}", newLeader)));
             } else {
-                sender.sendMessage(MSG.color(prefix + "&2 Has salido del clan."));
+                sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.left_clan")));
             }
 
             plugin.getMariaDBManager().reloadCache();
 
         } catch (SQLException e) {
             e.printStackTrace();
-            sender.sendMessage(MSG.color(prefix + "&c Error al salir del clan."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.leave_error")));
         }
     }
+
 
 
     private static final long INVITE_EXPIRATION_MS = 5 * 60 * 1000; // 5 minutos en ms
 
     private void joinClan(CommandSender sender, String playerName, String clanToJoin) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(MSG.color(prefix + "&c Solo los jugadores pueden unirse a clanes."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.only_players_join")));
             return;
         }
 
         String currentClan = getPlayerClan(playerName);
         if (currentClan != null) {
-            sender.sendMessage(MSG.color(prefix + "&c Ya perteneces a un clan."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.already_in_clan")));
             return;
         }
 
@@ -885,7 +900,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
             ResultSet clanRs = clanCheck.executeQuery();
 
             if (!clanRs.next()) {
-                sender.sendMessage(MSG.color(prefix + "&c El clan no existe."));
+                sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.clan_not_exist")));
                 return;
             }
 
@@ -902,9 +917,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
                         if (currentTime - inviteTime <= INVITE_EXPIRATION_MS) {
                             canJoin = true;
                         } else {
-                            // Invitación expiró
-                            sender.sendMessage(MSG.color(prefix + "&c Tu invitación para unirte al clan ha expirado."));
-                            // Opcional: borrar invitación expirada
+                            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.invite_expired")));
                             try (PreparedStatement delExpired = con.prepareStatement("DELETE FROM clan_invites WHERE username=? AND clan=?")) {
                                 delExpired.setString(1, playerName);
                                 delExpired.setString(2, clanToJoin);
@@ -917,7 +930,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
             }
 
             if (!canJoin) {
-                sender.sendMessage(MSG.color(prefix + "&c Este clan es &lPrivado&c."));
+                sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.clan_private")));
                 return;
             }
 
@@ -925,21 +938,20 @@ public class CCMD implements CommandExecutor, TabCompleter {
             addUser.setString(2, clanToJoin);
             addUser.executeUpdate();
 
-            // Borrar invitación si existía
             deleteInvite.setString(1, playerName);
             deleteInvite.setString(2, clanToJoin);
             deleteInvite.executeUpdate();
 
-            // Registrar en historial (si mantenés esto)
             PECMD.addClanToHistory(player, clanToJoin);
 
-            sender.sendMessage(MSG.color(prefix + "&2 Te has unido al clan: &e" + clanToJoin));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.joined_clan").replace("{clan}", clanToJoin)));
 
         } catch (SQLException e) {
             e.printStackTrace();
-            sender.sendMessage(MSG.color(prefix + "&c Error al unirse al clan."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.join_error")));
         }
     }
+
 
 
     private String getPlayerClan(String playerName) {
@@ -965,32 +977,33 @@ public class CCMD implements CommandExecutor, TabCompleter {
             ResultSet rs = ps.executeQuery()) {
 
             if (!rs.isBeforeFirst()) {
-                sender.sendMessage(MSG.color(prefix + "&c No hay clanes en el servidor."));
+                sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_clans")));
                 return;
             }
 
             StringBuilder clansList = new StringBuilder();
-            clansList.append(MSG.color(prefix + "&2&l Clanes:\n"));
+            clansList.append(MSG.color(langManager.getMessageWithPrefix("user.clans_header") + "\n"));
 
             while (rs.next()) {
                 String rawName = rs.getString("name");
                 clansList.append(MSG.color("&7- " + MSG.color(rawName))).append("\n");
             }
 
-            clansList.append(MSG.color("&2&m=================="));
+            clansList.append(MSG.color(langManager.getMessageWithPrefix("user.clans_footer")));
             sender.sendMessage(clansList.toString());
 
         } catch (SQLException e) {
             e.printStackTrace();
-            sender.sendMessage(MSG.color(prefix + "&c Error al obtener la lista de clanes."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.clans_error")));
         }
     }
 
 
 
+
     private void report(CommandSender sender, String reportedClan, String reason) {
         if (reason == null || reason.trim().isEmpty()) {
-            sender.sendMessage(MSG.color(prefix + "&c Por favor proporciona una razón válida para el reporte."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.report_no_reason")));
             return;
         }
 
@@ -1002,7 +1015,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
             check.setString(1, reportedClan);
             ResultSet clanRs = check.executeQuery();
             if (!clanRs.next()) {
-                sender.sendMessage(MSG.color(prefix + "&c El clan reportado no existe."));
+                sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.report_clan_not_exist")));
                 return;
             }
 
@@ -1010,7 +1023,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
             checkDup.setString(2, reason);
             ResultSet dupRs = checkDup.executeQuery();
             if (dupRs.next()) {
-                sender.sendMessage(MSG.color(prefix + "&c Este reporte ya ha sido enviado."));
+                sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.report_already_sent")));
                 return;
             }
 
@@ -1018,23 +1031,26 @@ public class CCMD implements CommandExecutor, TabCompleter {
             insert.setString(2, reason);
             insert.executeUpdate();
 
-            sender.sendMessage(MSG.color(prefix + "&2 Clan reportado: &e" + reportedClan + "&2. Razón: " + reason));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.report_success")
+                .replace("{clan}", reportedClan)
+                .replace("{reason}", reason)));
 
         } catch (SQLException e) {
             e.printStackTrace();
-            sender.sendMessage(MSG.color(prefix + "&c Error al enviar el reporte."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.report_error")));
         }
     }
 
 
+
     private void edit(Player player, String clanName, String[] args) {
         if (!isLeader(player, clanName)) {
-            player.sendMessage(MSG.color(prefix + "&c ¡Solo el líder puede modificar el clan!"));
+            player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.edit_no_leader")));
             return;
         }
 
         if (args.length != 3) {
-            player.sendMessage(MSG.color(prefix + "&c USO: /cls edit <name|privacy> <valor>"));
+            player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.edit_usage")));
             return;
         }
 
@@ -1108,11 +1124,11 @@ public class CCMD implements CommandExecutor, TabCompleter {
 
                     con.commit();
                     plugin.getMariaDBManager().reloadCache();
-                    player.sendMessage(MSG.color(prefix + "&3 Nombre del clan cambiado a: &f" + value));
+                    player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.edit_name_success").replace("{name}", value)));
                 } catch (SQLException e) {
                     con.rollback();
                     e.printStackTrace();
-                    player.sendMessage(MSG.color(prefix + "&c Error al cambiar el nombre del clan."));
+                    player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.edit_name_error")));
                 } finally {
                     con.setAutoCommit(true);
                 }
@@ -1121,12 +1137,12 @@ public class CCMD implements CommandExecutor, TabCompleter {
                     ps.setString(1, value);
                     ps.setString(2, clanName);
                     ps.executeUpdate();
-                    player.sendMessage(MSG.color(prefix + "&3 Privacidad del clan cambiada a: &f" + value));
+                    player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.edit_privacy_success").replace("{privacy}", value)));
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            player.sendMessage(MSG.color(prefix + "&c Error al editar el clan."));
+            player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.edit_error")));
         }
     }
 
@@ -1135,7 +1151,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
 
     public void disband(CommandSender sender, String playerClan) {
         if (playerClan == null || playerClan.isEmpty()) {
-            sender.sendMessage(MSG.color(prefix + "&c No perteneces a ningún clan."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_clan")));
             return;
         }
 
@@ -1151,33 +1167,33 @@ public class CCMD implements CommandExecutor, TabCompleter {
 
                 if (!rs.next() || !rs.getString("leader").equalsIgnoreCase(player.getName())) {
                     Bukkit.getScheduler().runTask(plugin, () ->
-                        sender.sendMessage(MSG.color(prefix + "&c No eres el líder de este clan."))
+                        sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.disband_not_leader")))
                     );
                     return;
                 }
 
-                // Iniciar eliminación de todo lo relacionado
+                // Eliminar datos
                 deleteEntireClanData(con, playerClan);
 
                 boolean econEnabled = plugin.getFH().getConfig().getBoolean("economy.enabled");
                 int deleteGain = plugin.getFH().getConfig().getInt("economy.earn.delete-clan", 0);
                 if (econEnabled) econ.deposit(player, deleteGain);
 
-                // Actualizar caché
                 plugin.getMariaDBManager().reloadCache();
 
                 Bukkit.getScheduler().runTask(plugin, () -> {
                     if (econEnabled) {
-                        sender.sendMessage(MSG.color(prefix + "&2 El clan fue eliminado. Ganaste: &e$" + deleteGain));
+                        sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.disband_success_earn")
+                            .replace("{money}", String.valueOf(deleteGain))));
                     } else {
-                        sender.sendMessage(MSG.color(prefix + "&2 El clan fue eliminado."));
+                        sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.disband_success")));
                     }
                 });
 
             } catch (SQLException e) {
                 e.printStackTrace();
                 Bukkit.getScheduler().runTask(plugin, () ->
-                    sender.sendMessage(MSG.color(prefix + "&c Error al eliminar el clan."))
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.disband_error")))
                 );
             }
         });
@@ -1186,9 +1202,10 @@ public class CCMD implements CommandExecutor, TabCompleter {
 
 
 
+
     public void create(CommandSender sender, String[] args) {
         if (args.length < 2 || !(sender instanceof Player player)) {
-            sender.sendMessage(MSG.color(prefix + "&c&l USO:&f /cls create <nombre>"));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.create_usage")));
             return;
         }
 
@@ -1197,9 +1214,8 @@ public class CCMD implements CommandExecutor, TabCompleter {
         FileConfiguration config = plugin.getFH().getConfig();
         Econo econ = SatipoClan.getEcon();
 
-        // Nombre bloqueado
         if (config.getStringList("names-blocked.blocked").contains(clanName)) {
-            sender.sendMessage(MSG.color(prefix + "&c Este nombre está bloqueado."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.create_name_blocked")));
             return;
         }
 
@@ -1211,31 +1227,31 @@ public class CCMD implements CommandExecutor, TabCompleter {
                 ResultSet rs = check.executeQuery();
                 if (rs.next()) {
                     Bukkit.getScheduler().runTask(plugin, () ->
-                        sender.sendMessage(MSG.color(prefix + "&c El clan ya existe."))
+                        sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.create_exists")))
                     );
                     return;
                 }
 
-                // Límite de clanes
                 int maxClans = config.getInt("max-clans", 0);
                 if (maxClans > 0) {
                     try (PreparedStatement countStmt = con.prepareStatement("SELECT COUNT(*) AS total FROM clans")) {
                         ResultSet countRs = countStmt.executeQuery();
                         if (countRs.next() && countRs.getInt("total") >= maxClans) {
                             Bukkit.getScheduler().runTask(plugin, () ->
-                                sender.sendMessage(MSG.color(prefix + "&c Se alcanzó el límite de clanes (" + maxClans + ")."))
+                                sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.create_limit")
+                                    .replace("{max}", String.valueOf(maxClans))))
                             );
                             return;
                         }
                     }
                 }
 
-                // Economía
                 if (config.getBoolean("economy.enabled")) {
                     int cost = config.getInt("economy.cost.create-clan");
                     if (econ.getBalance(player) < cost) {
                         Bukkit.getScheduler().runTask(plugin, () ->
-                            sender.sendMessage(MSG.color("&c No tienes suficiente dinero. Necesitas: &2&l$" + cost))
+                            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.create_no_money")
+                                .replace("{cost}", String.valueOf(cost))))
                         );
                         return;
                     }
@@ -1256,28 +1272,29 @@ public class CCMD implements CommandExecutor, TabCompleter {
                 }
 
                 Bukkit.getScheduler().runTask(plugin, () -> {
-                    PECMD.addClanToHistory(player, clanName); // si seguís usando historial
-                    player.sendMessage(MSG.color(prefix + "&2 Tu clan &e" + clanName + " &2ha sido creado."));
+                    PECMD.addClanToHistory(player, clanName);
+                    player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.create_success").replace("{clan}", clanName)));
                 });
 
             } catch (SQLException e) {
                 e.printStackTrace();
                 Bukkit.getScheduler().runTask(plugin, () ->
-                    sender.sendMessage(MSG.color(prefix + "&c Error al crear el clan."))
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.create_error")))
                 );
             }
         });
     }
 
 
+
     private void handleFriendlyFireCommand(CommandSender sender, String playerClan, String[] args) {
         if (playerClan == null || playerClan.isEmpty()) {
-            sender.sendMessage(MSG.color(prefix + "&c No perteneces a ningún clan."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_clan")));
             return;
         }
 
         if (args.length != 2 || (!args[1].equalsIgnoreCase("on") && !args[1].equalsIgnoreCase("off"))) {
-            sender.sendMessage(MSG.color(prefix + "&c USO: /cls ff <on|off>"));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.ff_usage")));
             return;
         }
 
@@ -1290,22 +1307,23 @@ public class CCMD implements CommandExecutor, TabCompleter {
             stmt.setBoolean(2, enabled);
             stmt.executeUpdate();
 
-            sender.sendMessage(MSG.color(prefix + "&a El fuego amigo ahora está: &e" + (enabled ? "ACTIVADO" : "DESACTIVADO")));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.ff_status")
+                .replace("{status}", enabled ? langManager.getMessage("status.enabled") : langManager.getMessage("status.disabled"))));
 
         } catch (SQLException e) {
             e.printStackTrace();
-            sender.sendMessage(MSG.color(prefix + "&c Error al actualizar la configuración de fuego amigo."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.ff_error")));
         }
     }
 
     private void handleAllyFriendlyFireCommand(CommandSender sender, String playerClan, String[] args) {
         if (playerClan == null || playerClan.isEmpty()) {
-            sender.sendMessage(MSG.color(prefix + "&c No perteneces a ningún clan."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_clan")));
             return;
         }
 
         if (args.length != 2 || (!args[1].equalsIgnoreCase("on") && !args[1].equalsIgnoreCase("off"))) {
-            sender.sendMessage(MSG.color(prefix + "&c USO: /clan allyff <on|off>"));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.allyff_usage")));
             return;
         }
 
@@ -1318,11 +1336,12 @@ public class CCMD implements CommandExecutor, TabCompleter {
             stmt.setBoolean(2, enabled);
             stmt.executeUpdate();
 
-            sender.sendMessage(MSG.color(prefix + "&a El fuego amigo entre aliados ahora está: &e" + (enabled ? "ACTIVADO" : "DESACTIVADO")));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.allyff_status")
+                .replace("{status}", enabled ? langManager.getMessage("status.enabled") : langManager.getMessage("status.disabled"))));
 
         } catch (SQLException e) {
             e.printStackTrace();
-            sender.sendMessage(MSG.color(prefix + "&c Error al actualizar la configuración de fuego amigo entre aliados."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.allyff_error")));
         }
     }
 
@@ -1349,12 +1368,12 @@ public class CCMD implements CommandExecutor, TabCompleter {
 
     private void handleAllyCommand(CommandSender sender, String playerName, String playerClan, String[] args) {
         if (playerClan == null || playerClan.isEmpty()) {
-            sender.sendMessage(MSG.color(prefix + "&c No perteneces a ningún clan."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_clan")));
             return;
         }
 
         if (args.length < 1) {
-            sender.sendMessage(MSG.color(prefix + "&c USO: /cls ally <request|accept|decline|remove|ff> [<clan>|<on|off>]"));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.ally_usage")));
             return;
         }
 
@@ -1363,7 +1382,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
         switch (subCommand) {
             case "request":
                 if (args.length != 2) {
-                    sender.sendMessage(MSG.color(prefix + "&c Uso correcto: /cls ally request <clan>"));
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.ally_request_usage")));
                     return;
                 }
                 sendAllyRequest(sender, playerClan, args[1]);
@@ -1371,7 +1390,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
 
             case "accept":
                 if (args.length != 2) {
-                    sender.sendMessage(MSG.color(prefix + "&c Uso correcto: /cls ally accept <clan>"));
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.ally_accept_usage")));
                     return;
                 }
                 acceptAlly(sender, playerClan, args[1]);
@@ -1379,7 +1398,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
 
             case "decline":
                 if (args.length != 2) {
-                    sender.sendMessage(MSG.color(prefix + "&c Uso correcto: /cls ally decline <clan>"));
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.ally_decline_usage")));
                     return;
                 }
                 declineAlly(sender, playerClan, args[1]);
@@ -1387,7 +1406,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
 
             case "remove":
                 if (args.length != 2) {
-                    sender.sendMessage(MSG.color(prefix + "&c Uso correcto: /cls ally remove <clan>"));
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.ally_remove_usage")));
                     return;
                 }
                 removeAlly(sender, playerClan, args[1]);
@@ -1395,14 +1414,14 @@ public class CCMD implements CommandExecutor, TabCompleter {
 
             case "ff":
                 if (args.length != 2) {
-                    sender.sendMessage(MSG.color(prefix + "&c Uso correcto: /cls ally ff <on|off>"));
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.ally_ff_usage")));
                     return;
                 }
-                handleAllyFriendlyFireCommand(sender, playerClan, args[1]);
+                handleAllyFriendlyFireCommand(sender, playerClan, args);
                 break;
 
             default:
-                sender.sendMessage(MSG.color(prefix + "&c Subcomando inválido. Usa request, accept, decline, remove o ff."));
+                sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.ally_invalid_subcommand")));
         }
     }
 
@@ -1436,7 +1455,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
 
     private void sendAllyRequest(CommandSender sender, String playerClan, String targetClan) {
         if (targetClan.equalsIgnoreCase(playerClan)) {
-            sender.sendMessage(MSG.color(prefix + "&c No puedes aliarte con tu propio clan."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.ally_same_clan")));
             return;
         }
 
@@ -1448,7 +1467,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
             check.setString(1, targetClan);
             ResultSet rs = check.executeQuery();
             if (!rs.next()) {
-                sender.sendMessage(MSG.color(prefix + "&c El clan &e" + targetClan + " &cno existe."));
+                sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.ally_target_not_exist").replace("{target}", targetClan)));
                 return;
             }
 
@@ -1456,7 +1475,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
             checkPending.setString(2, targetClan);
             ResultSet rsPending = checkPending.executeQuery();
             if (rsPending.next()) {
-                sender.sendMessage(MSG.color(prefix + "&c Ya enviaste una solicitud a ese clan."));
+                sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.ally_already_requested")));
                 return;
             }
 
@@ -1464,25 +1483,25 @@ public class CCMD implements CommandExecutor, TabCompleter {
             insert.setString(2, targetClan);
             insert.executeUpdate();
 
-            sender.sendMessage(MSG.color(prefix + "&a Solicitud de alianza enviada a &e" + targetClan));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.ally_request_sent").replace("{target}", targetClan)));
 
-            // Notificar a jugadores online del clan target
             for (Player p : Bukkit.getOnlinePlayers()) {
                 String pClan = this.getPlayerClan(p.getName());
                 if (pClan != null && pClan.equalsIgnoreCase(targetClan)) {
-                    p.sendMessage(MSG.color(prefix + "&eTienes una nueva solicitud de alianza de &a" + playerClan));
+                    p.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.ally_request_received").replace("{clan}", playerClan)));
                 }
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
-            sender.sendMessage(MSG.color(prefix + "&c Error al enviar la solicitud de alianza."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.ally_request_error")));
         }
     }
 
+
     private void acceptAlly(CommandSender sender, String playerClan, String requesterClan) {
         if (requesterClan.equalsIgnoreCase(playerClan)) {
-            sender.sendMessage(MSG.color(prefix + "&c No puedes aceptar alianza con tu propio clan."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.ally_accept_same_clan")));
             return;
         }
 
@@ -1496,7 +1515,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
             ResultSet rs = checkPending.executeQuery();
 
             if (!rs.next()) {
-                sender.sendMessage(MSG.color(prefix + "&c No tienes solicitudes pendientes de ese clan."));
+                sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.ally_accept_no_pending")));
                 return;
             }
 
@@ -1515,19 +1534,18 @@ public class CCMD implements CommandExecutor, TabCompleter {
             con.commit();
             con.setAutoCommit(true);
 
-            sender.sendMessage(MSG.color(prefix + "&a Has aceptado la alianza con &e" + requesterClan));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.ally_accept_success").replace("{requester}", requesterClan)));
 
-            // Notificar a jugadores online del clan solicitante
             for (Player p : Bukkit.getOnlinePlayers()) {
                 String pClan = this.getPlayerClan(p.getName());
                 if (pClan != null && pClan.equalsIgnoreCase(requesterClan)) {
-                    p.sendMessage(MSG.color(prefix + "&a El clan &e" + playerClan + " &aha aceptado la alianza."));
+                    p.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.ally_accepted_notify").replace("{clan}", playerClan)));
                 }
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
-            sender.sendMessage(MSG.color(prefix + "&c Error al aceptar la alianza."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.ally_accept_error")));
             try {
                 plugin.getMariaDBManager().getConnection().setAutoCommit(true);
             } catch (SQLException ex) {
@@ -1536,9 +1554,10 @@ public class CCMD implements CommandExecutor, TabCompleter {
         }
     }
 
+
     private void declineAlly(CommandSender sender, String playerClan, String requesterClan) {
         if (requesterClan.equalsIgnoreCase(playerClan)) {
-            sender.sendMessage(MSG.color(prefix + "&c No puedes rechazar alianza con tu propio clan."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.ally_decline_same_clan")));
             return;
         }
 
@@ -1551,7 +1570,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
             ResultSet rs = checkPending.executeQuery();
 
             if (!rs.next()) {
-                sender.sendMessage(MSG.color(prefix + "&c No tienes solicitudes pendientes de ese clan."));
+                sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.ally_decline_no_pending")));
                 return;
             }
 
@@ -1559,25 +1578,25 @@ public class CCMD implements CommandExecutor, TabCompleter {
             deletePending.setString(2, playerClan);
             deletePending.executeUpdate();
 
-            sender.sendMessage(MSG.color(prefix + "&a Has rechazado la alianza con &e" + requesterClan));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.ally_decline_success").replace("{requester}", requesterClan)));
 
-            // Notificar a jugadores online del clan solicitante
             for (Player p : Bukkit.getOnlinePlayers()) {
                 String pClan = this.getPlayerClan(p.getName());
                 if (pClan != null && pClan.equalsIgnoreCase(requesterClan)) {
-                    p.sendMessage(MSG.color(prefix + "&c El clan &e" + playerClan + " &ch a rechazado la alianza."));
+                    p.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.ally_declined_notify").replace("{clan}", playerClan)));
                 }
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
-            sender.sendMessage(MSG.color(prefix + "&c Error al rechazar la alianza."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.ally_decline_error")));
         }
     }
 
+
     private void removeAlly(CommandSender sender, String playerClan, String targetClan) {
         if (targetClan.equalsIgnoreCase(playerClan)) {
-            sender.sendMessage(MSG.color(prefix + "&c No puedes eliminar alianza con tu propio clan."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.ally_remove_same_clan")));
             return;
         }
 
@@ -1591,20 +1610,21 @@ public class CCMD implements CommandExecutor, TabCompleter {
             int affected = deleteAlliance.executeUpdate();
 
             if (affected > 0) {
-                sender.sendMessage(MSG.color(prefix + "&a Has eliminado la alianza con &e" + targetClan));
+                sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.ally_remove_success").replace("{target}", targetClan)));
             } else {
-                sender.sendMessage(MSG.color(prefix + "&c No tienes alianza con ese clan."));
+                sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.ally_remove_none")));
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
-            sender.sendMessage(MSG.color(prefix + "&c Error al eliminar la alianza."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.ally_remove_error")));
         }
     }
 
+
     private void handleAllyFriendlyFireCommand(CommandSender sender, String playerClan, String value) {
         if (!value.equalsIgnoreCase("on") && !value.equalsIgnoreCase("off")) {
-            sender.sendMessage(MSG.color(prefix + "&c Uso correcto: /cls ally ff <on|off>"));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.allyff_usage")));
             return;
         }
 
@@ -1619,13 +1639,15 @@ public class CCMD implements CommandExecutor, TabCompleter {
             stmt.setBoolean(2, ffEnabled);
             stmt.executeUpdate();
 
-            sender.sendMessage(MSG.color(prefix + "&a El fuego amigo entre aliados ahora está: &e" + (ffEnabled ? "ACTIVADO" : "DESACTIVADO")));
+            String status = langManager.getMessageWithPrefix(ffEnabled ? "status.enabled" : "status.disabled");
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.allyff_status").replace("{status}", status)));
 
         } catch (SQLException e) {
             e.printStackTrace();
-            sender.sendMessage(MSG.color(prefix + "&c Error al modificar la configuración de fuego amigo entre aliados."));
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.allyff_error")));
         }
     }
+
 
 
 
