@@ -35,13 +35,13 @@ public class SatipoClan extends JavaPlugin {
       instance = this;
       saveDefaultConfig();
       prefix = getConfig().getString("prefix", "&7 [&a&lꜱᴀᴛɪᴘᴏ&6&lᴄʟᴀɴꜱ&7]&n");
-      langManager = new LangManager(this);
       fh = new FileHandler(this);
       updater = new Updater(this, 114316);
       metrics = new Metrics(this, 20912);
       econ = new Econo(this);
       ClanUtils.init(this);
       copyLangFiles();
+      langManager = new LangManager(this);
 
       
 
@@ -95,15 +95,22 @@ public class SatipoClan extends JavaPlugin {
       return instance;
    }
 
-   public void copyLangFiles() {
-        File langFolder = new File(getDataFolder(), "lang");
-        if (!langFolder.exists()) {
-            langFolder.mkdirs();
-            saveResource("lang/es.yml", false);
-            saveResource("lang/en.yml", false);
-            // agrega más idiomas si tienes
+   private void copyLangFiles() {
+      File langFolder = new File(getDataFolder(), "lang");
+      if (!langFolder.exists()) {
+         langFolder.mkdirs();
+      }
+
+      String[] languages = {"es.yml", "en.yml"};  // pon aquí todos los idiomas que tengas
+
+      for (String langFile : languages) {
+         File file = new File(langFolder, langFile);
+         if (!file.exists()) {
+               saveResource("lang/" + langFile, false);
          }
+      }
    }
+
 
    private void setupMetrics() {
       int max = getConfig().getInt("max-clans", -1);

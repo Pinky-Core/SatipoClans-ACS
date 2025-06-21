@@ -64,7 +64,7 @@ public class LangCMD implements CommandExecutor {
             line.setColor(net.md_5.bungee.api.ChatColor.GOLD);
 
             TextComponent langText = new TextComponent(lang.toUpperCase() + " - " + displayName);
-            langText.setColor(isSelected ? net.md_5.bungee.api.ChatColor.GREEN : net.md_5.bungee.api.ChatColor.YELLOW);
+            langText.setColor(isSelected ? net.md_5.bungee.api.ChatColor.GREEN : net.md_5.bungee.api.ChatColor.GRAY);
             if (isSelected) langText.setBold(true);
 
             langText.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,

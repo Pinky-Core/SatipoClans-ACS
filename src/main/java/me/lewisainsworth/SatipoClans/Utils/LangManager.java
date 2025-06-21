@@ -35,16 +35,18 @@ public class LangManager {
 
         for (File file : files) {
             String langName = file.getName().replace(".yml", "").toLowerCase(Locale.ROOT);
+            plugin.getLogger().info("Cargando archivo de idioma: " + file.getName() + " como clave '" + langName + "'");
             YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
             loadedLangs.put(langName, config);
         }
 
         // Si el idioma configurado no existe, fallback a "es"
         if (!loadedLangs.containsKey(currentLang)) {
+            plugin.getLogger().warning("Idioma configurado '" + currentLang + "' no encontrado en los idiomas cargados.");
             currentLang = "es";
             plugin.getConfig().set("lang", currentLang);
             plugin.saveConfig();
-            plugin.getLogger().info("Idioma configurado no encontrado. Se usará el idioma por defecto: " + currentLang);
+            plugin.getLogger().info("Se usará el idioma por defecto: " + currentLang);
         }
     }
 
@@ -52,8 +54,10 @@ public class LangManager {
         YamlConfiguration config = loadedLangs.get(currentLang);
         if (config == null) {
             plugin.getLogger().warning("Archivo de idioma no encontrado para: " + currentLang);
-            return "&c[LangManager] Idioma '" + currentLang + "' no encontrado.";
+        } else if (config.getKeys(false).isEmpty()) {
+            plugin.getLogger().warning("Archivo de idioma '" + currentLang + "' está vacío o mal formado.");
         }
+
 
         String msg = config.getString(path);
         if (msg == null) {
@@ -93,6 +97,9 @@ public class LangManager {
         plugin.getConfig().set("lang", lang);
         plugin.saveConfig();
         plugin.getLogger().info("Idioma cambiado a: " + lang);
+        plugin.getLogger().info("Idioma actual configurado: " + currentLang);
+        plugin.getLogger().info("Idiomas cargados: " + loadedLangs.keySet());
+
     }
 
     public String getCurrentLang() {
