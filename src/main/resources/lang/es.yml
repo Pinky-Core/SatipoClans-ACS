@@ -78,7 +78,7 @@ user:
   invite_error: "&c Error al enviar la invitación."
 
   # CHAT COMMAND
-  chat_format: "&e{clan} &f{player}&f: &7{message}"
+  chat_format: "&7[&6&lClan Chat&7] {clan} &f{player}&f: &7{message}"
   chat_error: "&c Error al enviar el mensaje al chat del clan."
   
   # LEAVE COMMAND
@@ -116,6 +116,8 @@ user:
   edit_name_error: "&c Error al cambiar el nombre del clan."
   edit_privacy_success: "&3 Privacidad del clan cambiada a: &f{privacy}"
   edit_error: "&c Error al editar el clan."
+  edit_name_too_long: "&cEl nombre del clan supera el máximo de {max} caracteres visibles."
+  edit_name_blocked: "&cEse nombre de clan está bloqueado y no se puede usar."
 
   # DISBAND COMMAND
   disband_not_leader: "&c No eres el líder de este clan."
@@ -124,13 +126,14 @@ user:
   disband_error: "&c Error al eliminar el clan."
 
   # CREATE COMMAND
-  create_usage: "&c&l USO:&f /cls create <nombre>"
-  create_name_blocked: "&c Este nombre está bloqueado."
+  create_usage: "&c&l USO:&f /cls create <nombre>""
   create_exists: "&c El clan ya existe."
   create_limit: "&c Se alcanzó el límite de clanes ({max})."
   create_no_money: "&c No tienes suficiente dinero. Necesitas: &2&l${cost}"
   create_success: "&2 Tu clan &e{clan} &2ha sido creado."
   create_error: "&c Error al crear el clan."
+  create_name_too_long: "&cEl nombre del clan es demasiado largo. Máximo {max} caracteres visibles."
+  create_name_blocked: "&c Este nombre está bloqueado."
 
 
 # HANDLERS
@@ -229,18 +232,21 @@ msg:
   report_reason: "  &7- &f{reason}"
   error_loading_reports: "&cError al cargar los reportes."
 
-  # BAN COMMANDS
+  # BAN/UNBAN COMMANDS
   usage_ban: "&c &lUSO:&f /cla ban <clan> [razón]"
-  clan_not_exist: "&cEl clan '{clan}' no existe."
-  clan_banned: "&cEl clan '{clan}' ha sido baneado."
-  error_banning_clan: "&cError al banear el clan."
-  kicked_ban_message: "&cHas sido expulsado de tu clan."
-
-  # UNBAN COMMANDS
   usage_unban: "&c &lUSO:&f /cla unban <clan>"
-  clan_not_exist: "&cEl clan '{clan}' no existe."
-  clan_unbanned: "&aEl clan '{clan}' ha sido desbaneado."
-  error_unbanning_clan: "&cError al desbanear el clan."
+  default_ban_reason: "Baneado por un administrador"
+
+  clan_banned: "&cEl clan &e{clan} &cha sido baneado. Razón: &f{reason}"
+  clan_unbanned: "&aEl clan &e{clan} &aha sido desbaneado correctamente."
+  clan_already_banned: "&cEl clan &e{clan} &cya está baneado."
+  clan_not_banned: "&cEl clan &e{clan} &cno estaba baneado."
+  clan_name_banned: "&cNo puedes usar el nombre &e{clan}&c porque está baneado."
+
+  kicked_ban_message: "&cHas sido expulsado del servidor porque el clan &e{clan} &cestá baneado.\n&cRazón: &f{reason}"
+  error_banning_clan: "&cOcurrió un error al banear el clan."
+  error_unbanning_clan: "&cOcurrió un error al desbanear el clan."
+  clan_not_exist: "&cEl clan &e{clan} &cno existe."
 
 
 # STATS COMMANDS
@@ -262,8 +268,8 @@ stats:
 lang:
   usage: "&e &lUSO:&f /clansadmin lang (select) <código>"
   lang_list_title: "&eLista de idiomas disponibles:"
-  actual_lang: "&eIdioma actual: &a{lang}"
-  selected_lang: "Idioma seleccionado"
+  current_lang: "&eIdioma actual: &a{lang}"
+  actual_lang: "Idioma seleccionado"
   select_lang: "Click para seleccionar"
   lang_changed: "&aIdioma cambiado a {lang}"
   no_permission: "&cNo tienes permiso para usar este comando."

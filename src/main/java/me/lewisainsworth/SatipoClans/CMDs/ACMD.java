@@ -142,7 +142,7 @@ public class ACMD implements CommandExecutor, TabCompleter {
         // Mensaje final
         sender.sendMessage(MSG.color("&7------------------------------------"));
         sender.sendMessage(MSG.color(langManager.getMessage("msg.plugin_reloaded")));
-        sender.sendMessage(MSG.color(langManager.getMessage("lang.actual_lang ")
+        sender.sendMessage(MSG.color(langManager.getMessage("lang.actual_lang")
                 .replace("{lang}", currentLang.toUpperCase())
                 .replace("{lang_name}", langDisplayName)));
         sender.sendMessage(MSG.color("&7------------------------------------"));
@@ -238,44 +238,48 @@ public class ACMD implements CommandExecutor, TabCompleter {
         }
 
         String clan = args[1];
-        String reason = args.length >= 3 ? args[2] : "Baneado por un administrador";
+        String reason = args.length >= 3 ? String.join(" ", Arrays.copyOfRange(args, 2, args.length)) : langManager.getMessage("msg.default_ban_reason");
 
         try (Connection con = plugin.getMariaDBManager().getConnection();
-            PreparedStatement check = con.prepareStatement("SELECT name FROM clans WHERE name = ?");
-            PreparedStatement ban = con.prepareStatement("REPLACE INTO banned_clans (name, reason) VALUES (?, ?)");
+            PreparedStatement alreadyBanned = con.prepareStatement("SELECT name FROM banned_clans WHERE name = ?");
+            PreparedStatement insertBan = con.prepareStatement("REPLACE INTO banned_clans (name, reason) VALUES (?, ?)");
             PreparedStatement members = con.prepareStatement("SELECT username FROM clan_users WHERE clan = ?")) {
 
-            check.setString(1, clan);
-            ResultSet rs = check.executeQuery();
-
-            if (!rs.next()) {
-                sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("msg.clan_not_exist").replace("{clan}", clan)));
-                return;
-            }
-
-            ban.setString(1, clan);
-            ban.setString(2, reason);
-            ban.executeUpdate();
-
-            members.setString(1, clan);
-            ResultSet mrs = members.executeQuery();
-            while (mrs.next()) {
-                String user = mrs.getString("username");
-                Player player = Bukkit.getPlayer(user);
-                if (player != null) {
-                    player.kickPlayer(MSG.color(langManager.getMessage("msg.kicked_ban_message")));
-                    // El método ban() no existe en Bukkit API, asumí que tenés un método personalizado o plugin para esto
-                    // player.ban(reason, (Date) null, "SatipoClans", true);
+            alreadyBanned.setString(1, clan);
+            try (ResultSet rs = alreadyBanned.executeQuery()) {
+                if (rs.next()) {
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("msg.clan_already_banned").replace("{clan}", clan)));
+                    return;
                 }
             }
 
-            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("msg.clan_banned").replace("{clan}", clan)));
+            insertBan.setString(1, clan);
+            insertBan.setString(2, reason);
+            insertBan.executeUpdate();
+
+            // Kick a todos los jugadores del clan, si están online
+            members.setString(1, clan);
+            try (ResultSet mrs = members.executeQuery()) {
+                while (mrs.next()) {
+                    String user = mrs.getString("username");
+                    Player player = Bukkit.getPlayer(user);
+                    if (player != null && player.isOnline()) {
+                        String kickMessage = langManager.getMessage("msg.kicked_ban_message")
+                            .replace("{clan}", clan)
+                            .replace("{reason}", reason);
+                        player.kickPlayer(MSG.color(kickMessage));
+                    }
+                }
+            }
+
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("msg.clan_banned").replace("{clan}", clan).replace("{reason}", reason)));
 
         } catch (SQLException e) {
             e.printStackTrace();
             sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("msg.error_banning_clan")));
         }
     }
+
 
 
     /*
@@ -395,27 +399,19 @@ public class ACMD implements CommandExecutor, TabCompleter {
         String clan = args[1];
 
         try (Connection con = plugin.getMariaDBManager().getConnection();
-            PreparedStatement check = con.prepareStatement("SELECT name FROM clans WHERE name = ?");
-            PreparedStatement unban = con.prepareStatement("DELETE FROM banned_clans WHERE name = ?");
-            PreparedStatement members = con.prepareStatement("SELECT username FROM clan_users WHERE clan = ?")) {
+            PreparedStatement check = con.prepareStatement("SELECT name FROM banned_clans WHERE name = ?");
+            PreparedStatement unban = con.prepareStatement("DELETE FROM banned_clans WHERE name = ?")) {
 
             check.setString(1, clan);
-            ResultSet rs = check.executeQuery();
-
-            if (!rs.next()) {
-                sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("msg.clan_not_exist").replace("{clan}", clan)));
-                return;
+            try (ResultSet rs = check.executeQuery()) {
+                if (!rs.next()) {
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("msg.clan_not_banned").replace("{clan}", clan)));
+                    return;
+                }
             }
 
             unban.setString(1, clan);
             unban.executeUpdate();
-
-            members.setString(1, clan);
-            ResultSet mrs = members.executeQuery();
-            while (mrs.next()) {
-                String username = mrs.getString("username");
-                Bukkit.getBanList(org.bukkit.BanList.Type.NAME).pardon(username);
-            }
 
             sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("msg.clan_unbanned").replace("{clan}", clan)));
 
@@ -424,6 +420,7 @@ public class ACMD implements CommandExecutor, TabCompleter {
             sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("msg.error_unbanning_clan")));
         }
     }
+
 
 
 

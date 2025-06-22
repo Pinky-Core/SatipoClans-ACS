@@ -17,6 +17,11 @@ import net.md_5.bungee.api.chat.TextComponent;
 
 import java.io.File;
 import java.util.Objects;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 
 public class SatipoClan extends JavaPlugin {
    public String version = getDescription().getVersion();
@@ -47,9 +52,6 @@ public class SatipoClan extends JavaPlugin {
       getCommand("cls").setExecutor(new CCMD(this, langManager));
       LangCMD langCMD = new LangCMD(this);
       setLangCMD(langCMD);
-
-
-
       
 
       if (getConfig().getBoolean("economy.enabled", true)) {
@@ -143,7 +145,7 @@ public class SatipoClan extends JavaPlugin {
 
    public void searchUpdates() {
       String downloadUrl = "https://www.spigotmc.org/resources/satipoclans.126207/";
-      TextComponent link = new TextComponent(MSG.color("&e&lClick here to download the update!"));
+      TextComponent link = new TextComponent(MSG.color("&eClick here to download the update!"));
       link.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, downloadUrl));
 
       boolean updateAvailable = false;
@@ -158,21 +160,42 @@ public class SatipoClan extends JavaPlugin {
       }
 
       if (updateAvailable) {
-         Bukkit.getConsoleSender().sendMessage(MSG.color("&2&l============= " + prefix + " &2&l============="));
-         Bukkit.getConsoleSender().sendMessage(MSG.color("&6&lＮＥＷ ＶＥＲＳＩＯＮ ＡＶＡＩＬＡＢＬＥ!"));
-         Bukkit.getConsoleSender().sendMessage(MSG.color("&e&lＣｕｒｒｅｎｔ Ｖｅｒｓｉｏｎ: &f" + version));
-         Bukkit.getConsoleSender().sendMessage(MSG.color("&e&lＬａｔｅｓｔ Ｖｅｒｓｉｏｎ: &f" + latestVersion));
-         Bukkit.getConsoleSender().sendMessage(MSG.color("&e&lＤｏｗｎｌｏａｄ ｉｔ ｈｅｒｅ: &f" + downloadUrl));
-         Bukkit.getConsoleSender().sendMessage(MSG.color("&2&l============= " + prefix + " &2&l============="));
+          Bukkit.getConsoleSender().sendMessage(MSG.color("&2&l============================================================"));
+          Bukkit.getConsoleSender().sendMessage(MSG.color("&6&l         ＮＥＷ  ＶＥＲＳＩＯＮ  ＡＶＡＩＬＡＢＬＥ!"));
+          Bukkit.getConsoleSender().sendMessage(MSG.color("&7"));
+          Bukkit.getConsoleSender().sendMessage(MSG.color("&e&lPlugin: &fSatipoClans"));
+          Bukkit.getConsoleSender().sendMessage(MSG.color("&e&lCurrent Version: &f" + version));
+          Bukkit.getConsoleSender().sendMessage(MSG.color("&e&lLatest Version: &f" + latestVersion));
+          Bukkit.getConsoleSender().sendMessage(MSG.color("&e&lDownload: &b" + downloadUrl));
+          Bukkit.getConsoleSender().sendMessage(MSG.color("&7"));
+          Bukkit.getConsoleSender().sendMessage(MSG.color("&a&lChangelog &7(see plugin page for details)"));
+          Bukkit.getConsoleSender().sendMessage(MSG.color("&7- Bug fixes and improvements"));
+          Bukkit.getConsoleSender().sendMessage(MSG.color("&7- New features may be available!"));
+          Bukkit.getConsoleSender().sendMessage(MSG.color("&7"));
+          Bukkit.getConsoleSender().sendMessage(MSG.color("&c&lPlease update to enjoy the latest features and fixes!"));
+          Bukkit.getConsoleSender().sendMessage(MSG.color("&2&l============================================================"));
 
          for (Player player : Bukkit.getOnlinePlayers()) {
             if (player.hasPermission("satipoclans.admin")) {
-               player.sendMessage(MSG.color(prefix + "&e&l Ａ ｎｅｗ ｐｌｕｇｉｎ ｕｐｄａｔｅ ｉｓ ａｖａｉｌａｂｌｅ!"));
+                  player.sendMessage(MSG.color(prefix + "&e A new plugin update is available!"));
                player.spigot().sendMessage(link);
             }
          }
       }
    }
+
+   public boolean isClanBanned(String clanName) {
+      try (Connection con = getMariaDBManager().getConnection();
+            PreparedStatement ps = con.prepareStatement("SELECT name FROM banned_clans WHERE name = ?")) {
+         ps.setString(1, clanName);
+         ResultSet rs = ps.executeQuery();
+         return rs.next();
+      } catch (SQLException e) {
+         e.printStackTrace();
+         return false; // Por seguridad, podrías devolver true si quieres evitar riesgos
+      }
+   }
+
 
    public static Econo getEcon() {
       return econ;

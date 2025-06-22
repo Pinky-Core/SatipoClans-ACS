@@ -73,7 +73,7 @@ public class PAPI extends PlaceholderExpansion {
                     return clanName;
 
                 case "clan_tag":
-                    return querySingleString(con, "SELECT tag FROM clans WHERE name = ?", clanName, "N/A");
+                    return MSG.color(querySingleString(con, "SELECT name_colored FROM clans WHERE name = ?", clanName, "N/A"));
 
                 case "clan_money":
                     return querySingleString(con, "SELECT money FROM clans WHERE name = ?", clanName, "0");

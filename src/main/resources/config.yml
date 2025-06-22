@@ -1,20 +1,21 @@
-#####################################################################
-#                                                                   #
-#                     Placeholders disponibles:                     #
-#  ---------------------------------------------------------------  #
+######################################################################
+#                                                                    #
+#                     Placeholders disponibles:                      #
+#  ---------------------------------------------------------------   #
 #  | %satipoclans_prefix%               : Prefijo del plugin      |  #
 #  | %satipoclans_clan_leader%          : Nombre del líder        |  #
 #  | %satipoclans_clan_founder%         : Nombre del fundador     |  #
 #  | %satipoclans_clan_name%            : Nombre del clan         |  #
+#  | %satipoclans_clan_tag%             : Tag del clan            |  #
 #  | %satipoclans_clan_money%           : Bóveda del clan         |  #
 #  | %satipoclans_clan_membercount_offline% : Miembros offline    |  #
 #  | %satipoclans_clan_membercount_online%  : Miembros en línea   |  #
 #  | %satipoclans_clan_membercount%     : Total de miembros       |  #
 #  | %satipoclans_player_money%         : Bóveda del jugador      |  #
-#  ---------------------------------------------------------------  #
-#       Ahora puedes usar los placeholders de PlaceholderAPI.       #
-#                                                                   #
-#####################################################################
+#  ---------------------------------------------------------------   #
+#       Ahora puedes usar los placeholders de PlaceholderAPI.        #
+#                                                                    #
+######################################################################
 
 
 prefix: "&7[&a&lꜱᴀᴛɪᴘᴏ&6&lᴄʟᴀɴꜱ&7]"
@@ -33,21 +34,21 @@ welcome-message:
   enabled: true
 
   no-clan:
-  - ""
-  - "&b&l¡ʙɪᴇɴᴠᴇɴɪᴅᴏ ᴅᴇ ɴᴜᴇᴠᴏ!"
-  - "&7ᴜꜱᴀ &a/clans create &7ᴘᴀʀᴀ ᴄʀᴇᴀʀ ᴛᴜ ᴄʟᴀɴ."
-  - ""
+    - ""
+    - "¡Bienvenido de nuevo!"
+    - "Usa /clans create para crear tu clan."
+    - ""
 
   self-clan:
-  - ""
-  - "&eᴇꜱᴛᴀ́ꜱ ᴇɴ ᴇʟ ᴄʟᴀɴ &a&l%satipoclans_clan_name%"
-  - "&7ᴍɪᴇᴍʙʀᴏꜱ ᴇɴ ʟɪ́ɴᴇᴀ: &a&l%satipoclans_clan_membercount_online% &7/&f&l%satipoclans_clan_membercount%"
-  - ""
+    - ""
+    - "Estás en el clan %satipoclans_clan_name%"
+    - "Miembros en línea: %satipoclans_clan_membercount_online% / %satipoclans_clan_membercount%"
+    - ""
 
   to-clan:
-  - ""
-  - "&a&l%player_name% &7ꜱᴇ ᴄᴏɴᴇᴄᴛᴏ́"
-  - ""
+    - ""
+    - "%player_name% se conectó"
+    - ""
 
 
 max-clans: 0 # 0 = ILIMITADO
@@ -57,10 +58,10 @@ economy:
   system: "Vault" # Vault / Internal (SatipoClans sistema de economía)
 
   cost:
-    create-clan: 5
+    create-clan: 1000
   earn:
-    delete-clan: 1
-    kill-enemy: 2.5
+    delete-clan: 100
+    kill-enemy: 0
 
 names-blocked:
   enabled: true

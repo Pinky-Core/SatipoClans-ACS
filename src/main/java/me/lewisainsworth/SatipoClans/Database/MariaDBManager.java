@@ -1,4 +1,7 @@
 package me.lewisainsworth.satipoclans.Database;
+import me.lewisainsworth.satipoclans.SatipoClan;
+import org.bukkit.Bukkit;
+
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -9,13 +12,18 @@ import java.sql.*;
 import java.util.*;
 
 public class MariaDBManager {
+    private final SatipoClan plugin;
+    private final FileConfiguration config;
     private HikariDataSource dataSource;
-
     private final Map<String, String> playerClanCache = new HashMap<>();
     private final Set<String> clanNamesCache = new HashSet<>();
+    private final Map<String, String> clanColoredNameCache = new HashMap<>();
     private long lastCacheUpdate = 0;
 
     public MariaDBManager(FileConfiguration config) {
+        this.config = config;
+        this.plugin = SatipoClan.getInstance();
+
         String host = config.getString("storage.mariadb.host");
         int port = config.getInt("storage.mariadb.port");
         String database = config.getString("storage.mariadb.database");
@@ -53,7 +61,8 @@ public class MariaDBManager {
         try (Connection con = getConnection(); Statement stmt = con.createStatement()) {
             stmt.executeUpdate("""
                 CREATE TABLE IF NOT EXISTS clans (
-                    name VARCHAR(36) PRIMARY KEY,
+                    name VARCHAR(255) PRIMARY KEY,
+                    name_colored TEXT,
                     founder VARCHAR(36),
                     leader VARCHAR(36),
                     money DOUBLE,
@@ -63,7 +72,7 @@ public class MariaDBManager {
 
             stmt.executeUpdate("""
                 CREATE TABLE IF NOT EXISTS clan_users (
-                    clan VARCHAR(36),
+                    clan VARCHAR(255),
                     username VARCHAR(36),
                     PRIMARY KEY (clan, username)
                 )
@@ -71,8 +80,8 @@ public class MariaDBManager {
 
             stmt.executeUpdate("""
                 CREATE TABLE IF NOT EXISTS alliances (
-                    clan1 VARCHAR(36),
-                    clan2 VARCHAR(36),
+                    clan1 VARCHAR(255),
+                    clan2 VARCHAR(255),
                     friendly_fire BOOLEAN DEFAULT FALSE,
                     PRIMARY KEY (clan1, clan2)
                 )
@@ -80,14 +89,14 @@ public class MariaDBManager {
 
             stmt.executeUpdate("""
                 CREATE TABLE IF NOT EXISTS friendlyfire (
-                    clan VARCHAR(36) PRIMARY KEY,
+                    clan VARCHAR(255) PRIMARY KEY,
                     enabled BOOLEAN
                 )
             """);
 
             stmt.executeUpdate("""
                 CREATE TABLE IF NOT EXISTS banned_clans (
-                    name VARCHAR(36) PRIMARY KEY,
+                    name VARCHAR(255) PRIMARY KEY,
                     reason TEXT
                 )
             """);
@@ -95,7 +104,7 @@ public class MariaDBManager {
             stmt.executeUpdate("""
                 CREATE TABLE IF NOT EXISTS reports (
                     id INT AUTO_INCREMENT PRIMARY KEY,
-                    clan VARCHAR(36),
+                    clan VARCHAR(255),
                     reason TEXT
                 )
             """);
@@ -111,7 +120,7 @@ public class MariaDBManager {
                 CREATE TABLE IF NOT EXISTS player_clan_history (
                     uuid VARCHAR(36) NOT NULL,
                     name VARCHAR(16),
-                    current_clan VARCHAR(32),
+                    current_clan VARCHAR(255),
                     history TEXT,
                     PRIMARY KEY (uuid)
                 )
@@ -119,7 +128,7 @@ public class MariaDBManager {
 
             stmt.executeUpdate("""
                 CREATE TABLE IF NOT EXISTS clan_invites (
-                    clan VARCHAR(36),
+                    clan VARCHAR(255),
                     username VARCHAR(36),
                     PRIMARY KEY (clan, username),
                     invite_time BIGINT NOT NULL DEFAULT 0
@@ -128,18 +137,32 @@ public class MariaDBManager {
 
             stmt.executeUpdate("""
                 CREATE TABLE IF NOT EXISTS pending_alliances (
-                    requester VARCHAR(36),
-                    target VARCHAR(36),
+                    requester VARCHAR(255),
+                    target VARCHAR(255),
                     PRIMARY KEY (requester, target)
                 )
             """);
 
             stmt.executeUpdate("""
                 CREATE TABLE IF NOT EXISTS friendlyfire_allies (
-                    clan VARCHAR(36) PRIMARY KEY,
+                    clan VARCHAR(255) PRIMARY KEY,
                     enabled BOOLEAN
                 )
             """);
+        }
+
+        try (Connection con = getConnection();
+            Statement stmt = con.createStatement()) {
+
+            ResultSet rs = con.getMetaData().getColumns(null, null, "clans", "name_colored");
+            if (!rs.next()) {
+                stmt.executeUpdate("ALTER TABLE clans ADD COLUMN name_colored TEXT");
+                Bukkit.getLogger().info("Columna 'name_colored' agregada a la tabla 'clans'.");
+            }
+
+        } catch (SQLException e) {
+            Bukkit.getLogger().severe("Error al verificar o agregar la columna 'name_colored': " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -195,11 +218,15 @@ public class MariaDBManager {
         }
 
         try (Connection con = getConnection();
-             PreparedStatement stmt2 = con.prepareStatement("SELECT name FROM clans");
-             ResultSet rs2 = stmt2.executeQuery()) {
+            PreparedStatement stmt2 = con.prepareStatement("SELECT name, name_colored FROM clans");
+            ResultSet rs2 = stmt2.executeQuery()) {
 
             while (rs2.next()) {
-                clanNamesCache.add(rs2.getString("name"));
+                String name = rs2.getString("name");
+                String colored = rs2.getString("name_colored");
+
+                clanNamesCache.add(name);
+                clanColoredNameCache.put(name, colored != null ? colored : name); // fallback
             }
 
         } catch (SQLException e) {
@@ -229,4 +256,10 @@ public class MariaDBManager {
             reloadCache();
         }
     }
+
+    public String getColoredClanName(String clan) {
+        ensureCacheFresh();
+        return clanColoredNameCache.getOrDefault(clan, clan);
+    }
+
 }

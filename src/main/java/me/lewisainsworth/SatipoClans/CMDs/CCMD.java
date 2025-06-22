@@ -6,6 +6,8 @@ import me.lewisainsworth.satipoclans.Utils.FileHandler;
 import me.lewisainsworth.satipoclans.Utils.MSG;
 import static me.lewisainsworth.satipoclans.SatipoClan.prefix;
 import me.lewisainsworth.satipoclans.Utils.LangManager;
+import me.lewisainsworth.satipoclans.Utils.ClanNameHandler;
+
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -564,9 +566,11 @@ public class CCMD implements CommandExecutor, TabCompleter {
 //        data.set("Wars." + otherClan + ".Ally.Alliance", allianceOtherClan);
 //    }
 
-   public void stats(CommandSender sender, String clanName) {
+    public void stats(CommandSender sender, String clanName) {
         try (Connection con = plugin.getMariaDBManager().getConnection();
-            PreparedStatement clanStmt = con.prepareStatement("SELECT founder, leader, privacy, money FROM clans WHERE name=?");
+            PreparedStatement clanStmt = con.prepareStatement(
+                "SELECT name_colored, founder, leader, privacy, money FROM clans WHERE name=?"
+            );
             PreparedStatement membersStmt = con.prepareStatement("SELECT username FROM clan_users WHERE clan=?")) {
 
             clanStmt.setString(1, clanName);
@@ -577,6 +581,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
                 return;
             }
 
+            String coloredName = clanRs.getString("name_colored");
             String founder = clanRs.getString("founder");
             String leader = clanRs.getString("leader");
             String privacy = clanRs.getString("privacy");
@@ -584,7 +589,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
 
             sender.sendMessage(MSG.color(""));
             sender.sendMessage(MSG.color(langManager.getMessage("user.stats_border")));
-            sender.sendMessage(MSG.color(langManager.getMessage("user.stats_title").replace("{clan}", clanName)));
+            sender.sendMessage(MSG.color(langManager.getMessage("user.stats_title").replace("{clan}", coloredName)));
             sender.sendMessage(MSG.color(langManager.getMessage("user.stats_border")));
             sender.sendMessage(MSG.color(langManager.getMessage("user.stats_founder").replace("{founder}", founder)));
             sender.sendMessage(MSG.color(langManager.getMessage("user.stats_leader").replace("{leader}", leader)));
@@ -606,6 +611,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
             sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.stats_error")));
         }
     }
+
 
 
 
@@ -801,7 +807,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
                 Player recipient = Bukkit.getPlayerExact(userName);
                 if (recipient != null) {
                     recipient.sendMessage(MSG.color(langManager.getMessage("user.chat_format")
-                        .replace("{clan}", playerClan)
+                        .replace("{clan}", plugin.getMariaDBManager().getColoredClanName(playerClan))
                         .replace("{player}", player.getName())
                         .replace("{message}", formattedMessage)));
                 }
@@ -972,7 +978,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
     public void list(CommandSender sender) {
         try (Connection con = plugin.getMariaDBManager().getConnection();
             PreparedStatement ps = con.prepareStatement(
-                "SELECT name FROM clans WHERE name NOT IN (SELECT name FROM banned_clans)"
+                "SELECT name_colored FROM clans WHERE name NOT IN (SELECT name FROM banned_clans)"
             );
             ResultSet rs = ps.executeQuery()) {
 
@@ -985,8 +991,8 @@ public class CCMD implements CommandExecutor, TabCompleter {
             clansList.append(MSG.color(langManager.getMessageWithPrefix("user.clans_header") + "\n"));
 
             while (rs.next()) {
-                String rawName = rs.getString("name");
-                clansList.append(MSG.color("&7- " + MSG.color(rawName))).append("\n");
+                String coloredName = rs.getString("name_colored");
+                clansList.append(MSG.color("&7- " + coloredName)).append("\n");
             }
 
             clansList.append(MSG.color(langManager.getMessageWithPrefix("user.clans_footer")));
@@ -997,6 +1003,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
             sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.clans_error")));
         }
     }
+
 
 
 
@@ -1058,14 +1065,19 @@ public class CCMD implements CommandExecutor, TabCompleter {
         String value = args[2];
 
         try (Connection con = plugin.getMariaDBManager().getConnection()) {
-            if (type.equalsIgnoreCase("name")) {
+           if (type.equalsIgnoreCase("name")) {
+                if (plugin.isClanBanned(value)) {
+                    player.sendMessage(MSG.color(langManager.getMessageWithPrefix("msg.clan_name_banned").replace("{clan}", value)));
+                    return;
+                }
+
                 con.setAutoCommit(false);
                 try {
-                    // Actualizar nombre en todas las tablas necesarias
-                    try (PreparedStatement ps = con.prepareStatement("UPDATE clans SET name=? WHERE name=?")) {
-                        ps.setString(1, value);
-                        ps.setString(2, clanName);
-                        ps.executeUpdate();
+                    try {
+                        ClanNameHandler.updateClanName(plugin, clanName, value);
+                    } catch (IllegalArgumentException e) {
+                        player.sendMessage(e.getMessage());
+                        return;
                     }
 
                     try (PreparedStatement ps = con.prepareStatement("UPDATE clan_users SET clan=? WHERE clan=?")) {
@@ -1200,22 +1212,27 @@ public class CCMD implements CommandExecutor, TabCompleter {
     }
 
 
-
-
-
     public void create(CommandSender sender, String[] args) {
         if (args.length < 2 || !(sender instanceof Player player)) {
             sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.create_usage")));
             return;
         }
 
-        String clanName = args[1];
+        String rawClanName = args[1];
+        String plainClanName = ClanNameHandler.getVisibleName(rawClanName);
         String playerName = player.getName();
         FileConfiguration config = plugin.getFH().getConfig();
         Econo econ = SatipoClan.getEcon();
 
-        if (config.getStringList("names-blocked.blocked").contains(clanName)) {
+        // Validar nombres bloqueados
+        if (config.getStringList("names-blocked.blocked").stream().anyMatch(b -> b.equalsIgnoreCase(plainClanName))) {
             sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.create_name_blocked")));
+            return;
+        }
+
+        // ❌ Verificar si está baneado
+        if (plugin.isClanBanned(plainClanName)) {
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("msg.clan_name_banned").replace("{clan}", plainClanName)));
             return;
         }
 
@@ -1223,67 +1240,75 @@ public class CCMD implements CommandExecutor, TabCompleter {
             try (Connection con = plugin.getMariaDBManager().getConnection();
                 PreparedStatement check = con.prepareStatement("SELECT name FROM clans WHERE name=?")) {
 
-                check.setString(1, clanName);
+                check.setString(1, plainClanName);
                 ResultSet rs = check.executeQuery();
                 if (rs.next()) {
                     Bukkit.getScheduler().runTask(plugin, () ->
-                        sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.create_exists")))
+                            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.create_exists")))
                     );
                     return;
                 }
 
+                // Límite de clanes
                 int maxClans = config.getInt("max-clans", 0);
                 if (maxClans > 0) {
                     try (PreparedStatement countStmt = con.prepareStatement("SELECT COUNT(*) AS total FROM clans")) {
                         ResultSet countRs = countStmt.executeQuery();
                         if (countRs.next() && countRs.getInt("total") >= maxClans) {
                             Bukkit.getScheduler().runTask(plugin, () ->
-                                sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.create_limit")
-                                    .replace("{max}", String.valueOf(maxClans))))
+                                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.create_limit")
+                                            .replace("{max}", String.valueOf(maxClans))))
                             );
                             return;
                         }
                     }
                 }
 
+                // Economía
                 if (config.getBoolean("economy.enabled")) {
                     int cost = config.getInt("economy.cost.create-clan");
                     if (econ.getBalance(player) < cost) {
                         Bukkit.getScheduler().runTask(plugin, () ->
-                            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.create_no_money")
-                                .replace("{cost}", String.valueOf(cost))))
+                                sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.create_no_money")
+                                        .replace("{cost}", String.valueOf(cost))))
                         );
                         return;
                     }
                     econ.withdraw(player, cost);
                 }
 
-                try (PreparedStatement insertClan = con.prepareStatement("INSERT INTO clans (name, founder, leader, money, privacy) VALUES (?, ?, ?, 0, 'Private')");
-                    PreparedStatement insertUser = con.prepareStatement("INSERT INTO clan_users (username, clan) VALUES (?, ?)")) {
+                // Insertar clan
+                try {
+                    ClanNameHandler.insertClan(plugin, rawClanName, playerName, playerName);
 
-                    insertClan.setString(1, clanName);
-                    insertClan.setString(2, playerName);
-                    insertClan.setString(3, playerName);
-                    insertClan.executeUpdate();
+                    try (PreparedStatement insertUser = con.prepareStatement("INSERT INTO clan_users (username, clan) VALUES (?, ?)")) {
+                        insertUser.setString(1, playerName);
+                        insertUser.setString(2, plainClanName);
+                        insertUser.executeUpdate();
+                    }
 
-                    insertUser.setString(1, playerName);
-                    insertUser.setString(2, clanName);
-                    insertUser.executeUpdate();
+                    Bukkit.getScheduler().runTask(plugin, () -> {
+                        PECMD.addClanToHistory(player, plainClanName);
+                        player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.create_success")
+                                .replace("{clan}", MSG.color(rawClanName))));
+                    });
+
+                } catch (IllegalArgumentException e) {
+                    Bukkit.getScheduler().runTask(plugin, () -> {
+                        player.sendMessage(e.getMessage());
+                    });
                 }
-
-                Bukkit.getScheduler().runTask(plugin, () -> {
-                    PECMD.addClanToHistory(player, clanName);
-                    player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.create_success").replace("{clan}", clanName)));
-                });
 
             } catch (SQLException e) {
                 e.printStackTrace();
                 Bukkit.getScheduler().runTask(plugin, () ->
-                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.create_error")))
+                        sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.create_error")))
                 );
             }
         });
     }
+
+
 
 
 

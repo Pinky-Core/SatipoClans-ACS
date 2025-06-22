@@ -17,6 +17,7 @@ me\lewisainsworth\satipoclans\Utils\Metrics$SimplePie.class
 me\lewisainsworth\satipoclans\Utils\Econo.class
 me\lewisainsworth\satipoclans\Utils\Metrics$MultiLineChart.class
 me\lewisainsworth\satipoclans\Utils\Metrics$AdvancedPie.class
+me\lewisainsworth\satipoclans\Utils\ClanNameHandler.class
 me\lewisainsworth\satipoclans\Utils\Metrics$JsonObjectBuilder.class
 me\lewisainsworth\satipoclans\Utils\PAPI.class
 me\lewisainsworth\satipoclans\Utils\LangManager.class
