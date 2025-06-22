@@ -145,7 +145,7 @@ public class SatipoClan extends JavaPlugin {
 
    public void searchUpdates() {
       String downloadUrl = "https://www.spigotmc.org/resources/satipoclans.126207/";
-      TextComponent link = new TextComponent(MSG.color("&eClick here to download the update!"));
+      TextComponent link = new TextComponent(MSG.color("&6&lClick here to download the update!"));
       link.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, downloadUrl));
 
       boolean updateAvailable = false;

@@ -142,7 +142,7 @@ public class ACMD implements CommandExecutor, TabCompleter {
         // Mensaje final
         sender.sendMessage(MSG.color("&7------------------------------------"));
         sender.sendMessage(MSG.color(langManager.getMessage("msg.plugin_reloaded")));
-        sender.sendMessage(MSG.color(langManager.getMessage("lang.actual_lang")
+        sender.sendMessage(MSG.color(langManager.getMessage("lang.current_lang")
                 .replace("{lang}", currentLang.toUpperCase())
                 .replace("{lang_name}", langDisplayName)));
         sender.sendMessage(MSG.color("&7------------------------------------"));
@@ -238,47 +238,79 @@ public class ACMD implements CommandExecutor, TabCompleter {
         }
 
         String clan = args[1];
-        String reason = args.length >= 3 ? String.join(" ", Arrays.copyOfRange(args, 2, args.length)) : langManager.getMessage("msg.default_ban_reason");
+        String reason = args.length >= 3 ? args[2] : "Baneado por un administrador";
 
         try (Connection con = plugin.getMariaDBManager().getConnection();
-            PreparedStatement alreadyBanned = con.prepareStatement("SELECT name FROM banned_clans WHERE name = ?");
-            PreparedStatement insertBan = con.prepareStatement("REPLACE INTO banned_clans (name, reason) VALUES (?, ?)");
-            PreparedStatement members = con.prepareStatement("SELECT username FROM clan_users WHERE clan = ?")) {
+            PreparedStatement check = con.prepareStatement("SELECT name FROM clans WHERE name = ?");
+            PreparedStatement ban = con.prepareStatement("REPLACE INTO banned_clans (name, reason) VALUES (?, ?)");
+            PreparedStatement members = con.prepareStatement("SELECT username FROM clan_users WHERE clan = ?");
+            PreparedStatement deleteClan = con.prepareStatement("DELETE FROM clans WHERE name = ?");
+            PreparedStatement deleteUsers = con.prepareStatement("DELETE FROM clan_users WHERE clan = ?");
+            PreparedStatement deleteInvites = con.prepareStatement("DELETE FROM clan_invites WHERE clan = ?");
+            PreparedStatement deleteAlliances = con.prepareStatement("DELETE FROM alliances WHERE clan1 = ? OR clan2 = ?");
+            PreparedStatement deleteFF = con.prepareStatement("DELETE FROM friendlyfire WHERE clan = ?");
+            PreparedStatement deletePendingAllies = con.prepareStatement("DELETE FROM pending_alliances WHERE requester = ? OR target = ?");
+            PreparedStatement deleteReports = con.prepareStatement("DELETE FROM reports WHERE clan = ?")) {
 
-            alreadyBanned.setString(1, clan);
-            try (ResultSet rs = alreadyBanned.executeQuery()) {
-                if (rs.next()) {
-                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("msg.clan_already_banned").replace("{clan}", clan)));
-                    return;
-                }
+            check.setString(1, clan);
+            ResultSet rs = check.executeQuery();
+
+            if (!rs.next()) {
+                sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("msg.clan_not_exist").replace("{clan}", clan)));
+                return;
             }
 
-            insertBan.setString(1, clan);
-            insertBan.setString(2, reason);
-            insertBan.executeUpdate();
+            // Agrega a la blacklist de nombres
+            ban.setString(1, clan);
+            ban.setString(2, reason);
+            ban.executeUpdate();
 
-            // Kick a todos los jugadores del clan, si están online
+            // Expulsa y limpia tags a los miembros conectados
             members.setString(1, clan);
-            try (ResultSet mrs = members.executeQuery()) {
-                while (mrs.next()) {
-                    String user = mrs.getString("username");
-                    Player player = Bukkit.getPlayer(user);
-                    if (player != null && player.isOnline()) {
-                        String kickMessage = langManager.getMessage("msg.kicked_ban_message")
-                            .replace("{clan}", clan)
-                            .replace("{reason}", reason);
-                        player.kickPlayer(MSG.color(kickMessage));
-                    }
+            ResultSet mrs = members.executeQuery();
+            while (mrs.next()) {
+                String user = mrs.getString("username");
+                Player player = Bukkit.getPlayer(user);
+                if (player != null) {
+                    // Limpiar scoreboard/tag si usás uno
+                    player.kickPlayer(MSG.color(langManager.getMessage("msg.kicked_ban_message")
+                        .replace("{clan}", clan)
+                        .replace("{reason}", reason)));
                 }
             }
 
-            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("msg.clan_banned").replace("{clan}", clan).replace("{reason}", reason)));
+            // Elimina todos los datos relacionados al clan
+            deleteClan.setString(1, clan);
+            deleteClan.executeUpdate();
+
+            deleteUsers.setString(1, clan);
+            deleteUsers.executeUpdate();
+
+            deleteInvites.setString(1, clan);
+            deleteInvites.executeUpdate();
+
+            deleteAlliances.setString(1, clan);
+            deleteAlliances.setString(2, clan);
+            deleteAlliances.executeUpdate();
+
+            deleteFF.setString(1, clan);
+            deleteFF.executeUpdate();
+
+            deletePendingAllies.setString(1, clan);
+            deletePendingAllies.setString(2, clan);
+            deletePendingAllies.executeUpdate();
+
+            deleteReports.setString(1, clan);
+            deleteReports.executeUpdate();
+
+            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("msg.clan_banned").replace("{clan}", clan)));
 
         } catch (SQLException e) {
             e.printStackTrace();
             sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("msg.error_banning_clan")));
         }
     }
+
 
 
 

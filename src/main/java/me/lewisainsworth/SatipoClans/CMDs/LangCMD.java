@@ -51,10 +51,12 @@ public class LangCMD implements CommandExecutor {
         String currentLang = langManager.getCurrentLang();
         String langDisplay = currentLang.toUpperCase() + " - " +
                 languageNames.getOrDefault(currentLang, "Unknown");
+        String langDisplayName = plugin.getLangCMD().getLanguageDisplayName(currentLang);
 
         player.sendMessage(MSG.color(
-                langManager.getMessage("lang.actual_lang")
+                langManager.getMessage("lang.current_lang")
                         .replace("{lang}", langDisplay)
+                        .replace("{lang_name}", langDisplayName)
         ));
 
         player.sendMessage(MSG.color(langManager.getMessage("lang.lang_list_title")));
@@ -74,7 +76,7 @@ public class LangCMD implements CommandExecutor {
                     new TextComponent[]{
                             new TextComponent(MSG.color(
                                     langManager.getMessage(isSelected
-                                            ? "lang.selected_lang"
+                                            ? "lang.actual_lang"
                                             : "lang.select_lang")
                             ))
                     }));

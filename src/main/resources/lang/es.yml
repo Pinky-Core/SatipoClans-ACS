@@ -126,7 +126,7 @@ user:
   disband_error: "&c Error al eliminar el clan."
 
   # CREATE COMMAND
-  create_usage: "&c&l USO:&f /cls create <nombre>""
+  create_usage: "&c&l USO:&f /cls create <nombre>"
   create_exists: "&c El clan ya existe."
   create_limit: "&c Se alcanzó el límite de clanes ({max})."
   create_no_money: "&c No tienes suficiente dinero. Necesitas: &2&l${cost}"
