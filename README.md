@@ -8,8 +8,9 @@ SatipoClans es un plugin para servidores Minecraft que implementa un sistema ava
 
 1. Descarga el archivo JAR de SatipoClans.  
 2. Colócalo en la carpeta `plugins` de tu servidor Minecraft.  
-3. Configura la conexión a MariaDB en el archivo `config.yml` o en la sección correspondiente.  
-4. Reinicia el servidor para que el plugin se cargue correctamente.
+3. Configura la conexión a MariaDB en el archivo `config.yml` o en la sección correspondiente.
+5. Reinicia el servidor para que el plugin se cargue correctamente.
+6. Configura tu idioma con `/cla lang` o `/cls lang select <idioma>` (Puedes crear tu propio yml).
 
 ---
 
@@ -30,6 +31,7 @@ El plugin crea automáticamente las tablas necesarias al iniciar el servidor si 
 | `/cls join <clan>`    | Unirse a un clan (requiere invitación si es privado) | `satipoclans.user.join`     |
 | `/cls leave`          | Salir del clan actual                         | `satipoclans.user.leave`     |
 | `/cls disband`        | Disolver tu clan (solo líderes)               | `satipoclans.user.disband`   |
+| `/cls edit <name/privacy>`          | Editar nombre o privacidad                    | `satipoclans.user.edit`     |
 | `/cls ally`          | Haz una alianza con otro clan                     | `satipoclans.user.ally`     |
 | `/cls ff`          | Activa o desactiva el fuego amigo                      | `satipoclans.user.ff`     |
 | `/cls chat <mensaje>` | Enviar mensaje al chat privado del clan      | `satipoclans.user.chat`     |
