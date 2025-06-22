@@ -25,16 +25,16 @@ El plugin crea automáticamente las tablas necesarias al iniciar el servidor si 
 
 | Comando               | Descripción                                  | Permiso                |
 |-----------------------|----------------------------------------------|------------------------|
-| `/cls create <nombre>`| Crear un nuevo clan                           | `satipoclans.user`     |
-| `/cls invite <jugador>`| Invitar a un jugador a tu clan               | `satipoclans.user`     |
-| `/cls join <clan>`    | Unirse a un clan (requiere invitación si es privado) | `satipoclans.user`     |
-| `/cls leave`          | Salir del clan actual                         | `satipoclans.user`     |
-| `/cls disband`        | Disolver tu clan (solo líderes)               | `satipoclans.user`   |
-| `/cls ally`          | Haz una alianza con otro clan                     | `satipoclans.user`     |
-| `/cls ff`          | Activa o desactiva el fuego amigo                      | `satipoclans.user`     |
-| `/cls chat <mensaje>` | Enviar mensaje al chat privado del clan      | `satipoclans.user`     |
-| `/cls stats`          | Ver estadísticas del clan                      | `satipoclans.user`     |
-| `/cls list`          | Ver lista de clanes                     | `satipoclans.user`     |
+| `/cls create <nombre>`| Crear un nuevo clan                           | `satipoclans.user.create`     |
+| `/cls invite <jugador>`| Invitar a un jugador a tu clan               | `satipoclans.user.invite`     |
+| `/cls join <clan>`    | Unirse a un clan (requiere invitación si es privado) | `satipoclans.user.join`     |
+| `/cls leave`          | Salir del clan actual                         | `satipoclans.user.leave`     |
+| `/cls disband`        | Disolver tu clan (solo líderes)               | `satipoclans.user.disband`   |
+| `/cls ally`          | Haz una alianza con otro clan                     | `satipoclans.user.ally`     |
+| `/cls ff`          | Activa o desactiva el fuego amigo                      | `satipoclans.user.ff`     |
+| `/cls chat <mensaje>` | Enviar mensaje al chat privado del clan      | `satipoclans.user.chat`     |
+| `/cls stats`          | Ver estadísticas del clan                      | `satipoclans.user.stats`     |
+| `/cls list`          | Ver lista de clanes                     | `satipoclans.user.list`     |
 
 ---
 
