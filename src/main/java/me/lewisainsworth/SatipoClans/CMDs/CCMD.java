@@ -995,7 +995,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
                 clansList.append(MSG.color("&7- " + coloredName)).append("\n");
             }
 
-            clansList.append(MSG.color(langManager.getMessageWithPrefix("user.clans_footer")));
+            clansList.append(MSG.color(langManager.getMessage("user.clans_footer")));
             sender.sendMessage(clansList.toString());
 
         } catch (SQLException e) {
