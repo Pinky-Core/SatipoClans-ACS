@@ -246,7 +246,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
         int totalPages = (int) Math.ceil((double) helpLines.size() / linesPerPage);
 
         if (page < 1 || page > totalPages) {
-            player.sendMessage(MSG.color(prefix + "&c Página inválida. Usa /cls help <1-" + totalPages + ">"));
+            player.sendMessage(MSG.color(prefix + "&c Página inválida. Usa /clan help <1-" + totalPages + ">"));
             return;
         }
 
@@ -266,14 +266,14 @@ public class CCMD implements CommandExecutor, TabCompleter {
 
         if (page > 1) {
             TextComponent prev = new TextComponent(MSG.color("&e« Página anterior "));
-            prev.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/cls help " + (page - 1)));
+            prev.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/clan help " + (page - 1)));
             prev.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("Haz clic para ir a la página " + (page - 1))));
             nav.addExtra(prev);
         }
 
         if (page < totalPages) {
             TextComponent next = new TextComponent(MSG.color("&e Página siguiente »"));
-            next.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/cls help " + (page + 1)));
+            next.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/clan help " + (page + 1)));
             next.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text("Haz clic para ir a la página " + (page + 1))));
             nav.addExtra(next);
         }
@@ -617,7 +617,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
 
     /* private void Economy(Player player, String clan, String[] args) {
         if (args.length != 3) {
-            player.sendMessage(MSG.color(prefix + "&c USO: /cls economy <depositar|retirar> <cantidad>"));
+            player.sendMessage(MSG.color(prefix + "&c USO: /clan economy <depositar|retirar> <cantidad>"));
             return;
         }
 

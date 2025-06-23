@@ -1,19 +1,19 @@
 # USER COMMANDS
 user:
-  console_command_only: "&c Comandos de consola: &f/cls reload."
+  console_command_only: "&c Comandos de consola: &f/clansadmin reload."
   no_permission: "&c No tienes permisos para usar este comando."
   invalid_page_number: "&c Número de página inválido."
   only_players_help: "&c Solo los jugadores pueden ver la ayuda paginada."
   already_in_clan: "&c Ya perteneces a un clan."
-  usage_report: "&c &lUSO:&f /cls report <clan> <razón>"
-  usage_join: "&c &lUSO:&f /cls join <clan>"
-  usage_invite: "&c &lUSO:&f /cls invite <jugador>"
-  usage_ff: "&c &lUSO:&f /cls ff <on|off>"
-  usage_ally: "&c &lUSO:&f /cls ally <request|accept|decline|remove> <nombreClan>"
+  usage_report: "&c &lUSO:&f /clan report <clan> <razón>"
+  usage_join: "&c &lUSO:&f /clan join <clan>"
+  usage_invite: "&c &lUSO:&f /clan invite <jugador>"
+  usage_ff: "&c &lUSO:&f /clan ff <on|off>"
+  usage_ally: "&c &lUSO:&f /clan ally <request|accept|decline|remove> <nombreClan>"
   no_clan: "&c No perteneces a ningún clan."
 
   # HELP COMMAND
-  invalid_page_help: "&c Página inválida. Usa /cls help <1-{total_pages}>"
+  invalid_page_help: "&c Página inválida. Usa /clan help <1-{total_pages}>"
   help_header: "&6&m====================================="
   help_title: "&6&l» &a&lꜱᴀᴛɪᴘᴏ&6&lᴄʟᴀɴꜱ &e&lᴄᴏᴍᴀɴᴅᴏꜱ &7(Página {page}/{total_pages})"
   help_footer: "&6&m====================================="
@@ -36,11 +36,11 @@ user:
     - "&e➤ &f&lʜᴇʟᴘ &7» &fᴍᴜᴇꜱᴛʀᴀ ᴇꜱᴛᴇ ᴍᴇɴᴜ́ ᴅᴇ ᴀʏᴜᴅᴀ."
 
   # KICK COMMAND
-  usage_kick: "&c &lUSO:&f /cls kick <jugador>"
-  console_command_only: "&c Comandos de consola: &f/cls reload."
+  usage_kick: "&c &lUSO:&f /clan kick <jugador>"
+  console_command_only: "&c Comandos de consola: &f/clan reload."
   no_clan: "&c No perteneces a ningún clan."
   kick_only_leader: "&c Solo el líder del clan puede expulsar miembros."
-  kick_cant_kick_self: "&c No puedes expulsarte a ti mismo. Usa /cls leave."
+  kick_cant_kick_self: "&c No puedes expulsarte a ti mismo. Usa /clan leave."
   kick_player_not_member: "&c El jugador no es miembro del clan."
   kick_success: "&2 El jugador &e&l{player} &2ha sido expulsado del clan &e&l{clan}"
   kick_clan_deleted: "&2 El clan está vacío. Ha sido eliminado."
@@ -74,7 +74,7 @@ user:
   invite_pending: "&c Este jugador ya tiene una invitación pendiente."
   invite_sent: "&a Invitación enviada a &f{player}"
   invite_received: "&e Has recibido una invitación para unirte al clan &f{clan}"
-  invite_usage: "&8 USO: /cls join {clan} &7- para unirte al clan"
+  invite_usage: "&8 USO: /clan join {clan} &7- para unirte al clan"
   invite_error: "&c Error al enviar la invitación."
 
   # CHAT COMMAND
@@ -111,7 +111,7 @@ user:
 
   # EDIT COMMAND
   edit_no_leader: "&c ¡Solo el líder puede modificar el clan!"
-  edit_usage: "&c &lUSO:&f /cls edit <name|privacy> <valor>"
+  edit_usage: "&c &lUSO:&f /clan edit <name|privacy> <valor>"
   edit_name_success: "&3 Nombre del clan cambiado a: &f{name}"
   edit_name_error: "&c Error al cambiar el nombre del clan."
   edit_privacy_success: "&3 Privacidad del clan cambiada a: &f{privacy}"
@@ -126,7 +126,7 @@ user:
   disband_error: "&c Error al eliminar el clan."
 
   # CREATE COMMAND
-  create_usage: "&c&l USO:&f /cls create <nombre>"
+  create_usage: "&c&l USO:&f /clan create <nombre>"
   create_exists: "&c El clan ya existe."
   create_limit: "&c Se alcanzó el límite de clanes ({max})."
   create_no_money: "&c No tienes suficiente dinero. Necesitas: &2&l${cost}"
@@ -139,7 +139,7 @@ user:
 # HANDLERS
 command:
   # FF COMMAND
-  ff_usage: "&c &lUSO:&f /cls ff <on|off>"
+  ff_usage: "&c &lUSO:&f /clan ff <on|off>"
   ff_status: "&a El fuego amigo ahora está: &e{status}"
   ff_error: "&c Error al actualizar la configuración de fuego amigo."
 
@@ -149,12 +149,12 @@ command:
   allyff_error: "&c Error al actualizar la configuración de fuego amigo entre aliados."
 
   # ALLY COMMAND
-  ally_usage: "&c &lUSO:&f /cls ally <request|accept|decline|remove|ff> [<clan>|<on|off>]"
-  ally_request_usage: "&c &lUso correcto:&f /cls ally request <clan>"
-  ally_accept_usage: "&c &lUso correcto:&f /cls ally accept <clan>"
-  ally_decline_usage: "&c &lUso correcto:&f /cls ally decline <clan>"
-  ally_remove_usage: "&c &lUso correcto:&f /cls ally remove <clan>"
-  ally_ff_usage: "&c &lUso correcto:&f /cls ally ff <on|off>"
+  ally_usage: "&c &lUSO:&f /clan ally <request|accept|decline|remove|ff> [<clan>|<on|off>]"
+  ally_request_usage: "&c &lUso correcto:&f /clan ally request <clan>"
+  ally_accept_usage: "&c &lUso correcto:&f /clan ally accept <clan>"
+  ally_decline_usage: "&c &lUso correcto:&f /clan ally decline <clan>"
+  ally_remove_usage: "&c &lUso correcto:&f /clan ally remove <clan>"
+  ally_ff_usage: "&c &lUso correcto:&f /clan ally ff <on|off>"
   ally_invalid_subcommand: "&c Subcomando inválido. Usa request, accept, decline, remove o ff."
 
   # ALLY REQUEST
@@ -186,7 +186,7 @@ command:
   ally_remove_error: "&c Error al eliminar la alianza."
 
   # ALLY FF COMMAND
-  allyff_usage: "&c &lUso correcto:&f /cls ally ff <on|off>"
+  allyff_usage: "&c &lUso correcto:&f /clan ally ff <on|off>"
   allyff_status: "&a El fuego amigo entre aliados ahora está: &e{status}"
   allyff_error: "&c Error al modificar la configuración de fuego amigo entre aliados."
 
@@ -201,14 +201,14 @@ status:
 msg:
   no_permission: "&cNo tienes permiso para usar este comando."
   only_in_game: "&cEste comando solo puede usarse en el juego."
-  usage_lang: "&e &lUso:&f /clansadmin lang"
-  console_reload_only: "&cLa consola solo puede usar: &f/cla reload"
+  usage_lang: "&e &lUso:&f /clanadminnadmin lang"
+  console_reload_only: "&cLa consola solo puede usar: &f/clanadmin reload"
   reloading: "&eRecargando plugin..."
   plugin_reloaded: "&a✔ Plugin recargado correctamente."
 
   # RELOAD COMMAND
   confirm_clear_1: "&e¿Estás seguro de borrar todos los datos de clanes?"
-  confirm_clear_2: "&eUsa &c&l/cla clear &eotra vez para confirmar."
+  confirm_clear_2: "&eUsa &c&l/clanadmin clear &eotra vez para confirmar."
   data_cleared: "&aTodos los datos relacionados con clanes fueron eliminados de la Database."
   error_clearing_data: "&cError al borrar los datos de la Database."
 
@@ -218,11 +218,11 @@ msg:
       - "&8&m====================================="
       - "&8&l» &a&lꜱᴀᴛɪᴘᴏ&6&lᴄʟᴀɴꜱ &c&lᴀᴅᴍɪɴ &8&l«"
       - "&8&m====================================="
-      - "&e/cla reports &7» &fᴍᴜᴇꜱᴛʀᴀ ᴛᴏᴅᴏꜱ ʟᴏꜱ ᴄʟᴀɴᴇꜱ ᴄᴏɴ ʀᴇᴘᴏʀᴛᴇꜱ ᴀᴄᴛɪᴠᴏꜱ."
-      - "&e/cla reload &7» &fʀᴇᴄᴀʀɢᴀ ʟᴀ ᴄᴏɴꜰɪɢᴜʀᴀᴄɪᴏ́ɴ ʏ ᴅᴀᴛᴏꜱ ᴅᴇʟ ᴘʟᴜɢɪɴ."
-      - "&e/cla ban <clan> [razón] &7» &fᴘʀᴏʜɪ́ʙᴇ ᴜɴ ᴄʟᴀɴ ᴘᴇʀᴍᴀɴᴇɴᴛᴇᴍᴇɴᴛᴇ (ᴘᴇʀᴍɪꜱᴏ ᴘᴏʀ ᴅᴇꜰᴇᴄᴛᴏ)."
-      - "&e/cla unban <clan> &7» &fʟᴇᴠᴀɴᴛᴀ ʟᴀ ᴘʀᴏʜɪʙɪᴄɪᴏ́ɴ ᴅᴇ ᴜɴ ᴄʟᴀɴ."
-      - "&e/cla clear &7» &c⚠ ʙᴏʀʀᴀ ᴛᴏᴅᴀ ʟᴀ ʙᴀꜱᴇ ᴅᴇ ᴅᴀᴛᴏꜱ (¡ᴜꜱᴀʀ ᴄᴏɴ ᴇxᴛʀᴇᴍᴀ ᴘʀᴇᴄᴀᴜᴄɪᴏ́ɴ!)."
+      - "&e/clanadmin reports &7» &fᴍᴜᴇꜱᴛʀᴀ ᴛᴏᴅᴏꜱ ʟᴏꜱ ᴄʟᴀɴᴇꜱ ᴄᴏɴ ʀᴇᴘᴏʀᴛᴇꜱ ᴀᴄᴛɪᴠᴏꜱ."
+      - "&e/clanadmin reload &7» &fʀᴇᴄᴀʀɢᴀ ʟᴀ ᴄᴏɴꜰɪɢᴜʀᴀᴄɪᴏ́ɴ ʏ ᴅᴀᴛᴏꜱ ᴅᴇʟ ᴘʟᴜɢɪɴ."
+      - "&e/clanadmin ban <clan> [razón] &7» &fᴘʀᴏʜɪ́ʙᴇ ᴜɴ ᴄʟᴀɴ ᴘᴇʀᴍᴀɴᴇɴᴛᴇᴍᴇɴᴛᴇ (ᴘᴇʀᴍɪꜱᴏ ᴘᴏʀ ᴅᴇꜰᴇᴄᴛᴏ)."
+      - "&e/clanadmin unban <clan> &7» &fʟᴇᴠᴀɴᴛᴀ ʟᴀ ᴘʀᴏʜɪʙɪᴄɪᴏ́ɴ ᴅᴇ ᴜɴ ᴄʟᴀɴ."
+      - "&e/clanadmin clear &7» &c⚠ ʙᴏʀʀᴀ ᴛᴏᴅᴀ ʟᴀ ʙᴀꜱᴇ ᴅᴇ ᴅᴀᴛᴏꜱ (¡ᴜꜱᴀʀ ᴄᴏɴ ᴇxᴛʀᴇᴍᴀ ᴘʀᴇᴄᴀᴜᴄɪᴏ́ɴ!)."
       - "&8&m====================================="
   
   # REPORTS COMMAND
@@ -233,8 +233,8 @@ msg:
   error_loading_reports: "&cError al cargar los reportes."
 
   # BAN/UNBAN COMMANDS
-  usage_ban: "&c &lUSO:&f /cla ban <clan> [razón]"
-  usage_unban: "&c &lUSO:&f /cla unban <clan>"
+  usage_ban: "&c &lUSO:&f /clanadmin ban <clan> [razón]"
+  usage_unban: "&c &lUSO:&f /clanadmin unban <clan>"
   default_ban_reason: "Baneado por un administrador"
 
   clan_banned: "&cEl clan &e{clan} &cha sido baneado. Razón: &f{reason}"
@@ -251,7 +251,7 @@ msg:
 
 # STATS COMMANDS
 stats:
-  usage_stats: "&c &lUSO correcto:&f &f/clans stats <jugador>"
+  usage_stats: "&c &lUSO correcto:&f &f/clanadminns stats <jugador>"
   no_clan: "Sin clan"
   error_database: "&cError al consultar la base de datos."
   stats_header_line: "&6&m========================================"
@@ -266,7 +266,7 @@ stats:
 
 # LANG COMMANDS
 lang:
-  usage: "&e &lUSO:&f /clansadmin lang (select) <código>"
+  usage: "&e &lUSO:&f /clanadmin lang (select) <código>"
   lang_list_title: "&eLista de idiomas disponibles:"
   current_lang: "&eIdioma actual: &a{lang}"
   actual_lang: "Idioma seleccionado"

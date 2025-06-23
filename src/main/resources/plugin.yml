@@ -6,15 +6,12 @@ api-version: "1.20"
 softdepend: [Vault, PlaceholderAPI]
 
 commands:
-  clans:
+  clan:
     description: Comandos principales de los clanes.
-    aliases: ${CLANS_ALIASES}
-  clansadmin:
+  clanadmin:
     description: Administra el plugin SatipoClans.
-    aliases: ${CLANSADMIN_ALIASES}
   scstats:
     description: Muestra estadísticas del jugador.
-    aliases: ${SCSTATS_ALIASES}
 
 permissions:
   satipoclans.*:

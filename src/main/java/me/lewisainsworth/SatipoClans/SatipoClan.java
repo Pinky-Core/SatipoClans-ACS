@@ -48,7 +48,6 @@ public class SatipoClan extends JavaPlugin {
    public void onEnable() {
       instance = this;
       saveDefaultConfig();
-      applyCommandAliases();
       prefix = getConfig().getString("prefix", "&7 [&a&lꜱᴀᴛɪᴘᴏ&6&lᴄʟᴀɴꜱ&7]&n");
       fh = new FileHandler(this);
       updater = new Updater(this, 114316);
@@ -57,7 +56,7 @@ public class SatipoClan extends JavaPlugin {
       ClanUtils.init(this);
       copyLangFiles();
       langManager = new LangManager(this);
-      getCommand("clans").setExecutor(new CCMD(this, langManager));
+      getCommand("clan").setExecutor(new CCMD(this, langManager));
       LangCMD langCMD = new LangCMD(this);
       setLangCMD(langCMD);
       
@@ -113,30 +112,6 @@ public class SatipoClan extends JavaPlugin {
       return instance;
    }
 
-   private void applyCommandAliases() {
-      FileConfiguration config = getConfig();
-      Map<String, List<String>> aliasMap = new HashMap<>();
-
-      // Cargar aliases del config
-      ConfigurationSection section = config.getConfigurationSection("command-aliases");
-      if (section != null) {
-         for (String cmd : section.getKeys(false)) {
-               List<String> aliases = section.getStringList(cmd);
-               aliasMap.put(cmd, aliases);
-         }
-      }
-
-      // Aplicar aliases a cada comando registrado
-      aliasMap.forEach((cmdName, aliases) -> {
-         PluginCommand command = getCommand(cmdName);
-         if (command != null) {
-               command.setAliases(aliases);
-         } else {
-               getLogger().warning("No se encontró el comando '" + cmdName + "' para aplicar aliases.");
-         }
-      });
-   }
-
    private void copyLangFiles() {
       File langFolder = new File(getDataFolder(), "lang");
       if (!langFolder.exists()) {
@@ -167,8 +142,8 @@ public class SatipoClan extends JavaPlugin {
    }
 
    private void registerCommands() {
-      Objects.requireNonNull(getCommand("clansadmin")).setExecutor(new ACMD(this));
-      Objects.requireNonNull(getCommand("clans")).setExecutor(new CCMD(this, langManager));
+      Objects.requireNonNull(getCommand("clanadmin")).setExecutor(new ACMD(this));
+      Objects.requireNonNull(getCommand("clan")).setExecutor(new CCMD(this, langManager));
       Objects.requireNonNull(getCommand("scstats")).setExecutor(new PECMD(this));
    }
 

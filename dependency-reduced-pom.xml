@@ -14,9 +14,6 @@
         </includes>
       </resource>
     </resources>
-    <filters>
-      <filter>src/main/filters/aliases.properties</filter>
-    </filters>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>

@@ -131,9 +131,8 @@ public class ACMD implements CommandExecutor, TabCompleter {
         plugin.getLangManager().reload();
 
         // Recargar comandos (si es necesario)
-        plugin.getCommand("clans").setExecutor(new CCMD(plugin, plugin.getLangManager()));
-        plugin.getCommand("clansadmin").setExecutor(new ACMD(plugin));
-        plugin.getCommand("cls").setExecutor(new CCMD(plugin, plugin.getLangManager())); // alias
+        plugin.getCommand("clan").setExecutor(new CCMD(plugin, plugin.getLangManager()));
+        plugin.getCommand("clanadmin").setExecutor(new ACMD(plugin));
 
         // Obtener idioma actual y nombre legible
         String currentLang = plugin.getLangManager().getCurrentLang();

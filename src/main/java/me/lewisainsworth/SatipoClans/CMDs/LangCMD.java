@@ -82,7 +82,7 @@ public class LangCMD implements CommandExecutor {
                     }));
 
             langText.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,
-                    "/clansadmin lang select " + lang));
+                    "/clanadmin lang select " + lang));
 
             line.addExtra(langText);
 
@@ -98,7 +98,7 @@ public class LangCMD implements CommandExecutor {
         player.sendMessage(MSG.color(langManager.getMessage("lang.menu_footer")));
     }
 
-    // Este método debe llamarse desde el main o desde ACMD al detectar /clansadmin lang select <lang>
+    // Este método debe llamarse desde el main o desde ACMD al detectar /clanadmin lang select <lang>
     public void setLanguageCommand(Player player, String lang) {
         if (!langManager.getAvailableLangs().contains(lang)) {
             player.sendMessage(MSG.color(langManager.getMessage("lang.lang_not_found")));

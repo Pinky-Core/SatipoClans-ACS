@@ -66,7 +66,7 @@ public class Events implements Listener {
         List<String> invites = getInvites(player.getName());
         if (!invites.isEmpty()) {
             player.sendMessage(MSG.color(prefix + " &eFuiste invitado a un clan:"));
-            invites.forEach(c -> player.sendMessage(MSG.color("&7- &a" + c + " &7(/cl join " + c + ")")));
+            invites.forEach(c -> player.sendMessage(MSG.color("&7- &a" + c + " &7(/clan join " + c + ")")));
         }
     }
 

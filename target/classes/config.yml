@@ -71,8 +71,3 @@ names-blocked:
     - "nigga"
     - "KKK"
 
-command-aliases:
-  clans: [cl, clan, clanes]
-  clansadmin: [cla, cladmin]
-  scstats: [scs, satistats]
-
