@@ -3,6 +3,9 @@ package me.lewisainsworth.satipoclans;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.command.PluginCommand;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 
 import me.lewisainsworth.satipoclans.CMDs.CCMD;
 import me.lewisainsworth.satipoclans.CMDs.ACMD;
@@ -21,6 +24,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
+
 
 
 public class SatipoClan extends JavaPlugin {
@@ -41,6 +48,7 @@ public class SatipoClan extends JavaPlugin {
    public void onEnable() {
       instance = this;
       saveDefaultConfig();
+      applyCommandAliases();
       prefix = getConfig().getString("prefix", "&7 [&a&lꜱᴀᴛɪᴘᴏ&6&lᴄʟᴀɴꜱ&7]&n");
       fh = new FileHandler(this);
       updater = new Updater(this, 114316);
@@ -49,9 +57,10 @@ public class SatipoClan extends JavaPlugin {
       ClanUtils.init(this);
       copyLangFiles();
       langManager = new LangManager(this);
-      getCommand("cls").setExecutor(new CCMD(this, langManager));
+      getCommand("clans").setExecutor(new CCMD(this, langManager));
       LangCMD langCMD = new LangCMD(this);
       setLangCMD(langCMD);
+      
       
 
       if (getConfig().getBoolean("economy.enabled", true)) {
@@ -102,6 +111,30 @@ public class SatipoClan extends JavaPlugin {
 
    public static SatipoClan getInstance() {
       return instance;
+   }
+
+   private void applyCommandAliases() {
+      FileConfiguration config = getConfig();
+      Map<String, List<String>> aliasMap = new HashMap<>();
+
+      // Cargar aliases del config
+      ConfigurationSection section = config.getConfigurationSection("command-aliases");
+      if (section != null) {
+         for (String cmd : section.getKeys(false)) {
+               List<String> aliases = section.getStringList(cmd);
+               aliasMap.put(cmd, aliases);
+         }
+      }
+
+      // Aplicar aliases a cada comando registrado
+      aliasMap.forEach((cmdName, aliases) -> {
+         PluginCommand command = getCommand(cmdName);
+         if (command != null) {
+               command.setAliases(aliases);
+         } else {
+               getLogger().warning("No se encontró el comando '" + cmdName + "' para aplicar aliases.");
+         }
+      });
    }
 
    private void copyLangFiles() {
