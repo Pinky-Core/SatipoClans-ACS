@@ -1,6 +1,15 @@
+<p align="center">
+  <img src="https://i.imgur.com/Y0SFJ6u.png" alt="Mi logo" width="500" />
+</p>
+
+<div align="center">
+
 # 🛡️ SatipoClans | Advanced Clans System 🛡️
 
 SatipoClans es un plugin para servidores Minecraft que implementa un sistema avanzado y robusto de clanes, con invitaciones, privacidad, administración y almacenamiento en MariaDB.
+
+</div>
+
 
 ---
 
