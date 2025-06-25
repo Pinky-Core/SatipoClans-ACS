@@ -34,6 +34,15 @@ permissions:
     description: Permiso para crear un clan.
     default: true
 
+  satipoclans.user.sethome:
+    default: true
+
+  satipoclans.user.home:
+    default: true
+    
+  satipoclans.bypass.homecooldown:
+    default: op
+
   satipoclans.user.list:
     description: Permiso para listar clanes.
     default: true

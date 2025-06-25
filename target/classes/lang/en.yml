@@ -80,7 +80,7 @@ user:
   # CHAT COMMAND
   chat_format: "&7[&6&lClan Chat&7] {clan} &f{player}&f: &7{message}"
   chat_error: "&c Error sending the message to clan chat."
-  
+    
   # LEAVE COMMAND
   clan_deleted_empty: "&c Clan deleted due to no members."
   leader_left: "&c You left. The new leader is {newLeader}"
@@ -134,6 +134,12 @@ user:
   create_error: "&c Error creating the clan."
   create_name_too_long: "&cThe clan name is too long. Maximum {max} visible characters."
   create_name_blocked: "&c This name is blocked."
+
+  # CLAN HOME COMMAND
+  home_set: "&aClan home has been set."
+  no_home_set: "&cYour clan does not have a home set yet."
+  teleported_home: "&aYou have been teleported to the clan home."
+  home_cooldown: "&cYou must wait {seconds} seconds before using &e/clan home again."
 
 
 # HANDLERS

@@ -1,6 +1,8 @@
 package me.lewisainsworth.satipoclans.Database;
 import me.lewisainsworth.satipoclans.SatipoClan;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.World;
 
 
 import com.zaxxer.hikari.HikariConfig;
@@ -149,6 +151,16 @@ public class MariaDBManager {
                     enabled BOOLEAN
                 )
             """);
+
+            stmt.executeUpdate("""
+            CREATE TABLE IF NOT EXISTS clan_homes (
+                clan VARCHAR(255) PRIMARY KEY,
+                world VARCHAR(64),
+                x DOUBLE,
+                y DOUBLE,
+                z DOUBLE
+            )
+        """);
         }
 
         try (Connection con = getConnection();
@@ -195,6 +207,44 @@ public class MariaDBManager {
             }
         }
     }
+
+    public void setClanHome(String clan, Location location) {
+        try (Connection con = getConnection();
+            PreparedStatement ps = con.prepareStatement("""
+                REPLACE INTO clan_homes (clan, world, x, y, z) VALUES (?, ?, ?, ?, ?)
+            """)) {
+            ps.setString(1, clan);
+            ps.setString(2, location.getWorld().getName());
+            ps.setDouble(3, location.getX());
+            ps.setDouble(4, location.getY());
+            ps.setDouble(5, location.getZ());
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Location getClanHome(String clan) {
+        try (Connection con = getConnection();
+            PreparedStatement ps = con.prepareStatement("SELECT * FROM clan_homes WHERE clan = ?")) {
+            ps.setString(1, clan);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String world = rs.getString("world");
+                    double x = rs.getDouble("x");
+                    double y = rs.getDouble("y");
+                    double z = rs.getDouble("z");
+                    World bukkitWorld = Bukkit.getWorld(world);
+                    if (bukkitWorld == null) return null;
+                    return new Location(bukkitWorld, x, y, z);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 
     public void clearYamlClans(FileConfiguration data, FileHandler fh) {
         data.set("Clans", null);

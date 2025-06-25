@@ -3,7 +3,6 @@ package me.lewisainsworth.satipoclans.Utils;
 import me.lewisainsworth.satipoclans.SatipoClan;
 import me.lewisainsworth.satipoclans.Utils.LangManager;
 
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;

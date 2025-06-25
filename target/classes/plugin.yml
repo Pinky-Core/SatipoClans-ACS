@@ -1,5 +1,5 @@
 main: me.lewisainsworth.satipoclans.SatipoClan
-version: 1.4.1
+version: 1.4.2
 name: SatipoClans
 author: LewisAinsworth
 api-version: "1.20"
@@ -33,6 +33,15 @@ permissions:
   satipoclans.user.create:
     description: Permiso para crear un clan.
     default: true
+
+  satipoclans.user.sethome:
+    default: true
+
+  satipoclans.user.home:
+    default: true
+    
+  satipoclans.bypass.homecooldown:
+    default: op
 
   satipoclans.user.list:
     description: Permiso para listar clanes.

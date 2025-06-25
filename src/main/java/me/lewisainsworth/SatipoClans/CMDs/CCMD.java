@@ -27,6 +27,9 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.command.TabCompleter;
 import org.jetbrains.annotations.NotNull;
+import org.bukkit.Location;
+import org.bukkit.World;
+
 
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -37,6 +40,9 @@ public class CCMD implements CommandExecutor, TabCompleter {
     private final SatipoClan plugin;
     private final LangManager langManager;
     private final List<String> helpLines;
+    private final Map<UUID, Long> homeCooldowns = new HashMap<>();
+    private final int HOME_COOLDOWN_SECONDS = 30;
+
 
     public CCMD(SatipoClan plugin, LangManager langManager) {
         this.plugin = plugin;
@@ -95,6 +101,31 @@ public class CCMD implements CommandExecutor, TabCompleter {
                     return true;
                 }
                 this.disband(sender, playerClan);
+                break;
+
+            case "sethome":
+                if (!player.hasPermission("satipoclans.user.sethome")) {
+                    player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_permission")));
+                    return true;
+                }
+                if (playerClan == null || playerClan.isEmpty()) {
+                    player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_clan")));
+                    return true;
+                }
+                plugin.getMariaDBManager().setClanHome(playerClan, player.getLocation());
+                player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.home_set")));
+                break;
+
+            case "home":
+                if (!player.hasPermission("satipoclans.user.home")) {
+                    player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_permission")));
+                    return true;
+                }
+                if (playerClan == null || playerClan.isEmpty()) {
+                    player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_clan")));
+                    return true;
+                }
+                teleportToClanHome(player, playerClan);
                 break;
 
             case "report":
@@ -1673,6 +1704,39 @@ public class CCMD implements CommandExecutor, TabCompleter {
         }
     }
 
+    private void setHome(Player player, String clan) {
+        plugin.getMariaDBManager().setClanHome(clan, player.getLocation());
+        player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.home_set")));
+    }
+
+    private void teleportToClanHome(Player player, String clan) {
+        if (!player.hasPermission("satipoclans.bypass.homecooldown")) {
+            long lastUsed = homeCooldowns.getOrDefault(player.getUniqueId(), 0L);
+            long timeLeft = ((lastUsed + HOME_COOLDOWN_SECONDS * 1000L) - System.currentTimeMillis()) / 1000;
+
+            if (timeLeft > 0) {
+                player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.home_cooldown")
+                        .replace("{seconds}", String.valueOf(timeLeft))));
+                return;
+            }
+        }
+
+        Location loc = plugin.getMariaDBManager().getClanHome(clan);
+        if (loc == null) {
+            player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_home_set")));
+            return;
+        }
+
+        homeCooldowns.put(player.getUniqueId(), System.currentTimeMillis());
+
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            player.teleport(loc);
+            player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.teleported_home")));
+        });
+    }
+
+
+
 
 
 
@@ -1689,7 +1753,7 @@ public class CCMD implements CommandExecutor, TabCompleter {
             case 1 -> completions.addAll(List.of(
                     "create", "disband", "report", "list", "join",
                     "kick", "invite", "chat", "leave", "stats", "resign", "edit",
-                    "ff", "ally", "help"
+                    "ff", "ally", "help", "home", "sethome"
             ));
 
             case 2 -> {

@@ -36,7 +36,7 @@ welcome-message:
   no-clan:
     - ""
     - "¡Bienvenido de nuevo!"
-    - "Usa /clans create para crear tu clan."
+    - "Usa /clan create para crear tu clan."
     - ""
 
   self-clan:
