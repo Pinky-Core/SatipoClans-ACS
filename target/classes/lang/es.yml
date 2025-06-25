@@ -136,10 +136,10 @@ user:
   create_name_blocked: "&c Este nombre está bloqueado."
 
   # CLAN HOME COMMAND
-  home_set: "&aHas establecido el home del clan."
-  no_home_set: "&cTu clan no tiene un home establecido aún."
-  teleported_home: "&aHas sido teletransportado al home del clan."
-  home_cooldown: "&cDebes esperar {seconds} segundos antes de volver a usar &e/clan home."
+  home_cooldown: "&cDebes esperar {seconds} segundos antes de usar /clan home nuevamente."
+  teleporting_home: "&eTeleportando a tu base de clan en {seconds} segundos..."
+  home_teleported: "&a¡Has sido teletransportado al home del clan!"
+  home_not_set: "&cEl home del clan aún no ha sido configurado."
 
 
 # HANDLERS

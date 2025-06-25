@@ -51,6 +51,11 @@ welcome-message:
     - ""
 
 
+clan_home:
+  cooldown: 30 
+  teleport_delay: 5 
+
+
 max-clans: 0 # 0 = ILIMITADO
 
 economy:
@@ -70,4 +75,5 @@ names-blocked:
     - "fuck"
     - "nigga"
     - "KKK"
+
 

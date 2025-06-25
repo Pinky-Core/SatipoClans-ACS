@@ -41,7 +41,6 @@ public class CCMD implements CommandExecutor, TabCompleter {
     private final LangManager langManager;
     private final List<String> helpLines;
     private final Map<UUID, Long> homeCooldowns = new HashMap<>();
-    private final int HOME_COOLDOWN_SECONDS = 30;
 
 
     public CCMD(SatipoClan plugin, LangManager langManager) {
@@ -1712,31 +1711,30 @@ public class CCMD implements CommandExecutor, TabCompleter {
     private void teleportToClanHome(Player player, String clan) {
         if (!player.hasPermission("satipoclans.bypass.homecooldown")) {
             long lastUsed = homeCooldowns.getOrDefault(player.getUniqueId(), 0L);
-            long timeLeft = ((lastUsed + HOME_COOLDOWN_SECONDS * 1000L) - System.currentTimeMillis()) / 1000;
+            long timeLeft = ((lastUsed + plugin.clanHomeCooldown * 1000L) - System.currentTimeMillis()) / 1000;
 
             if (timeLeft > 0) {
                 player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.home_cooldown")
                         .replace("{seconds}", String.valueOf(timeLeft))));
                 return;
             }
+
+            homeCooldowns.put(player.getUniqueId(), System.currentTimeMillis());
         }
 
-        Location loc = plugin.getMariaDBManager().getClanHome(clan);
-        if (loc == null) {
-            player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_home_set")));
-            return;
-        }
+        player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.teleporting_home")
+                .replace("{seconds}", String.valueOf(plugin.clanHomeDelay))));
 
-        homeCooldowns.put(player.getUniqueId(), System.currentTimeMillis());
-
-        Bukkit.getScheduler().runTask(plugin, () -> {
-            player.teleport(loc);
-            player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.teleported_home")));
-        });
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            Location home = plugin.getMariaDBManager().getClanHome(clan);
+            if (home != null) {
+                player.teleport(home);
+                player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.home_teleported")));
+            } else {
+                player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.home_not_set")));
+            }
+        }, plugin.clanHomeDelay * 20L); 
     }
-
-
-
 
 
 

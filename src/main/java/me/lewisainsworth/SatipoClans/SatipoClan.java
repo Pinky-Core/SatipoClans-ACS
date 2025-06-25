@@ -42,12 +42,17 @@ public class SatipoClan extends JavaPlugin {
    private LangManager langManager;
    private LangCMD langCMD;
 
+   public int clanHomeCooldown;
+   public int clanHomeDelay;
    private static SatipoClan instance;
+   
 
    @Override
    public void onEnable() {
       instance = this;
       saveDefaultConfig();
+      clanHomeCooldown = getConfig().getInt("clan_home.cooldown", 30);
+      clanHomeDelay = getConfig().getInt("clan_home.teleport_delay", 5);
       prefix = getConfig().getString("prefix", "&7 [&a&lꜱᴀᴛɪᴘᴏ&6&lᴄʟᴀɴꜱ&7]&n");
       fh = new FileHandler(this);
       updater = new Updater(this, 114316);
