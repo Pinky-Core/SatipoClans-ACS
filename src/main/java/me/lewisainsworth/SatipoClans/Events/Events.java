@@ -8,6 +8,10 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.Location;
+import org.bukkit.event.player.PlayerMoveEvent;
+
+
 
 import me.lewisainsworth.satipoclans.SatipoClan;
 import me.lewisainsworth.satipoclans.Utils.Econo;
@@ -82,6 +86,21 @@ public class Events implements Listener {
             int killReward = fh.getConfig().getInt("economy.earn.kill-enemy");
             SatipoClan.econ.deposit(killer, killReward);
             killer.sendMessage(MSG.color(prefix + "&2 Ganaste: &e&l" + killReward));
+        }
+    }
+
+    @EventHandler
+    public void onPlayerMove(PlayerMoveEvent event) {
+        Player player = event.getPlayer();
+        UUID uuid = player.getUniqueId();
+
+        if (!plugin.teleportingPlayers.contains(uuid)) return;
+
+        Location from = event.getFrom();
+        Location to = event.getTo();
+        if (from.getBlockX() != to.getBlockX() || from.getBlockY() != to.getBlockY() || from.getBlockZ() != to.getBlockZ()) {
+            plugin.teleportingPlayers.remove(uuid);
+            player.sendMessage(MSG.color(plugin.langManager.getMessageWithPrefix("user.teleport_cancelled")));
         }
     }
 

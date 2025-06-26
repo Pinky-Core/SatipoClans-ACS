@@ -29,6 +29,9 @@ import org.bukkit.command.TabCompleter;
 import org.jetbrains.annotations.NotNull;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 
 
 import net.md_5.bungee.api.chat.TextComponent;
@@ -36,12 +39,14 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.hover.content.Text;
 
-public class CCMD implements CommandExecutor, TabCompleter {
+public class CCMD implements CommandExecutor, TabCompleter, Listener {
     private final SatipoClan plugin;
     private final LangManager langManager;
     private final List<String> helpLines;
+    public Set<UUID> teleportingPlayers = new HashSet<>();
     private final Map<UUID, Long> homeCooldowns = new HashMap<>();
-
+    
+    
 
     public CCMD(SatipoClan plugin, LangManager langManager) {
         this.plugin = plugin;
@@ -1480,6 +1485,78 @@ public class CCMD implements CommandExecutor, TabCompleter {
         }
     }
 
+    private void setHome(Player player, String clan) {
+        if (!isLeader(player, clan)) {
+            player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.not_leader_home")));
+            return;
+        }
+
+        plugin.getMariaDBManager().setClanHome(clan, player.getLocation());
+        player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.home_set")));
+    }
+
+    private void teleportToClanHome(Player player, String clan) {
+        UUID uuid = player.getUniqueId();
+
+        if (plugin.teleportingPlayers.contains(uuid)) {
+            player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.on_teport")));
+            return;
+        }
+
+        boolean bypassCooldown = player.hasPermission("satipoclans.bypass.homecooldown");
+        boolean bypassDelay = player.hasPermission("satipoclans.bypass.homedelay");
+
+        if (!bypassCooldown) {
+            long lastUsed = plugin.homeCooldowns.getOrDefault(uuid, 0L);
+            long timeLeft = ((lastUsed + plugin.clanHomeCooldown * 1000L) - System.currentTimeMillis()) / 1000;
+
+            if (timeLeft > 0) {
+                player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.home_cooldown")
+                        .replace("{seconds}", String.valueOf(timeLeft))));
+                return;
+            }
+
+            plugin.homeCooldowns.put(uuid, System.currentTimeMillis());
+        }
+
+        if (bypassDelay) {
+            // Teletransporta inmediato sin delay
+            Location home = plugin.getMariaDBManager().getClanHome(clan);
+            if (home != null) {
+                player.teleport(home);
+                player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.home_teleported")));
+            } else {
+                player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.home_not_set")));
+            }
+        } else {
+            // Teletransporta con delay y cancelación por movimiento
+            plugin.teleportingPlayers.add(uuid);
+            player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.teleporting_home")
+                    .replace("{seconds}", String.valueOf(plugin.clanHomeDelay))));
+
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                if (!plugin.teleportingPlayers.contains(uuid)) {
+                    // Cancelado por movimiento
+                    return;
+                }
+
+                Location home = plugin.getMariaDBManager().getClanHome(clan);
+                if (home != null) {
+                    player.teleport(home);
+                    player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.home_teleported")));
+                } else {
+                    player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.home_not_set")));
+                }
+
+                plugin.teleportingPlayers.remove(uuid);
+            }, plugin.clanHomeDelay * 20L);
+        }
+}
+
+
+
+
+
     // ------------------------------------
     // Métodos auxiliares:
 
@@ -1701,39 +1778,6 @@ public class CCMD implements CommandExecutor, TabCompleter {
             e.printStackTrace();
             sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.allyff_error")));
         }
-    }
-
-    private void setHome(Player player, String clan) {
-        plugin.getMariaDBManager().setClanHome(clan, player.getLocation());
-        player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.home_set")));
-    }
-
-    private void teleportToClanHome(Player player, String clan) {
-        if (!player.hasPermission("satipoclans.bypass.homecooldown")) {
-            long lastUsed = homeCooldowns.getOrDefault(player.getUniqueId(), 0L);
-            long timeLeft = ((lastUsed + plugin.clanHomeCooldown * 1000L) - System.currentTimeMillis()) / 1000;
-
-            if (timeLeft > 0) {
-                player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.home_cooldown")
-                        .replace("{seconds}", String.valueOf(timeLeft))));
-                return;
-            }
-
-            homeCooldowns.put(player.getUniqueId(), System.currentTimeMillis());
-        }
-
-        player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.teleporting_home")
-                .replace("{seconds}", String.valueOf(plugin.clanHomeDelay))));
-
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            Location home = plugin.getMariaDBManager().getClanHome(clan);
-            if (home != null) {
-                player.teleport(home);
-                player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.home_teleported")));
-            } else {
-                player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.home_not_set")));
-            }
-        }, plugin.clanHomeDelay * 20L); 
     }
 
 

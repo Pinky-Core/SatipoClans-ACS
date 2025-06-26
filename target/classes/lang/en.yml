@@ -140,6 +140,9 @@ user:
   teleporting_home: "&eTeleporting to your clan home in {seconds} seconds..."
   home_teleported: "&aYou have been teleported to the clan home!"
   home_not_set: "&cThe clan home has not been set yet."
+  home_set: "&aClan home set."
+  teleport_cancelled: "&cMovement detected. Teleport cancelled."
+  on_teleport: "&cYa estás esperando un teleport."
 
 
 # HANDLERS

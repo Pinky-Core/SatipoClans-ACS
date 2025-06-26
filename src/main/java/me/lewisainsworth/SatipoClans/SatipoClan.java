@@ -27,6 +27,9 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.UUID;
 
 
 
@@ -39,20 +42,23 @@ public class SatipoClan extends JavaPlugin {
    private Metrics metrics;
    private FileHandler fh;
    private MariaDBManager mariaDBManager;
-   private LangManager langManager;
+   public LangManager langManager;
    private LangCMD langCMD;
 
+   private static SatipoClan instance;
+
+   public Set<UUID> teleportingPlayers = new HashSet<>();
+   public Map<UUID, Long> homeCooldowns = new HashMap<>();
    public int clanHomeCooldown;
    public int clanHomeDelay;
-   private static SatipoClan instance;
    
 
    @Override
    public void onEnable() {
       instance = this;
       saveDefaultConfig();
-      clanHomeCooldown = getConfig().getInt("clan_home.cooldown", 30);
-      clanHomeDelay = getConfig().getInt("clan_home.teleport_delay", 5);
+      this.clanHomeCooldown = getConfig().getInt("clan_home.cooldown", 30);
+      this.clanHomeDelay = getConfig().getInt("clan_home.teleport_delay", 5);
       prefix = getConfig().getString("prefix", "&7 [&a&lꜱᴀᴛɪᴘᴏ&6&lᴄʟᴀɴꜱ&7]&n");
       fh = new FileHandler(this);
       updater = new Updater(this, 114316);
@@ -62,6 +68,7 @@ public class SatipoClan extends JavaPlugin {
       copyLangFiles();
       langManager = new LangManager(this);
       getCommand("clan").setExecutor(new CCMD(this, langManager));
+      getServer().getPluginManager().registerEvents(new Events(this), this);
       LangCMD langCMD = new LangCMD(this);
       setLangCMD(langCMD);
       

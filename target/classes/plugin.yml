@@ -35,12 +35,17 @@ permissions:
     default: true
 
   satipoclans.user.sethome:
+    description: Permiso para ir a la home.
     default: true
 
   satipoclans.user.home:
+    description: Permiso para home.
     default: true
-    
+
   satipoclans.bypass.homecooldown:
+    default: op
+
+  satipoclans.bypass.homedelay:
     default: op
 
   satipoclans.user.list:

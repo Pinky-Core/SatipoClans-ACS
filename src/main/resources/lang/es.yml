@@ -140,6 +140,10 @@ user:
   teleporting_home: "&eTeleportando a tu base de clan en {seconds} segundos..."
   home_teleported: "&a¡Has sido teletransportado al home del clan!"
   home_not_set: "&cEl home del clan aún no ha sido configurado."
+  not_leader_home: "&cSolo el líder del clan puede usar /clan sethome."
+  home_set: "&aHome del clan establecido."
+  on_teport: "&cYa estás esperando un teletransporte. No te muevas..."
+  teleport_cancelled: "&c¡Te moviste! El teletransporte fue cancelado."
 
 
 # HANDLERS
