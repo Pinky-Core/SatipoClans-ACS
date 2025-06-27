@@ -14,33 +14,22 @@ commands:
     description: Muestra estadísticas del jugador.
 
 permissions:
-  satipoclans.*:
-    description: Todos los permisos del plugin.
-    default: op
-    children:
-      satipoclans.admin: true
-      satipoclans.user: true
-
   satipoclans.admin:
     description: Acceso a comandos administrativos.
     default: op
 
-  satipoclans.user.*:
-    description: Acceso a todos los comandos de usuario.
-    default: true
-
   # Permisos específicos para comandos/clanes
   satipoclans.user.create:
     description: Permiso para crear un clan.
-    default: true
+    default: false
 
   satipoclans.user.sethome:
     description: Permiso para ir a la home.
-    default: true
+    default: false
 
   satipoclans.user.home:
     description: Permiso para home.
-    default: true
+    default: false
 
   satipoclans.bypass.homecooldown:
     default: op
@@ -50,56 +39,56 @@ permissions:
 
   satipoclans.user.list:
     description: Permiso para listar clanes.
-    default: true
+    default: false
 
   satipoclans.user.join:
     description: Permiso para unirse a un clan.
-    default: true
+    default: false
 
   satipoclans.user.leave:
     description: Permiso para salir de un clan.
-    default: true
+    default: false
 
   satipoclans.user.disband:
     description: Permiso para disolver un clan.
-    default: true
+    default: false
 
   satipoclans.user.kick:
     description: Permiso para expulsar a un miembro de un clan.
-    default: true
+    default: false
 
   satipoclans.user.ally:
     description: Permiso para gestionar alianzas.
-    default: true
+    default: false
 
   satipoclans.user.ff:
     description: Permiso para configurar fuego amigo.
-    default: true
+    default: false
 
   satipoclans.user.chat:
     description: Permiso para usar chat de clan.
-    default: true
+    default: false
 
   satipoclans.user.stats:
     description: Permiso para ver estadísticas de clanes.
-    default: true
+    default: false
 
   satipoclans.user.invite:
     description: Permiso para invitar jugadores a un clan.
-    default: true
+    default: false
 
   satipoclans.user.accept:
     description: Permiso para aceptar invitaciones a clanes.
-    default: true
+    default: false
 
   satipoclans.user.decline:
     description: Permiso para rechazar invitaciones a clanes.
-    default: true
+    default: false
 
   satipoclans.user.resign:
     description: Permiso para renunciar a un clan.
-    default: true
+    default: false
 
   satipoclans.user.report:
     description: Permiso para reportar clanes.
-    default: true
+    default: false

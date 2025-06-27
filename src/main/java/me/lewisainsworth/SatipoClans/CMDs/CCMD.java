@@ -60,11 +60,6 @@ public class CCMD implements CommandExecutor, TabCompleter, Listener {
             return true;
         }
 
-        if (!sender.hasPermission("satipoclans.user")) {
-            sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_permission")));
-            return true;
-        }
-
         String playerName = player.getName();
         String playerClan = this.getPlayerClan(playerName);
 
