@@ -30,6 +30,9 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.io.InputStream;
+import java.util.regex.Pattern;
+
 
 import com.zaxxer.hikari.HikariDataSource;
 
@@ -44,6 +47,8 @@ import net.md_5.bungee.api.chat.hover.content.Text;
 public class ACMD implements CommandExecutor, TabCompleter {
 
     private final SatipoClan plugin;
+
+    private String lastMessageId = null;
 
     private final LangCMD langCMD;
     private final LangManager langManager;
@@ -166,31 +171,70 @@ public class ACMD implements CommandExecutor, TabCompleter {
         String webhookUrl = plugin.getConfig().getString("discord.sql_status_webhook");
         if (webhookUrl == null || webhookUrl.isEmpty()) return;
 
-        String content = "**SatipoClans - SQL Status**\n"
-            + "> 🟢 Active Connections: `" + active + "`\n"
-            + "> 🔵 Idle Connections: `" + idle + "`\n"
-            + "> ⚪ Total Connections: `" + total + "`\n"
-            + "> 🟠 Threads Awaiting Connection: `" + awaiting + "`";
+        String json = """
+        {
+        "embeds": [{
+            "title": "SatipoClans - SQL Status",
+            "color": 3066993,
+            "fields": [
+            { "name": "Active Connections", "value": "%d", "inline": true },
+            { "name": "Idle Connections", "value": "%d", "inline": true },
+            { "name": "Total Connections", "value": "%d", "inline": true },
+            { "name": "Threads Awaiting Connection", "value": "%d", "inline": true }
+            ]
+        }]
+        }
+        """.formatted(active, idle, total, awaiting);
 
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
+                if (lastMessageId != null) {
+                    // Construir URL para borrar mensaje anterior
+                    String deleteUrl = webhookUrl + "/messages/" + lastMessageId;
+                    HttpURLConnection deleteConn = (HttpURLConnection) new URL(deleteUrl).openConnection();
+                    deleteConn.setRequestMethod("DELETE");
+                    int deleteResponseCode = deleteConn.getResponseCode();
+                    if (deleteResponseCode != 204) {
+                        plugin.getLogger().warning("No se pudo borrar el mensaje anterior, código: " + deleteResponseCode);
+                    }
+                }
+
+                // Enviar mensaje nuevo
                 HttpURLConnection connection = (HttpURLConnection) new URL(webhookUrl).openConnection();
                 connection.setRequestMethod("POST");
                 connection.setDoOutput(true);
                 connection.setRequestProperty("Content-Type", "application/json");
 
-                String json = "{\"content\": \"" + content.replace("\"", "\\\"") + "\"}";
                 try (OutputStream os = connection.getOutputStream()) {
                     os.write(json.getBytes(StandardCharsets.UTF_8));
                 }
 
-                connection.getInputStream().close(); // fuerza la petición
+                // Leer respuesta JSON para obtener el ID del mensaje
+                try (InputStream is = connection.getInputStream()) {
+                    String response = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+                    // El JSON tiene un campo "id" con el ID del mensaje
+                    // Usamos simple regex para extraerlo:
+                    var matcher = Pattern.compile("\"id\":\"(\\d+)\"").matcher(response);
+                    if (matcher.find()) {
+                        lastMessageId = matcher.group(1);
+                    }
+                }
+
             } catch (Exception e) {
                 plugin.getLogger().severe("No se pudo enviar estado SQL al webhook de Discord:");
                 e.printStackTrace();
             }
         });
     }
+
+    private String escapeJson(String s) {
+        return s.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t");
+    }
+
 
     private boolean handleConsole(CommandSender sender, String[] args) {
         if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
