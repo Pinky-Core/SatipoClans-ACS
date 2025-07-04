@@ -40,11 +40,11 @@ public class MariaDBManager {
         // IMPORTANTE: usar driver sombreado si usás shading
         hikariConfig.setDriverClassName("me.lewisainsworth.shaded.mariadb.jdbc.Driver");
 
-        hikariConfig.setMaximumPoolSize(10);
-        hikariConfig.setMinimumIdle(2);
-        hikariConfig.setConnectionTimeout(10000);
-        hikariConfig.setIdleTimeout(600000);
-        hikariConfig.setMaxLifetime(1800000);
+        hikariConfig.setMaximumPoolSize(50);
+        hikariConfig.setMinimumIdle(10);          
+        hikariConfig.setConnectionTimeout(10000);  
+        hikariConfig.setIdleTimeout(300000);       
+        hikariConfig.setMaxLifetime(1800000); 
 
         dataSource = new HikariDataSource(hikariConfig);
     }
@@ -177,6 +177,136 @@ public class MariaDBManager {
             e.printStackTrace();
         }
     }
+
+    public void deleteClanHome(String clan) {
+        try (Connection con = getConnection();
+            PreparedStatement ps = con.prepareStatement("DELETE FROM clan_homes WHERE clan = ?")) {
+            ps.setString(1, clan);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public void forceJoin(String playerName, String clanName) {
+        try (Connection con = getConnection()) {
+            // Verificar si el clan existe
+            try (PreparedStatement checkClan = con.prepareStatement("SELECT name FROM clans WHERE name = ?")) {
+                checkClan.setString(1, clanName);
+                try (ResultSet rs = checkClan.executeQuery()) {
+                    if (!rs.next()) {
+                        System.out.println("[SatipoClans] Clan '" + clanName + "' no existe.");
+                        return;
+                    }
+                }
+            }
+
+            // Eliminar usuario de cualquier clan anterior
+            try (PreparedStatement removeOld = con.prepareStatement("DELETE FROM clan_users WHERE username = ?")) {
+                removeOld.setString(1, playerName);
+                removeOld.executeUpdate();
+            }
+
+            // Insertar al nuevo clan
+            try (PreparedStatement insert = con.prepareStatement("INSERT INTO clan_users (clan, username) VALUES (?, ?)")) {
+                insert.setString(1, clanName);
+                insert.setString(2, playerName);
+                insert.executeUpdate();
+            }
+
+            System.out.println("[SatipoClans] Jugador " + playerName + " forzado a unirse al clan " + clanName + ".");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void forceLeave(String playerName) {
+        try (Connection con = getConnection();
+            PreparedStatement stmt = con.prepareStatement("DELETE FROM clan_users WHERE username = ?")) {
+
+            stmt.setString(1, playerName);
+            int affected = stmt.executeUpdate();
+
+            if (affected > 0) {
+                System.out.println("[SatipoClans] Jugador " + playerName + " fue forzado a salir del clan.");
+            } else {
+                System.out.println("[SatipoClans] El jugador " + playerName + " no estaba en ningún clan.");
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteClan(String clanName) {
+        try (Connection con = getConnection()) {
+            // Eliminar aliados
+            try (PreparedStatement stmt = con.prepareStatement("DELETE FROM alliances WHERE clan1 = ? OR clan2 = ?")) {
+                stmt.setString(1, clanName);
+                stmt.setString(2, clanName);
+                stmt.executeUpdate();
+            }
+
+            // Eliminar usuarios del clan
+            try (PreparedStatement stmt = con.prepareStatement("DELETE FROM clan_users WHERE clan = ?")) {
+                stmt.setString(1, clanName);
+                stmt.executeUpdate();
+            }
+
+            // Eliminar solicitudes de alianza pendientes
+            try (PreparedStatement stmt = con.prepareStatement("DELETE FROM pending_alliances WHERE requester = ? OR target = ?")) {
+                stmt.setString(1, clanName);
+                stmt.setString(2, clanName);
+                stmt.executeUpdate();
+            }
+
+            // Eliminar home
+            try (PreparedStatement stmt = con.prepareStatement("DELETE FROM clan_homes WHERE clan = ?")) {
+                stmt.setString(1, clanName);
+                stmt.executeUpdate();
+            }
+
+            // Eliminar configuraciones de FF
+            try (PreparedStatement stmt = con.prepareStatement("DELETE FROM friendlyfire WHERE clan = ?")) {
+                stmt.setString(1, clanName);
+                stmt.executeUpdate();
+            }
+
+            try (PreparedStatement stmt = con.prepareStatement("DELETE FROM friendlyfire_allies WHERE clan = ?")) {
+                stmt.setString(1, clanName);
+                stmt.executeUpdate();
+            }
+
+            // Eliminar invitaciones
+            try (PreparedStatement stmt = con.prepareStatement("DELETE FROM clan_invites WHERE clan = ?")) {
+                stmt.setString(1, clanName);
+                stmt.executeUpdate();
+            }
+
+            // Eliminar reportes
+            try (PreparedStatement stmt = con.prepareStatement("DELETE FROM reports WHERE clan = ?")) {
+                stmt.setString(1, clanName);
+                stmt.executeUpdate();
+            }
+
+            // Finalmente eliminar el clan
+            try (PreparedStatement stmt = con.prepareStatement("DELETE FROM clans WHERE name = ?")) {
+                stmt.setString(1, clanName);
+                int affected = stmt.executeUpdate();
+
+                if (affected > 0) {
+                    System.out.println("[SatipoClans] Clan '" + clanName + "' eliminado correctamente.");
+                } else {
+                    System.out.println("[SatipoClans] El clan '" + clanName + "' no existe.");
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public void syncFromYaml(FileConfiguration data) throws SQLException {
         if (!data.contains("Clans")) return;

@@ -10,6 +10,8 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.Location;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
+
 
 
 
@@ -19,6 +21,7 @@ import me.lewisainsworth.satipoclans.Utils.FileHandler;
 import me.lewisainsworth.satipoclans.Utils.MSG;
 import me.lewisainsworth.satipoclans.Utils.ClanUtils;
 import me.lewisainsworth.satipoclans.Utils.ClanUtils;
+import me.lewisainsworth.satipoclans.CMDs.CCMD;
 
 import static me.lewisainsworth.satipoclans.SatipoClan.prefix;
 
@@ -27,9 +30,11 @@ import java.util.*;
 
 public class Events implements Listener {
     private final SatipoClan plugin;
+    private final CCMD ccCmd;
 
-    public Events(SatipoClan plugin) {
+    public Events(SatipoClan plugin, CCMD ccCmd) {
         this.plugin = plugin;
+        this.ccCmd = ccCmd;
     }
 
     @EventHandler
@@ -40,7 +45,7 @@ public class Events implements Listener {
 
         if (!config.getBoolean("welcome-message.enabled")) return;
 
-        String clan = getPlayerClan(player.getName());
+        String clan = plugin.getPlayerClan(player.getName());
 
         if (clan == null) {
             config.getStringList("welcome-message.no-clan").forEach(
@@ -109,8 +114,9 @@ public class Events implements Listener {
         if (!(event.getEntity() instanceof Player victim)) return;
         if (!(event.getDamager() instanceof Player damager)) return;
 
-        String clanVictim = getPlayerClan(victim.getName());
-        String clanDamager = getPlayerClan(damager.getName());
+        String clanVictim = plugin.getPlayerClan(victim.getName());
+        String clanDamager = plugin.getPlayerClan(damager.getName());
+
 
         if (clanVictim == null || clanDamager == null) return;
 
@@ -144,24 +150,6 @@ public class Events implements Listener {
             e.printStackTrace();
         }
         return false;
-    }
-
-
-    private String getPlayerClan(String playerName) {
-        String clan = null;
-        String sql = "SELECT clan FROM clan_users WHERE username = ? LIMIT 1";
-        try (Connection con = plugin.getMariaDBManager().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, playerName);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    clan = rs.getString("clan");
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return clan;
     }
 
     private List<String> getClanUsers(String clan) {
@@ -213,5 +201,20 @@ public class Events implements Listener {
             e.printStackTrace();
         }
         return enabled;
+    }
+
+    @EventHandler
+    public void onPlayerChat(AsyncPlayerChatEvent event) {
+        Player player = event.getPlayer();
+
+        if (plugin.isClanChatToggled(player)) {
+            event.setCancelled(true);
+            String clanName = plugin.getPlayerClan(player.getName());
+            if (clanName != null && !clanName.isEmpty()) {
+                ccCmd.chat(clanName, player, event.getMessage().split(" "));
+            } else {
+                player.sendMessage(MSG.color(plugin.getLangManager().getMessageWithPrefix("user.no_clan")));
+            }
+        }
     }
 }

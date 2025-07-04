@@ -45,6 +45,7 @@ public class CCMD implements CommandExecutor, TabCompleter, Listener {
     private final List<String> helpLines;
     public Set<UUID> teleportingPlayers = new HashSet<>();
     private final Map<UUID, Long> homeCooldowns = new HashMap<>();
+
     
     
 
@@ -57,6 +58,11 @@ public class CCMD implements CommandExecutor, TabCompleter, Listener {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String s, String[] args) {
         if (!(sender instanceof Player player)) {
             sender.sendMessage(MSG.color(langManager.getMessage("user.console_command_only")));
+            return true;
+        }
+
+        if (plugin.isWorldBlocked(player.getWorld())) {
+            player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.command_blocked_world")));
             return true;
         }
 
@@ -113,6 +119,19 @@ public class CCMD implements CommandExecutor, TabCompleter, Listener {
                 }
                 plugin.getMariaDBManager().setClanHome(playerClan, player.getLocation());
                 player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.home_set")));
+                break;
+
+            case "delhome":
+                if (!player.hasPermission("satipoclans.user.delhome")) {
+                    player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_permission")));
+                    return true;
+                }
+                if (playerClan == null || playerClan.isEmpty()) {
+                    player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_clan")));
+                    return true;
+                }
+                plugin.getMariaDBManager().deleteClanHome(playerClan);
+                player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.home_deleted")));
                 break;
 
             case "home":
@@ -192,11 +211,22 @@ public class CCMD implements CommandExecutor, TabCompleter, Listener {
                     sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_permission")));
                     return true;
                 }
+
                 if (playerClan == null || playerClan.isEmpty()) {
                     sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_clan")));
                     return true;
                 }
-                this.chat(playerClan, player, Arrays.copyOfRange(args, 1, args.length));
+
+                if (args.length >= 2) {
+                    // Modo clásico: mensaje directo al clan
+                    this.chat(playerClan, player, Arrays.copyOfRange(args, 1, args.length));
+                } else {
+                    // Modo toggle: activás o desactivás el modo chat clan
+                    plugin.toggleClanChat(player);
+                    boolean toggled = plugin.isClanChatToggled(player);
+                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix(
+                        toggled ? "user.chat_enabled" : "user.chat_disabled")));
+                }
                 break;
 
             case "stats":
@@ -204,11 +234,17 @@ public class CCMD implements CommandExecutor, TabCompleter, Listener {
                     sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_permission")));
                     return true;
                 }
-                if (playerClan == null || playerClan.isEmpty()) {
-                    sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_clan")));
-                    return true;
+
+                if (args.length >= 2) {
+                    String targetClan = args[1];
+                    this.stats(sender, targetClan);
+                } else {
+                    if (playerClan == null || playerClan.isEmpty()) {
+                        sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_clan")));
+                        return true;
+                    }
+                    this.stats(sender, playerClan);
                 }
-                this.stats(sender, playerClan);
                 break;
 
             case "resign":
@@ -615,7 +651,7 @@ public class CCMD implements CommandExecutor, TabCompleter, Listener {
             String founder = clanRs.getString("founder");
             String leader = clanRs.getString("leader");
             String privacy = clanRs.getString("privacy");
-            double money = clanRs.getDouble("money");
+            //double money = clanRs.getDouble("money");
 
             sender.sendMessage(MSG.color(""));
             sender.sendMessage(MSG.color(langManager.getMessage("user.stats_border")));
@@ -624,7 +660,7 @@ public class CCMD implements CommandExecutor, TabCompleter, Listener {
             sender.sendMessage(MSG.color(langManager.getMessage("user.stats_founder").replace("{founder}", founder)));
             sender.sendMessage(MSG.color(langManager.getMessage("user.stats_leader").replace("{leader}", leader)));
             sender.sendMessage(MSG.color(langManager.getMessage("user.stats_privacy").replace("{privacy}", privacy)));
-            sender.sendMessage(MSG.color(langManager.getMessage("user.stats_money").replace("{money}", String.format("%.2f", money))));
+            //sender.sendMessage(MSG.color(langManager.getMessage("user.stats_money").replace("{money}", String.format("%.2f", money))));
 
             membersStmt.setString(1, clanName);
             ResultSet members = membersStmt.executeQuery();
@@ -1790,7 +1826,7 @@ public class CCMD implements CommandExecutor, TabCompleter, Listener {
             case 1 -> completions.addAll(List.of(
                     "create", "disband", "report", "list", "join",
                     "kick", "invite", "chat", "leave", "stats", "resign", "edit",
-                    "ff", "ally", "help", "home", "sethome"
+                    "ff", "ally", "help", "home", "sethome", "delhome"
             ));
 
             case 2 -> {
@@ -1836,8 +1872,6 @@ public class CCMD implements CommandExecutor, TabCompleter, Listener {
                 .filter(c -> c.toLowerCase().startsWith(args[args.length - 1].toLowerCase()))
                 .collect(Collectors.toList());
     }
-
-
 
     private boolean isInClan(String clan) {
         return clan != null && !clan.isEmpty();

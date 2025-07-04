@@ -90,6 +90,32 @@ public class ACMD implements CommandExecutor, TabCompleter {
                     sender.sendMessage(MSG.color(langManager.getMessage("msg.usage_lang")));
                 }
             }
+            case "forcejoin" -> {
+                if (args.length < 3) {
+                    sender.sendMessage(MSG.color(langManager.getMessage("msg.clan_forcejoin_usage")));
+                    return true;
+                }
+                plugin.getMariaDBManager().forceJoin(args[1], args[2]);
+                sender.sendMessage(MSG.color(langManager.getMessage("msg.clan_forced_joined")));
+            }
+
+            case "forceleave" -> {
+                if (args.length < 2) {
+                    sender.sendMessage(MSG.color(langManager.getMessage("msg.clan_forceleave_usage")));
+                    return true;
+                }
+                plugin.getMariaDBManager().forceLeave(args[1]);
+                sender.sendMessage(MSG.color(langManager.getMessage("msg.clan_forced_left")));
+            }
+
+            case "delete" -> {
+                if (args.length < 2) {
+                    sender.sendMessage(MSG.color(langManager.getMessage("msg.clan_force_delete")));
+                    return true;
+                }
+                plugin.getMariaDBManager().deleteClan(args[1]);
+                sender.sendMessage(MSG.color(langManager.getMessage("msg.clan_deleted")));
+            }
             default -> help(sender);
         }
 
@@ -453,8 +479,6 @@ public class ACMD implements CommandExecutor, TabCompleter {
     }
 
 
-
-
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String s, String[] args) {
         if (!(sender instanceof Player p) || !p.hasPermission("satipoclans.admin")) {
@@ -462,7 +486,7 @@ public class ACMD implements CommandExecutor, TabCompleter {
         }
 
         if (args.length == 1) {
-            return Stream.of("reload", "ban", "unban", "clear", "reports", "lang")
+            return Stream.of("reload", "ban", "unban", "clear", "reports", "lang", "forcejoin", "forceleave", "delete")
                     .filter(sub -> sub.startsWith(args[0].toLowerCase()))
                     .collect(Collectors.toList());
         }

@@ -2,6 +2,9 @@
 user:
   console_command_only: "&c Console commands: &f/clanadmin reload."
   no_permission: "&c You do not have permission to use this command."
+  commands_blocked_world: "&cYou cannot use clan commands in this world."
+
+
   invalid_page_number: "&c Invalid page number."
   only_players_help: "&c Only players can view the paginated help."
   already_in_clan: "&c You are already in a clan."
@@ -80,6 +83,8 @@ user:
   # CHAT COMMAND
   chat_format: "&7[&6&lClan Chat&7] {clan} &f{player}&f: &7{message}"
   chat_error: "&c Error sending the message to clan chat."
+  chat_enabled: "&aClan chat mode enabled. All your messages will go to the clan."
+  chat_disabled: "&cClan chat mode disabled. You are back to global chat."
     
   # LEAVE COMMAND
   clan_deleted_empty: "&c Clan deleted due to no members."
@@ -141,6 +146,7 @@ user:
   home_teleported: "&aYou have been teleported to the clan home!"
   home_not_set: "&cThe clan home has not been set yet."
   home_set: "&aClan home set."
+  home_deleted: "&aThe clan home has been deleted."
   teleport_cancelled: "&cMovement detected. Teleport cancelled."
   on_teleport: "&cYa estás esperando un teleport."
 
@@ -256,6 +262,16 @@ msg:
   error_banning_clan: "&cAn error occurred while banning the clan."
   error_unbanning_clan: "&cAn error occurred while unbanning the clan."
   clan_not_exist: "&cThe clan &e{clan} &cdoes not exist."
+
+ # FORCE JOIN/DEL CLAN
+  clan_forced_joined: "&a {player} was forced to join the clan {clan}."
+  clan_forcejoin_usage: "&c &lUSAGE:&f /clanadmin forcejoin <player> <clan>"
+  clan_forced_left: "&e {player} was forced to leave their clan."
+  clan_forceleave_usage: "&c &lUSAGE:&f /clanadmin forceleave <player>"
+  clan_deleted: "&c The clan {clan} was successfully deleted."
+  clan_force_delete: "&c &lUSAGE:&f /clanadmin delete <clan>"
+  clan_not_found: "&c The clan {clan} does not exist."
+  player_not_in_clan: "&d The player {player} does not belong to any clan."
 
 
 # STATS COMMANDS

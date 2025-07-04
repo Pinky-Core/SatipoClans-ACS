@@ -2,6 +2,8 @@
 user:
   console_command_only: "&c Comandos de consola: &f/clansadmin reload."
   no_permission: "&c No tienes permisos para usar este comando."
+  command_blocked_world: "&cNo puedes usar comandos de clanes en este mundo."
+
   invalid_page_number: "&c Número de página inválido."
   only_players_help: "&c Solo los jugadores pueden ver la ayuda paginada."
   already_in_clan: "&c Ya perteneces a un clan."
@@ -80,6 +82,8 @@ user:
   # CHAT COMMAND
   chat_format: "&7[&6&lClan Chat&7] {clan} &f{player}&f: &7{message}"
   chat_error: "&c Error al enviar el mensaje al chat del clan."
+  chat_enabled: "&aModo chat de clan activado. Todos tus mensajes irán al clan."
+  chat_disabled: "&cModo chat de clan desactivado. Volvés al chat global."
   
   # LEAVE COMMAND
   clan_deleted_empty: "&c Clan eliminado por no tener miembros."
@@ -142,6 +146,7 @@ user:
   home_not_set: "&cEl home del clan aún no ha sido configurado."
   not_leader_home: "&cSolo el líder del clan puede usar /clan sethome."
   home_set: "&aHome del clan establecido."
+  home_deleted: "&aEl home del clan fue eliminado."
   on_teport: "&cYa estás esperando un teletransporte. No te muevas..."
   teleport_cancelled: "&c¡Te moviste! El teletransporte fue cancelado."
 
@@ -257,6 +262,16 @@ msg:
   error_banning_clan: "&cOcurrió un error al banear el clan."
   error_unbanning_clan: "&cOcurrió un error al desbanear el clan."
   clan_not_exist: "&cEl clan &e{clan} &cno existe."
+
+  # FORCE JOIN/DEL CLAN
+  clan_forced_joined: "&a {player} fue forzado a unirse al clan {clan}."
+  clan_forcejoin_usage: "&c &lUSO: &f/clanadmin forcejoin <jugador> <clan>"
+  clan_forced_left: "&e {player} fue forzado a salir de su clan."
+  clan_forceleave_usage: "&c &lUSO:&f /clanadmin forceleave <jugador>"
+  clan_deleted: "&c El clan {clan} fue eliminado correctamente."
+  clan_force_delete: "&c &lUSO:&f /clanadmin delete <clan>"
+  clan_not_found: "&c El clan {clan} no existe."
+  player_not_in_clan: "&d eEl jugador {player} no pertenece a ningún clan."
 
 
 # STATS COMMANDS

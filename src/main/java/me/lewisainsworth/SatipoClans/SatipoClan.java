@@ -6,6 +6,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.World;
+import org.bukkit.command.CommandSender;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import me.lewisainsworth.satipoclans.CMDs.CCMD;
 import me.lewisainsworth.satipoclans.CMDs.ACMD;
@@ -44,11 +47,13 @@ public class SatipoClan extends JavaPlugin {
    private MariaDBManager mariaDBManager;
    public LangManager langManager;
    private LangCMD langCMD;
+   private CCMD ccCmd;
 
    private static SatipoClan instance;
 
    public Set<UUID> teleportingPlayers = new HashSet<>();
    public Map<UUID, Long> homeCooldowns = new HashMap<>();
+   private final Set<UUID> clanChatToggled = new HashSet<>();
    public int clanHomeCooldown;
    public int clanHomeDelay;
    
@@ -67,12 +72,13 @@ public class SatipoClan extends JavaPlugin {
       ClanUtils.init(this);
       copyLangFiles();
       langManager = new LangManager(this);
-      getCommand("clan").setExecutor(new CCMD(this, langManager));
-      getServer().getPluginManager().registerEvents(new Events(this), this);
       LangCMD langCMD = new LangCMD(this);
       setLangCMD(langCMD);
       
-      
+      this.ccCmd = new CCMD(this, langManager);
+      getCommand("clan").setExecutor(ccCmd);
+      // 🔥 Eliminar este:
+      // getServer().getPluginManager().registerEvents(new Events(this, ccCmd), this);
 
       if (getConfig().getBoolean("economy.enabled", true)) {
          if (!econ.setupEconomy()) {
@@ -111,6 +117,7 @@ public class SatipoClan extends JavaPlugin {
 
       Bukkit.getConsoleSender().sendMessage(MSG.color("&av" + getDescription().getVersion() + " &2Enabled!"));
    }
+
 
    @Override
    public void onDisable() {
@@ -160,7 +167,7 @@ public class SatipoClan extends JavaPlugin {
    }
 
    private void registerEvents() {
-      getServer().getPluginManager().registerEvents(new Events(this), this);
+      getServer().getPluginManager().registerEvents(new Events(this, ccCmd), this);
    }
 
    public void searchUpdates() {
@@ -216,6 +223,41 @@ public class SatipoClan extends JavaPlugin {
       }
    }
 
+   public boolean isClanChatToggled(Player player) {
+      return clanChatToggled.contains(player.getUniqueId());
+   }
+
+   public void toggleClanChat(Player player) {
+      if (isClanChatToggled(player)) {
+         clanChatToggled.remove(player.getUniqueId());
+      } else {
+         clanChatToggled.add(player.getUniqueId());
+      }
+   }
+
+
+   public String getPlayerClan(String playerName) {
+      String clan = null;
+      String sql = "SELECT clan FROM clan_users WHERE username = ? LIMIT 1";
+      try (Connection con = this.getMariaDBManager().getConnection();
+            PreparedStatement ps = con.prepareStatement(sql)) {
+         ps.setString(1, playerName);
+         try (ResultSet rs = ps.executeQuery()) {
+               if (rs.next()) {
+                  clan = rs.getString("clan");
+               }
+         }
+      } catch (SQLException e) {
+         e.printStackTrace();
+      }
+      return clan;
+   }
+
+
+
+   public boolean isWorldBlocked(World world) {
+      return getConfig().getStringList("blocked-worlds").contains(world.getName());
+   }
 
    public static Econo getEcon() {
       return econ;

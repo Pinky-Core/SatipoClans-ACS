@@ -56,6 +56,12 @@ clan_home:
   teleport_delay: 5 
 
 
+blocked-worlds:
+  - world_nether
+  - world_the_end
+  - parkoureventos
+
+
 max-clans: 0 # 0 = ILIMITADO
 
 economy:

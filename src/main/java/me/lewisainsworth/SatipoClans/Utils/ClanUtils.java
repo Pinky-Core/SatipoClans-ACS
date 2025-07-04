@@ -4,6 +4,13 @@ import me.lewisainsworth.satipoclans.SatipoClan;
 
 import java.sql.*;
 
+import org.bukkit.World;
+
+import java.util.List;
+import java.util.Set;
+import java.util.Map;
+import java.util.UUID;
+
 public class ClanUtils {
 
     private static SatipoClan plugin;
@@ -46,5 +53,10 @@ public class ClanUtils {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public boolean isWorldBlocked(World world) {
+        List<String> blocked = plugin.getConfig().getStringList("blocked-worlds");
+        return blocked.contains(world.getName());
     }
 }
