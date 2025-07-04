@@ -307,6 +307,10 @@ public class MariaDBManager {
         }
     }
 
+    public HikariDataSource getDataSource() {
+        return this.dataSource;
+    }
+
 
     public void syncFromYaml(FileConfiguration data) throws SQLException {
         if (!data.contains("Clans")) return;

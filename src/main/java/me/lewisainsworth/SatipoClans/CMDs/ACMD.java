@@ -25,6 +25,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.io.OutputStream;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+
+import com.zaxxer.hikari.HikariDataSource;
 
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -70,6 +77,38 @@ public class ACMD implements CommandExecutor, TabCompleter {
             case "clear" -> clear(sender);
             case "reports" -> reports(sender);
             //case "economy" -> economy(sender, args);
+            case "sqlstatus" -> {
+                try {
+                    var ds = plugin.getMariaDBManager().getDataSource();
+                    var pool = ds.getHikariPoolMXBean();
+
+                    int active = pool.getActiveConnections();
+                    int idle = pool.getIdleConnections();
+                    int total = pool.getTotalConnections();
+                    int awaiting = pool.getThreadsAwaitingConnection();
+
+                    String[] status = {
+                        "&7&m----------&r &a&lSatipo&6&lClans &a&lSQL Status &7&m----------",
+                        "&eActive connections: &f" + active,
+                        "&eIdle connections: &f" + idle,
+                        "&eTotal connections: &f" + total,
+                        "&eThreads awaiting connection: &f" + awaiting,
+                        "&7&m--------------------------------------------"
+                    };
+
+                    // Show to sender
+                    for (String line : status) {
+                        sender.sendMessage(MSG.color(line));
+                    }
+
+                    // Send to Discord webhook
+                    sendSqlStatusToDiscord(active, idle, total, awaiting);
+
+                } catch (Exception e) {
+                    sender.sendMessage(MSG.color("&cError getting SQL pool status."));
+                    e.printStackTrace();
+                }
+            }
             case "lang" -> {
                 if (!(sender instanceof Player p)) {
                     sender.sendMessage(MSG.color(langManager.getMessage("msg.only_in_game")));
@@ -120,6 +159,37 @@ public class ACMD implements CommandExecutor, TabCompleter {
         }
 
         return true;
+    }
+
+
+    private void sendSqlStatusToDiscord(int active, int idle, int total, int awaiting) {
+        String webhookUrl = plugin.getConfig().getString("discord.sql_status_webhook");
+        if (webhookUrl == null || webhookUrl.isEmpty()) return;
+
+        String content = "**SatipoClans - SQL Status**\n"
+            + "> 🟢 Active Connections: `" + active + "`\n"
+            + "> 🔵 Idle Connections: `" + idle + "`\n"
+            + "> ⚪ Total Connections: `" + total + "`\n"
+            + "> 🟠 Threads Awaiting Connection: `" + awaiting + "`";
+
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                HttpURLConnection connection = (HttpURLConnection) new URL(webhookUrl).openConnection();
+                connection.setRequestMethod("POST");
+                connection.setDoOutput(true);
+                connection.setRequestProperty("Content-Type", "application/json");
+
+                String json = "{\"content\": \"" + content.replace("\"", "\\\"") + "\"}";
+                try (OutputStream os = connection.getOutputStream()) {
+                    os.write(json.getBytes(StandardCharsets.UTF_8));
+                }
+
+                connection.getInputStream().close(); // fuerza la petición
+            } catch (Exception e) {
+                plugin.getLogger().severe("No se pudo enviar estado SQL al webhook de Discord:");
+                e.printStackTrace();
+            }
+        });
     }
 
     private boolean handleConsole(CommandSender sender, String[] args) {

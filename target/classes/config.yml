@@ -83,3 +83,7 @@ names-blocked:
     - "KKK"
 
 
+
+discord:
+  sql_status_webhook: "https://discord.com/api/webhooks/..."
+  sql_status_interval_minutes: 10
