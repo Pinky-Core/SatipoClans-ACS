@@ -264,14 +264,14 @@ msg:
   clan_not_exist: "&cEl clan &e{clan} &cno existe."
 
   # FORCE JOIN/DEL CLAN
-  clan_forced_joined: "&a {player} fue forzado a unirse al clan {clan}."
+  clan_forced_joined: "&a El jugador fue forzado a unirse al clan."
   clan_forcejoin_usage: "&c &lUSO: &f/clanadmin forcejoin <jugador> <clan>"
-  clan_forced_left: "&e {player} fue forzado a salir de su clan."
+  clan_forced_left: "&e El jugador fue forzado a salir de su clan."
   clan_forceleave_usage: "&c &lUSO:&f /clanadmin forceleave <jugador>"
-  clan_deleted: "&c El clan {clan} fue eliminado correctamente."
+  clan_deleted: "&c El clan fue eliminado correctamente."
   clan_force_delete: "&c &lUSO:&f /clanadmin delete <clan>"
-  clan_not_found: "&c El clan {clan} no existe."
-  player_not_in_clan: "&d eEl jugador {player} no pertenece a ningún clan."
+  clan_not_found: "&c El clan no existe."
+  player_not_in_clan: "&d El jugador no pertenece a ningún clan."
 
 
 # STATS COMMANDS

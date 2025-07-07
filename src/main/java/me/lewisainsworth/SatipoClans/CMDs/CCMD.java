@@ -45,7 +45,6 @@ public class CCMD implements CommandExecutor, TabCompleter, Listener {
     private final List<String> helpLines;
     public Set<UUID> teleportingPlayers = new HashSet<>();
     private final Map<UUID, Long> homeCooldowns = new HashMap<>();
-
     
     
 
@@ -763,6 +762,7 @@ public class CCMD implements CommandExecutor, TabCompleter, Listener {
                     }
 
                     con.commit();
+                    plugin.getMariaDBManager().reloadCache();
                 }
             } catch (SQLException e) {
                 con.rollback();
@@ -1379,6 +1379,13 @@ public class CCMD implements CommandExecutor, TabCompleter, Listener {
 
 
     private void handleFriendlyFireCommand(CommandSender sender, String playerClan, String[] args) {
+        Player player = (Player) sender;
+
+        if (!isLeader(player, playerClan)) {
+            player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.not_leader_command")));
+            return;
+        }
+
         if (playerClan == null || playerClan.isEmpty()) {
             sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_clan")));
             return;
@@ -1408,6 +1415,13 @@ public class CCMD implements CommandExecutor, TabCompleter, Listener {
     }
 
     private void handleAllyFriendlyFireCommand(CommandSender sender, String playerClan, String[] args) {
+         Player player = (Player) sender;
+
+        if (!isLeader(player, playerClan)) {
+            player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.not_leader_command")));
+            return;
+        }
+
         if (playerClan == null || playerClan.isEmpty()) {
             sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_clan")));
             return;
@@ -1458,6 +1472,13 @@ public class CCMD implements CommandExecutor, TabCompleter, Listener {
     }
 
     private void handleAllyCommand(CommandSender sender, String playerName, String playerClan, String[] args) {
+         Player player = (Player) sender;
+
+        if (!isLeader(player, playerClan)) {
+            player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.not_leader_command")));
+            return;
+        }
+        
         if (playerClan == null || playerClan.isEmpty()) {
             sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.no_clan")));
             return;
@@ -1582,7 +1603,7 @@ public class CCMD implements CommandExecutor, TabCompleter, Listener {
                 plugin.teleportingPlayers.remove(uuid);
             }, plugin.clanHomeDelay * 20L);
         }
-}
+    }
 
 
 
@@ -1695,6 +1716,7 @@ public class CCMD implements CommandExecutor, TabCompleter, Listener {
             deletePending.executeUpdate();
 
             con.commit();
+            plugin.getMariaDBManager().reloadCache();
             con.setAutoCommit(true);
 
             sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.ally_accept_success").replace("{requester}", requesterClan)));
@@ -1786,6 +1808,13 @@ public class CCMD implements CommandExecutor, TabCompleter, Listener {
 
 
     private void handleAllyFriendlyFireCommand(CommandSender sender, String playerClan, String value) {
+         Player player = (Player) sender;
+
+        if (!isLeader(player, playerClan)) {
+            player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.not_leader_command")));
+            return;
+        }
+
         if (!value.equalsIgnoreCase("on") && !value.equalsIgnoreCase("off")) {
             sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("command.allyff_usage")));
             return;

@@ -85,32 +85,31 @@ public class ACMD implements CommandExecutor, TabCompleter {
             case "sqlstatus" -> {
                 try {
                     var ds = plugin.getMariaDBManager().getDataSource();
+                    if (ds == null) {
+                        sender.sendMessage(MSG.color("&cDataSource is null."));
+                        return true;
+                    }
+
                     var pool = ds.getHikariPoolMXBean();
+                    if (pool == null) {
+                        sender.sendMessage(MSG.color("&cHikariPoolMXBean is null."));
+                        return true;
+                    }
 
                     int active = pool.getActiveConnections();
                     int idle = pool.getIdleConnections();
                     int total = pool.getTotalConnections();
                     int awaiting = pool.getThreadsAwaitingConnection();
 
-                    String[] status = {
-                        "&7&m----------&r &a&lSatipo&6&lClans &a&lSQL Status &7&m----------",
-                        "&eActive connections: &f" + active,
-                        "&eIdle connections: &f" + idle,
-                        "&eTotal connections: &f" + total,
-                        "&eThreads awaiting connection: &f" + awaiting,
-                        "&7&m--------------------------------------------"
-                    };
-
-                    // Show to sender
-                    for (String line : status) {
-                        sender.sendMessage(MSG.color(line));
-                    }
-
-                    // Send to Discord webhook
-                    sendSqlStatusToDiscord(active, idle, total, awaiting);
+                    sender.sendMessage(MSG.color("&7&m------&r &aSQL Pool Status &7&m------"));
+                    sender.sendMessage(MSG.color("&eActive: &f" + active));
+                    sender.sendMessage(MSG.color("&eIdle: &f" + idle));
+                    sender.sendMessage(MSG.color("&eTotal: &f" + total));
+                    sender.sendMessage(MSG.color("&eAwaiting: &f" + awaiting));
+                    sender.sendMessage(MSG.color("&7&m----------------------------"));
 
                 } catch (Exception e) {
-                    sender.sendMessage(MSG.color("&cError getting SQL pool status."));
+                    sender.sendMessage(MSG.color("&cError getting SQL status."));
                     e.printStackTrace();
                 }
             }
@@ -600,7 +599,7 @@ public class ACMD implements CommandExecutor, TabCompleter {
         }
 
         if (args.length == 1) {
-            return Stream.of("reload", "ban", "unban", "clear", "reports", "lang", "forcejoin", "forceleave", "delete")
+            return Stream.of("reload", "ban", "unban", "clear", "reports", "lang", "forcejoin", "forceleave", "delete", "sqlstatus")
                     .filter(sub -> sub.startsWith(args[0].toLowerCase()))
                     .collect(Collectors.toList());
         }

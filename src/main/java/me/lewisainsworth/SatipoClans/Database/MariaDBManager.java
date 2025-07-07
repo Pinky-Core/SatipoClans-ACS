@@ -40,7 +40,7 @@ public class MariaDBManager {
         // IMPORTANTE: usar driver sombreado si usás shading
         hikariConfig.setDriverClassName("me.lewisainsworth.shaded.mariadb.jdbc.Driver");
 
-        hikariConfig.setMaximumPoolSize(50);
+        hikariConfig.setMaximumPoolSize(75);
         hikariConfig.setMinimumIdle(10);          
         hikariConfig.setConnectionTimeout(10000);  
         hikariConfig.setIdleTimeout(300000);       
