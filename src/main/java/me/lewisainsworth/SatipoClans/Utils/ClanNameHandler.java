@@ -51,8 +51,10 @@ public class ClanNameHandler {
         String colored = MSG.color(rawName);
 
         try (Connection con = plugin.getMariaDBManager().getConnection();
-            PreparedStatement stmt = con.prepareStatement("INSERT INTO clans (name, name_colored, founder, leader, money, privacy) VALUES (?, ?, ?, ?, 0, 'Private')")) {
-            stmt.setString(1, visibleName);
+            PreparedStatement stmt = con.prepareStatement(
+                "INSERT INTO clans (name, name_colored, founder, leader, money, privacy) VALUES (?, ?, ?, ?, 0, 'private')"
+            )) {
+            stmt.setString(1, visibleName);  // ❌ NO usar colored
             stmt.setString(2, colored);
             stmt.setString(3, founder);
             stmt.setString(4, leader);

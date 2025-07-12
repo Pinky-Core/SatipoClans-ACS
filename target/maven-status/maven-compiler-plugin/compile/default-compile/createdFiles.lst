@@ -22,6 +22,7 @@ me\lewisainsworth\satipoclans\Utils\Metrics$JsonObjectBuilder.class
 me\lewisainsworth\satipoclans\Utils\PAPI.class
 me\lewisainsworth\satipoclans\Utils\LangManager.class
 me\lewisainsworth\satipoclans\Utils\Metrics$AdvancedBarChart.class
+me\lewisainsworth\satipoclans\listeners\PlayerStatsListener.class
 me\lewisainsworth\satipoclans\Utils\Metrics$DrilldownPie.class
 me\lewisainsworth\satipoclans\Utils\Metrics$JsonObjectBuilder$JsonObject.class
 me\lewisainsworth\satipoclans\Utils\Updater.class

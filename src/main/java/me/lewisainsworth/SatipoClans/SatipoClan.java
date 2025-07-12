@@ -17,6 +17,7 @@ import me.lewisainsworth.satipoclans.CMDs.LangCMD;
 import me.lewisainsworth.satipoclans.Events.Events;
 import me.lewisainsworth.satipoclans.Utils.*;
 import me.lewisainsworth.satipoclans.Database.MariaDBManager;
+import me.lewisainsworth.satipoclans.listeners.PlayerStatsListener;
 
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -73,6 +74,7 @@ public class SatipoClan extends JavaPlugin {
       copyLangFiles();
       langManager = new LangManager(this);
       LangCMD langCMD = new LangCMD(this);
+      getServer().getPluginManager().registerEvents(new PlayerStatsListener(this), this);
       setLangCMD(langCMD);
       
       this.ccCmd = new CCMD(this, langManager);

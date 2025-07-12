@@ -41,7 +41,7 @@ public class MariaDBManager {
         hikariConfig.setDriverClassName("me.lewisainsworth.shaded.mariadb.jdbc.Driver");
 
         hikariConfig.setMaximumPoolSize(75);
-        hikariConfig.setMinimumIdle(10);          
+        hikariConfig.setMinimumIdle(20);          
         hikariConfig.setConnectionTimeout(10000);  
         hikariConfig.setIdleTimeout(300000);       
         hikariConfig.setMaxLifetime(1800000); 
@@ -153,14 +153,22 @@ public class MariaDBManager {
             """);
 
             stmt.executeUpdate("""
-            CREATE TABLE IF NOT EXISTS clan_homes (
-                clan VARCHAR(255) PRIMARY KEY,
-                world VARCHAR(64),
-                x DOUBLE,
-                y DOUBLE,
-                z DOUBLE
-            )
-        """);
+                CREATE TABLE IF NOT EXISTS clan_homes (
+                    clan VARCHAR(255) PRIMARY KEY,
+                    world VARCHAR(64),
+                    x DOUBLE,
+                    y DOUBLE,
+                    z DOUBLE
+                )
+            """);
+
+            stmt.executeUpdate("""
+                CREATE TABLE IF NOT EXISTS player_stats (
+                    username VARCHAR(16) PRIMARY KEY,
+                    kills INT DEFAULT 0,
+                    deaths INT DEFAULT 0
+                )
+            """);
         }
 
         try (Connection con = getConnection();
@@ -419,6 +427,25 @@ public class MariaDBManager {
 
         lastCacheUpdate = System.currentTimeMillis();
     }
+
+
+    public double getKillDeathRatio(String playerName) {
+        try (Connection con = plugin.getMariaDBManager().getConnection();
+            PreparedStatement ps = con.prepareStatement("SELECT kills, deaths FROM player_stats WHERE username = ?")) {
+            ps.setString(1, playerName);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                int kills = rs.getInt("kills");
+                int deaths = rs.getInt("deaths");
+                if (deaths == 0) return kills;
+                return (double) kills / deaths;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0.0;
+    }
+    
 
     public String getCachedPlayerClan(String playerName) {
         ensureCacheFresh();

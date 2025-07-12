@@ -634,9 +634,11 @@ public class CCMD implements CommandExecutor, TabCompleter, Listener {
     public void stats(CommandSender sender, String clanName) {
         try (Connection con = plugin.getMariaDBManager().getConnection();
             PreparedStatement clanStmt = con.prepareStatement(
-                "SELECT name_colored, founder, leader, privacy, money FROM clans WHERE name=?"
+                    "SELECT name_colored, founder, leader, privacy FROM clans WHERE name = ?"
             );
-            PreparedStatement membersStmt = con.prepareStatement("SELECT username FROM clan_users WHERE clan=?")) {
+            PreparedStatement membersStmt = con.prepareStatement(
+                    "SELECT username FROM clan_users WHERE clan = ?"
+            )) {
 
             clanStmt.setString(1, clanName);
             ResultSet clanRs = clanStmt.executeQuery();
@@ -650,7 +652,6 @@ public class CCMD implements CommandExecutor, TabCompleter, Listener {
             String founder = clanRs.getString("founder");
             String leader = clanRs.getString("leader");
             String privacy = clanRs.getString("privacy");
-            //double money = clanRs.getDouble("money");
 
             sender.sendMessage(MSG.color(""));
             sender.sendMessage(MSG.color(langManager.getMessage("user.stats_border")));
@@ -659,15 +660,28 @@ public class CCMD implements CommandExecutor, TabCompleter, Listener {
             sender.sendMessage(MSG.color(langManager.getMessage("user.stats_founder").replace("{founder}", founder)));
             sender.sendMessage(MSG.color(langManager.getMessage("user.stats_leader").replace("{leader}", leader)));
             sender.sendMessage(MSG.color(langManager.getMessage("user.stats_privacy").replace("{privacy}", privacy)));
-            //sender.sendMessage(MSG.color(langManager.getMessage("user.stats_money").replace("{money}", String.format("%.2f", money))));
 
             membersStmt.setString(1, clanName);
             ResultSet members = membersStmt.executeQuery();
 
             sender.sendMessage(MSG.color(langManager.getMessage("user.stats_members_title")));
+
+            double totalKD = 0.0;
+            int count = 0;
+
             while (members.next()) {
-                sender.sendMessage(MSG.color(langManager.getMessage("user.stats_member_line").replace("{member}", members.getString("username"))));
+                String username = members.getString("username");
+                double kd = plugin.getMariaDBManager().getKillDeathRatio(username);
+                totalKD += kd;
+                count++;
+
+                sender.sendMessage(MSG.color(langManager.getMessage("user.stats_member_line").replace("{member}", username)
+                        .replace("{kd}", String.format("%.2f", kd))));
             }
+
+            double avgKD = count > 0 ? totalKD / count : 0.0;
+
+            sender.sendMessage(MSG.color(langManager.getMessage("user.stats_avg_kd").replace("{avgKD}", String.format("%.2f", avgKD))));
 
             sender.sendMessage(MSG.color(langManager.getMessage("user.stats_footer")));
 
@@ -676,6 +690,7 @@ public class CCMD implements CommandExecutor, TabCompleter, Listener {
             sender.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.stats_error")));
         }
     }
+
 
 
 

@@ -66,6 +66,8 @@ user:
   stats_member_line: "&f- &l{member}"
   stats_footer: "&2================== &7 [&a&lꜱᴀᴛɪᴘᴏ&6&lᴄʟᴀɴꜱ&7] &2=================="
   stats_error: "&c Error al cargar las estadísticas del clan."
+  stats_avg_kd: "&eK/D promedio del clan: &b{avgKD}"
+  stats_member_line: "&7- &f{member} &8| &eK/D: &b{kd}"
 
   # INVITE COMMAND
   only_players_invite: "&c Solo los jugadores pueden enviar invitaciones."
