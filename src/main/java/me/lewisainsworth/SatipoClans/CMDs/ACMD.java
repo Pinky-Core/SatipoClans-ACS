@@ -82,6 +82,15 @@ public class ACMD implements CommandExecutor, TabCompleter {
             case "clear" -> clear(sender);
             case "reports" -> reports(sender);
             //case "economy" -> economy(sender, args);
+            case "fix" -> {
+                if (args.length < 2 || !args[1].equalsIgnoreCase("confirm")) {
+                    sender.sendMessage(MSG.color(langManager.getMessage("msg.admin_fix_usage_1")));
+                    sender.sendMessage(MSG.color(langManager.getMessage("msg.admin_fix_usage_2")));
+                    return true;
+                }
+                sender.sendMessage(MSG.color(langManager.getMessage("msg.admin_fix_start")));
+                plugin.getMariaDBManager().fixClanColorsAsync(sender);
+            }
             case "sqlstatus" -> {
                 try {
                     var ds = plugin.getMariaDBManager().getDataSource();

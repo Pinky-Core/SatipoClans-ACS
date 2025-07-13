@@ -229,6 +229,13 @@ msg:
   data_cleared: "&aTodos los datos relacionados con clanes fueron eliminados de la Database."
   error_clearing_data: "&cError al borrar los datos de la Database."
 
+
+  # FIX COMMAND
+  admin_fix_usage_1: "&eUsa &b/clanadmin fix confirm &epara confirmar la reparación de nombres de clanes."
+  admin_fix_usage_2: "&7Esto eliminará colores de &fname_colored &7en todos los clanes para evitar bugs de invitación y detección de clan."
+  admin_fix_start: "&eIniciando reparación asincrónica de colores de clanes..."
+
+
   # HELP COMMAND
   help:
     commands:

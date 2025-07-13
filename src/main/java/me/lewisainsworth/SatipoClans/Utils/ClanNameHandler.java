@@ -7,6 +7,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import org.bukkit.ChatColor;
+
+
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -65,10 +68,11 @@ public class ClanNameHandler {
     public static void updateClanName(SatipoClan plugin, String oldName, String newRawName) throws SQLException {
         LangManager lang = plugin.getLangManager();
 
-        String newVisible = getVisibleName(newRawName);
+        String newVisible = ChatColor.stripColor(MSG.color(newRawName)); // quitar color
+        String newColored = MSG.color(newRawName); // aplicar color
 
         // Validar longitud visible
-        if (!isValid(newRawName)) {
+        if (!isValid(newVisible)) {
             throw new IllegalArgumentException(
                 MSG.color(lang.getMessageWithPrefix("user.edit_name_too_long")
                     .replace("{max}", String.valueOf(MAX_VISIBLE_LENGTH)))
@@ -83,20 +87,63 @@ public class ClanNameHandler {
             );
         }
 
-        String newColored = MSG.color(newRawName);
+        // Verificar que no exista un clan con ese nombre
+        if (plugin.getMariaDBManager().clanExists(newVisible)) {
+            throw new IllegalArgumentException(
+                MSG.color(lang.getMessageWithPrefix("user.edit_name_exists"))
+            );
+        }
 
-        try (Connection con = plugin.getMariaDBManager().getConnection();
-            PreparedStatement updateClans = con.prepareStatement("UPDATE clans SET name=?, name_colored=? WHERE name=?");
-            PreparedStatement updateUsers = con.prepareStatement("UPDATE clan_users SET clan=? WHERE clan=?")) {
+        try (Connection con = plugin.getMariaDBManager().getConnection()) {
+            con.setAutoCommit(false);
 
-            updateClans.setString(1, newVisible);
-            updateClans.setString(2, newColored);
-            updateClans.setString(3, oldName);
-            updateClans.executeUpdate();
+            try (
+                PreparedStatement updateClans = con.prepareStatement(
+                    "UPDATE clans SET name=?, name_colored=? WHERE name=?");
+                PreparedStatement updateUsers = con.prepareStatement(
+                    "UPDATE clan_users SET clan=? WHERE clan=?");
+                PreparedStatement updateFF = con.prepareStatement(
+                    "UPDATE friendlyfire SET clan=? WHERE clan=?");
+                PreparedStatement updateInvites = con.prepareStatement(
+                    "UPDATE clan_invites SET clan=? WHERE clan=?");
+                PreparedStatement updateReports = con.prepareStatement(
+                    "UPDATE reports SET clan=? WHERE clan=?");
+                PreparedStatement updateAlliances1 = con.prepareStatement(
+                    "UPDATE alliances SET clan1=? WHERE clan1=?");
+                PreparedStatement updateAlliances2 = con.prepareStatement(
+                    "UPDATE alliances SET clan2=? WHERE clan2=?");
+                PreparedStatement updatePending1 = con.prepareStatement(
+                    "UPDATE pending_alliances SET requester=? WHERE requester=?");
+                PreparedStatement updatePending2 = con.prepareStatement(
+                    "UPDATE pending_alliances SET target=? WHERE target=?");
+                PreparedStatement updateHistory = con.prepareStatement(
+                    "UPDATE player_clan_history SET current_clan=? WHERE current_clan=?")
+            ) {
 
-            updateUsers.setString(1, newVisible);
-            updateUsers.setString(2, oldName);
-            updateUsers.executeUpdate();
+                updateClans.setString(1, newVisible);
+                updateClans.setString(2, newColored);
+                updateClans.setString(3, oldName);
+                updateClans.executeUpdate();
+
+                PreparedStatement[] updates = {
+                    updateUsers, updateFF, updateInvites, updateReports,
+                    updateAlliances1, updateAlliances2, updatePending1, updatePending2, updateHistory
+                };
+
+                for (PreparedStatement ps : updates) {
+                    ps.setString(1, newVisible);
+                    ps.setString(2, oldName);
+                    ps.executeUpdate();
+                }
+
+                con.commit();
+            } catch (SQLException e) {
+                con.rollback();
+                e.printStackTrace();
+                throw new IllegalArgumentException(MSG.color("&cError al actualizar el nombre del clan."));
+            } finally {
+                con.setAutoCommit(true);
+            }
         }
     }
 }

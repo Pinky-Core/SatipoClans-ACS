@@ -32,6 +32,8 @@ import org.bukkit.World;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.ChatColor;
+
 
 
 import net.md_5.bungee.api.chat.TextComponent;
@@ -1145,99 +1147,84 @@ public class CCMD implements CommandExecutor, TabCompleter, Listener {
         String type = args[1];
         String value = args[2];
 
-        try (Connection con = plugin.getMariaDBManager().getConnection()) {
-           if (type.equalsIgnoreCase("name")) {
-                if (plugin.isClanBanned(value)) {
-                    player.sendMessage(MSG.color(langManager.getMessageWithPrefix("msg.clan_name_banned").replace("{clan}", value)));
-                    return;
-                }
+        if (type.equalsIgnoreCase("name")) {
+            final String coloredName = ChatColor.translateAlternateColorCodes('&', value);
+            final String plainName = ChatColor.stripColor(coloredName);
+            final String oldClanName = clanName;
 
-                con.setAutoCommit(false);
-                try {
-                    try {
-                        ClanNameHandler.updateClanName(plugin, clanName, value);
-                    } catch (IllegalArgumentException e) {
-                        player.sendMessage(e.getMessage());
-                        return;
-                    }
-
-                    try (PreparedStatement ps = con.prepareStatement("UPDATE clan_users SET clan=? WHERE clan=?")) {
-                        ps.setString(1, value);
-                        ps.setString(2, clanName);
-                        ps.executeUpdate();
-                    }
-
-                    try (PreparedStatement ps = con.prepareStatement("UPDATE friendlyfire SET clan=? WHERE clan=?")) {
-                        ps.setString(1, value);
-                        ps.setString(2, clanName);
-                        ps.executeUpdate();
-                    }
-
-                    try (PreparedStatement ps = con.prepareStatement("UPDATE clan_invites SET clan=? WHERE clan=?")) {
-                        ps.setString(1, value);
-                        ps.setString(2, clanName);
-                        ps.executeUpdate();
-                    }
-
-                    try (PreparedStatement ps = con.prepareStatement("UPDATE reports SET clan=? WHERE clan=?")) {
-                        ps.setString(1, value);
-                        ps.setString(2, clanName);
-                        ps.executeUpdate();
-                    }
-
-                    try (PreparedStatement ps = con.prepareStatement("UPDATE alliances SET clan1=? WHERE clan1=?")) {
-                        ps.setString(1, value);
-                        ps.setString(2, clanName);
-                        ps.executeUpdate();
-                    }
-
-                    try (PreparedStatement ps = con.prepareStatement("UPDATE alliances SET clan2=? WHERE clan2=?")) {
-                        ps.setString(1, value);
-                        ps.setString(2, clanName);
-                        ps.executeUpdate();
-                    }
-
-                    try (PreparedStatement ps = con.prepareStatement("UPDATE pending_alliances SET requester=? WHERE requester=?")) {
-                        ps.setString(1, value);
-                        ps.setString(2, clanName);
-                        ps.executeUpdate();
-                    }
-
-                    try (PreparedStatement ps = con.prepareStatement("UPDATE pending_alliances SET target=? WHERE target=?")) {
-                        ps.setString(1, value);
-                        ps.setString(2, clanName);
-                        ps.executeUpdate();
-                    }
-
-                    try (PreparedStatement ps = con.prepareStatement("UPDATE player_clan_history SET current_clan=? WHERE current_clan=?")) {
-                        ps.setString(1, value);
-                        ps.setString(2, clanName);
-                        ps.executeUpdate();
-                    }
-
-                    con.commit();
-                    plugin.getMariaDBManager().reloadCache();
-                    player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.edit_name_success").replace("{name}", value)));
-                } catch (SQLException e) {
-                    con.rollback();
-                    e.printStackTrace();
-                    player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.edit_name_error")));
-                } finally {
-                    con.setAutoCommit(true);
-                }
-            } else if (type.equalsIgnoreCase("privacy")) {
-                try (PreparedStatement ps = con.prepareStatement("UPDATE clans SET privacy=? WHERE name=?")) {
-                    ps.setString(1, value);
-                    ps.setString(2, clanName);
-                    ps.executeUpdate();
-                    player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.edit_privacy_success").replace("{privacy}", value)));
-                }
+            if (plugin.isClanBanned(plainName)) {
+                player.sendMessage(MSG.color(langManager.getMessageWithPrefix("msg.clan_name_banned").replace("{clan}", plainName)));
+                return;
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.edit_error")));
+
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                try (Connection connection = plugin.getMariaDBManager().getConnection()) {
+                    connection.setAutoCommit(false);
+
+                    try {
+                        if (plugin.getMariaDBManager().clanExists(plainName)) {
+                            Bukkit.getScheduler().runTask(plugin, () -> 
+                                player.sendMessage(MSG.color("&cYa existe un clan con ese nombre."))
+                            );
+                            return;
+                        }
+
+                        ClanNameHandler.updateClanName(plugin, oldClanName, plainName);
+
+                        // Actualizar name_colored
+                        try (PreparedStatement ps = connection.prepareStatement("UPDATE clans SET name_colored=? WHERE name=?")) {
+                            ps.setString(1, coloredName);
+                            ps.setString(2, plainName);
+                            ps.executeUpdate();
+                        }
+
+                        String[] updates = {
+                            "UPDATE clan_users SET clan=? WHERE clan=?",
+                            "UPDATE friendlyfire SET clan=? WHERE clan=?",
+                            "UPDATE clan_invites SET clan=? WHERE clan=?",
+                            "UPDATE reports SET clan=? WHERE clan=?",
+                            "UPDATE alliances SET clan1=? WHERE clan1=?",
+                            "UPDATE alliances SET clan2=? WHERE clan2=?",
+                            "UPDATE pending_alliances SET requester=? WHERE requester=?",
+                            "UPDATE pending_alliances SET target=? WHERE target=?",
+                            "UPDATE player_clan_history SET current_clan=? WHERE current_clan=?"
+                        };
+
+                        for (String sql : updates) {
+                            try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                                ps.setString(1, plainName);
+                                ps.setString(2, oldClanName);
+                                ps.executeUpdate();
+                            }
+                        }
+
+                        connection.commit();
+                        plugin.getMariaDBManager().reloadCache();
+
+                        Bukkit.getScheduler().runTask(plugin, () ->
+                            player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.edit_name_success").replace("{name}", coloredName)))
+                        );
+
+                    } catch (SQLException e) {
+                        connection.rollback();
+                        e.printStackTrace();
+                        Bukkit.getScheduler().runTask(plugin, () ->
+                            player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.edit_name_error")))
+                        );
+                    } finally {
+                        connection.setAutoCommit(true);
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    Bukkit.getScheduler().runTask(plugin, () ->
+                        player.sendMessage(MSG.color(langManager.getMessageWithPrefix("user.edit_error")))
+                    );
+                }
+            });
         }
     }
+
+
 
 
 

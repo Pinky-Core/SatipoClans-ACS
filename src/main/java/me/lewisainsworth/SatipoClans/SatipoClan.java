@@ -76,11 +76,9 @@ public class SatipoClan extends JavaPlugin {
       LangCMD langCMD = new LangCMD(this);
       getServer().getPluginManager().registerEvents(new PlayerStatsListener(this), this);
       setLangCMD(langCMD);
-      
+
       this.ccCmd = new CCMD(this, langManager);
       getCommand("clan").setExecutor(ccCmd);
-      // 🔥 Eliminar este:
-      // getServer().getPluginManager().registerEvents(new Events(this, ccCmd), this);
 
       if (getConfig().getBoolean("economy.enabled", true)) {
          if (!econ.setupEconomy()) {

@@ -3,6 +3,9 @@ import me.lewisainsworth.satipoclans.SatipoClan;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.command.CommandSender;
+
+import me.lewisainsworth.satipoclans.Utils.MSG;
 
 
 import com.zaxxer.hikari.HikariConfig;
@@ -445,6 +448,94 @@ public class MariaDBManager {
         }
         return 0.0;
     }
+
+    public void fixClanColorsAsync(CommandSender sender) {
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            final int[] fixed = {0}; // Usamos un array de 1 elemento para contador mutable
+            try (Connection con = getConnection();
+                PreparedStatement select = con.prepareStatement("SELECT name_colored, name FROM clans WHERE name_colored != name");
+                PreparedStatement update = con.prepareStatement("UPDATE clans SET name_colored=? WHERE name=?")) {
+
+                ResultSet rs = select.executeQuery();
+                while (rs.next()) {
+                    String raw = rs.getString("name");
+
+                    update.setString(1, raw);
+                    update.setString(2, raw);
+                    update.addBatch();
+                    fixed[0]++;
+                }
+                update.executeBatch();
+
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    plugin.getMariaDBManager().reloadCache();
+                    sender.sendMessage(MSG.color("&aSe han corregido &f" + fixed[0] + " &aclanes, eliminando colores del nombre y reparando la detección de clan."));
+                });
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+                Bukkit.getScheduler().runTask(plugin, () ->
+                    sender.sendMessage(MSG.color("&cOcurrió un error al intentar reparar los colores de los clanes. Revisa la consola."))
+                );
+            }
+        });
+    }
+
+
+
+    /**
+     * Obtiene el nombre coloreado de un clan, o devuelve el nombre plano si no existe.
+     */
+    public String getColoredName(String clanName) {
+        if (clanName == null) return null;
+        try (Connection con = getConnection();
+            PreparedStatement ps = con.prepareStatement("SELECT name_colored FROM clans WHERE name=?")) {
+            ps.setString(1, clanName);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                String colored = rs.getString("name_colored");
+                return colored != null ? colored : clanName;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return clanName;
+    }
+
+    /**
+     * Obtiene el nombre plano (raw) de un clan dado un nombre coloreado.
+     */
+    public String getRawNameFromColored(String coloredName) {
+        if (coloredName == null) return null;
+        try (Connection con = getConnection();
+            PreparedStatement ps = con.prepareStatement("SELECT name FROM clans WHERE name_colored=?")) {
+            ps.setString(1, coloredName);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getString("name");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * Verifica si existe un clan por nombre plano.
+     */
+    public boolean clanExists(String clanName) {
+        try (Connection con = getConnection();
+            PreparedStatement ps = con.prepareStatement("SELECT 1 FROM clans WHERE name=?")) {
+            ps.setString(1, clanName);
+            ResultSet rs = ps.executeQuery();
+            return rs.next();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+
     
 
     public String getCachedPlayerClan(String playerName) {
